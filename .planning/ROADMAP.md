@@ -33,11 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Convex schema is deployed with tables for raw scraped records, canonical scholarships, and sources -- with indexes for all planned filter combinations
   3. Frontend app deploys to Netlify and loads successfully in a browser (placeholder page)
   4. Python environment is configured with dependency management and can import Convex HTTP API utilities
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- Monorepo scaffold, web app tooling, Convex schema, Python scraping environment
+- [ ] 01-02-PLAN.md -- Branded placeholder page with neo-brutalism styling, GitHub Actions CI/CD
 
 ### Phase 2: Source Discovery
 **Goal**: A comprehensive, structured catalog of scholarship sources exists, each annotated with scrape strategy and priority, ready to feed the scraping pipeline
