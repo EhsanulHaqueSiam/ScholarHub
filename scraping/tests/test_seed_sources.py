@@ -96,4 +96,5 @@ def test_all_fixture_entries_pass_validation(schema, fixtures):
     jsonschema.validate(instance=fixtures, schema=schema)
     assert len(fixtures) == 5
     categories = {entry["category"] for entry in fixtures}
-    assert categories == {"aggregator", "official_program", "government", "foundation", "university"}
+    expected = {"aggregator", "official_program", "government", "foundation", "university"}
+    assert categories == expected
