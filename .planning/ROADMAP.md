@@ -48,11 +48,12 @@ Plans:
   2. Each source entry specifies URL, source type (API/scrape/Scrapling), estimated reliability, and recommended scrape frequency
   3. Sources are categorized by type (official program, university, aggregator, government, foundation) and prioritized for scraping order
   4. Source catalog is stored in a format consumable by the scraping pipeline (structured data in repo or Convex)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Convex schema evolution, upsertSource mutation, JSON Schema, test fixtures, validation tests
+- [ ] 02-02-PLAN.md -- Seed script, URL validation script, stats script, CI JSON Schema validation
+- [ ] 02-03-PLAN.md -- Source catalog population (aggregators, official programs, government, foundations)
 
 ### Phase 3: Scraping Pipeline
 **Goal**: An automated scraping system pulls scholarship data from multiple source types, lands it in Convex staging tables, and runs on a schedule via GitHub Actions with monitoring
@@ -171,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-03-20 |
-| 2. Source Discovery | 0/2 | Not started | - |
+| 2. Source Discovery | 0/3 | Not started | - |
 | 3. Scraping Pipeline | 0/3 | Not started | - |
 | 4. Data Aggregation | 0/2 | Not started | - |
 | 5. Admin Dashboard | 0/3 | Not started | - |
