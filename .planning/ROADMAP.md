@@ -12,7 +12,7 @@ ScholarHub delivers a scholarship aggregation platform in 9 phases, starting wit
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Monorepo scaffold, Convex schema, Netlify deployment, project skeleton
+- [x] **Phase 1: Foundation** - Monorepo scaffold, Convex schema, Netlify deployment, project skeleton
 - [ ] **Phase 2: Source Discovery** - Catalog 1000+ scholarship sources with metadata and scrape strategies
 - [ ] **Phase 3: Scraping Pipeline** - Automated scraping with API-first approach, Scrapling fallback, GitHub Actions scheduling, monitoring
 - [ ] **Phase 4: Data Aggregation** - Deduplication, multi-source merging, cyclical scholarship tracking
@@ -36,8 +36,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Monorepo scaffold, web app tooling, Convex schema, Python scraping environment
-- [ ] 01-02-PLAN.md -- Branded placeholder page with neo-brutalism styling, GitHub Actions CI/CD
+- [x] 01-01-PLAN.md -- Monorepo scaffold, web app tooling, Convex schema, Python scraping environment
+- [x] 01-02-PLAN.md -- Branded placeholder page with neo-brutalism styling, GitHub Actions CI/CD
 
 ### Phase 2: Source Discovery
 **Goal**: A comprehensive, structured catalog of scholarship sources exists, each annotated with scrape strategy and priority, ready to feed the scraping pipeline
@@ -170,7 +170,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 2/2 | Complete | 2026-03-20 |
 | 2. Source Discovery | 0/2 | Not started | - |
 | 3. Scraping Pipeline | 0/3 | Not started | - |
 | 4. Data Aggregation | 0/2 | Not started | - |
