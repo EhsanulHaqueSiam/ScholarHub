@@ -137,13 +137,74 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| INFR-01 | Phase 1 | Pending |
+| INFR-02 | Phase 1 | Pending |
+| INFR-03 | Phase 1 | Pending |
+| SRCD-01 | Phase 2 | Pending |
+| SRCD-02 | Phase 2 | Pending |
+| SRCD-03 | Phase 2 | Pending |
+| SRCD-04 | Phase 2 | Pending |
+| SRCD-05 | Phase 2 | Pending |
+| SCRP-01 | Phase 3 | Pending |
+| SCRP-02 | Phase 3 | Pending |
+| SCRP-03 | Phase 3 | Pending |
+| SCRP-04 | Phase 3 | Pending |
+| SCRP-05 | Phase 3 | Pending |
+| SCRP-06 | Phase 3 | Pending |
+| SCRP-07 | Phase 3 | Pending |
+| INFR-04 | Phase 3 | Pending |
+| AGGR-01 | Phase 4 | Pending |
+| AGGR-02 | Phase 4 | Pending |
+| AGGR-03 | Phase 4 | Pending |
+| AGGR-04 | Phase 4 | Pending |
+| AGGR-05 | Phase 4 | Pending |
+| AGGR-06 | Phase 4 | Pending |
+| ADMN-01 | Phase 5 | Pending |
+| ADMN-02 | Phase 5 | Pending |
+| ADMN-03 | Phase 5 | Pending |
+| ADMN-04 | Phase 5 | Pending |
+| ADMN-05 | Phase 5 | Pending |
+| ADMN-06 | Phase 5 | Pending |
+| ADMN-07 | Phase 5 | Pending |
+| ADMN-08 | Phase 5 | Pending |
+| UIDX-04 | Phase 5 | Pending |
+| PDIR-01 | Phase 6 | Pending |
+| PDIR-02 | Phase 6 | Pending |
+| PDIR-03 | Phase 6 | Pending |
+| PDIR-04 | Phase 6 | Pending |
+| PDIR-05 | Phase 6 | Pending |
+| PDIR-06 | Phase 6 | Pending |
+| PDIR-07 | Phase 6 | Pending |
+| PDIR-08 | Phase 6 | Pending |
+| PDIR-09 | Phase 6 | Pending |
+| PDIR-10 | Phase 6 | Pending |
+| PDIR-11 | Phase 6 | Pending |
+| UIDX-01 | Phase 6 | Pending |
+| UIDX-02 | Phase 6 | Pending |
+| UIDX-03 | Phase 6 | Pending |
+| DTLP-01 | Phase 7 | Pending |
+| DTLP-02 | Phase 7 | Pending |
+| DTLP-03 | Phase 7 | Pending |
+| DTLP-04 | Phase 7 | Pending |
+| DTLP-05 | Phase 7 | Pending |
+| DTLP-06 | Phase 7 | Pending |
+| DTLP-07 | Phase 7 | Pending |
+| DTLP-08 | Phase 7 | Pending |
+| DTLP-09 | Phase 7 | Pending |
+| DTLP-10 | Phase 7 | Pending |
+| DTLP-11 | Phase 7 | Pending |
+| DISC-01 | Phase 8 | Pending |
+| DISC-02 | Phase 8 | Pending |
+| DISC-03 | Phase 8 | Pending |
+| SEOG-01 | Phase 9 | Pending |
+| SEOG-02 | Phase 9 | Pending |
+| SEOG-03 | Phase 9 | Pending |
 
 **Coverage:**
-- v1 requirements: 49 total
-- Mapped to phases: 0
-- Unmapped: 49
+- v1 requirements: 62 total
+- Mapped to phases: 62
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after initial definition*
+*Last updated: 2026-03-20 after roadmap creation*
