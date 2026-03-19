@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Build output
+dist/
+.vercel/
+
+# Environment
+.env.local
+.env.production.local
+
+# Convex
+.convex/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Lockfiles that shouldn't be gitignored
+!web/bun.lockb
+!scraping/uv.lock
+
+# Python
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
