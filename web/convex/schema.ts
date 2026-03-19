@@ -48,6 +48,7 @@ export const scrapeMethodValidator = v.union(
   v.literal("api"),
   v.literal("scrape"),
   v.literal("scrapling"),
+  v.literal("rss"),
 );
 export type ScrapeMethod = Infer<typeof scrapeMethodValidator>;
 
@@ -68,10 +69,17 @@ export default defineSchema({
     data_quality_rating: v.optional(v.number()),
     notes: v.optional(v.string()),
     is_active: v.boolean(),
+    wave: v.optional(v.number()),
+    auth_required: v.optional(v.boolean()),
+    has_api: v.optional(v.boolean()),
+    estimated_volume: v.optional(v.string()),
   })
     .index("by_category", ["category"])
     .index("by_trust_level", ["trust_level"])
-    .index("by_active_category", ["is_active", "category"]),
+    .index("by_active_category", ["is_active", "category"])
+    .index("by_url", ["url"])
+    .index("by_wave", ["wave"])
+    .index("by_active_wave", ["is_active", "wave"]),
 
   // Raw scraped records -- staging area before aggregation
   raw_records: defineTable({

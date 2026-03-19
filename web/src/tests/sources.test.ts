@@ -1,13 +1,16 @@
 // @vitest-environment edge-runtime
+
+import { anyApi } from "convex/server";
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import { api } from "../../convex/_generated/api";
 import schema from "../../convex/schema";
+
+const modules = import.meta.glob("../../convex/**/*.*s");
 
 describe("upsertSource", () => {
   it("creates a new source when URL not found", async () => {
-    const t = convexTest(schema);
-    const id = await t.mutation(api.sources.upsertSource, {
+    const t = convexTest(schema, modules);
+    const id = await t.mutation(anyApi.sources.upsertSource, {
       name: "Test Source",
       url: "https://example.com/scholarships",
       category: "aggregator" as const,
@@ -27,9 +30,9 @@ describe("upsertSource", () => {
   });
 
   it("updates existing source when URL matches", async () => {
-    const t = convexTest(schema);
+    const t = convexTest(schema, modules);
     // Create initial
-    await t.mutation(api.sources.upsertSource, {
+    await t.mutation(anyApi.sources.upsertSource, {
       name: "Original",
       url: "https://example.com",
       category: "aggregator" as const,
@@ -39,7 +42,7 @@ describe("upsertSource", () => {
       is_active: true,
     });
     // Upsert with same URL
-    await t.mutation(api.sources.upsertSource, {
+    await t.mutation(anyApi.sources.upsertSource, {
       name: "Updated",
       url: "https://example.com",
       category: "aggregator" as const,
@@ -58,8 +61,8 @@ describe("upsertSource", () => {
   });
 
   it("handles optional fields with defaults", async () => {
-    const t = convexTest(schema);
-    const id = await t.mutation(api.sources.upsertSource, {
+    const t = convexTest(schema, modules);
+    const id = await t.mutation(anyApi.sources.upsertSource, {
       name: "Minimal Source",
       url: "https://minimal.example.com",
       category: "foundation" as const,
@@ -79,8 +82,8 @@ describe("upsertSource", () => {
   });
 
   it("accepts rss as a valid scrape_method", async () => {
-    const t = convexTest(schema);
-    const id = await t.mutation(api.sources.upsertSource, {
+    const t = convexTest(schema, modules);
+    const id = await t.mutation(anyApi.sources.upsertSource, {
       name: "RSS Feed Source",
       url: "https://feeds.example.com/scholarships",
       category: "official_program" as const,
