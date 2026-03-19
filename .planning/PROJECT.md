@@ -55,6 +55,8 @@ Students can discover every relevant international scholarship in one place, wit
 - **Runtime**: Bun
 - **Scraping**: Python (Scrapling + Scrapy), GitHub Actions for automation
 - **Analytics (later)**: Sentry (errors), PostHog (usage/heatmaps/retention)
+- **UI Style**: Neo-brutalism design — bold, high-contrast, distinctive. Inspiration: neobrutalism.dev, Dribbble neo-brutalism examples. Use `frontend-design` skill for all UI work.
+- **Repo Structure**: Monorepo — Python scraping + TypeScript web app in single repository, sharing Convex backend
 
 ## Key Decisions
 
@@ -65,6 +67,8 @@ Students can discover every relevant international scholarship in one place, wit
 | Python for scraping, separate from web app | Best scraping ecosystem (Scrapy/Scrapling), runs on GitHub Actions independently | — Pending |
 | API-first scraping strategy | Try APIs before scraping, fall back to Scrapling for protected sites | — Pending |
 | No student auth in v1 | Focus on content quality and scraping robustness first | — Pending |
+| Neo-brutalism UI design | Distinctive, user-friendly, high information density done right — stands out from generic scholarship sites | — Pending |
+| Monorepo (Python + TypeScript) | Keep scraping and web app in one repo — shared Convex backend, single source of truth, unified GitHub Actions | — Pending |
 
 ---
-*Last updated: 2026-03-20 after initialization*
+*Last updated: 2026-03-20 after research + user feedback*
