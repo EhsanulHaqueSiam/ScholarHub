@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
-import schema, {
-  degreeLevelValidator,
-  fundingTypeValidator,
-  sourceCategoryValidator,
-  trustLevelValidator,
-  scholarshipStatusValidator,
-  scrapeMethodValidator,
-} from "../../convex/schema";
 import type {
   DegreeLevel,
   FundingType,
-  SourceCategory,
-  TrustLevel,
   ScholarshipStatus,
   ScrapeMethod,
+  SourceCategory,
+  TrustLevel,
+} from "../../convex/schema";
+import schema, {
+  degreeLevelValidator,
+  fundingTypeValidator,
+  scholarshipStatusValidator,
+  scrapeMethodValidator,
+  sourceCategoryValidator,
+  trustLevelValidator,
 } from "../../convex/schema";
 
 describe("Convex schema validators", () => {
