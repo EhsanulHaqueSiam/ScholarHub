@@ -1,6 +1,7 @@
 [build]
+  base = "web"
   command = "bun run build"
-  publish = "dist"
+  publish = "web/dist"
 
 # SPA fallback — all routes serve index.html
 [[redirects]]
