@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install web dependencies
+        run: cd web && bun install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: cd web && bun biome check .
+
+      - name: Type check
+        run: cd web && bun tsc --noEmit

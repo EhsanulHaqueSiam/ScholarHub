@@ -1,0 +1,29 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install web dependencies
+        run: cd web && bun install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: cd web && bun biome check .
+
+      - name: Type check
+        run: cd web && bun tsc --noEmit
+
+      - name: Deploy to Netlify
+        run: cd web && npx convex deploy --cmd 'bun run build'
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
