@@ -42,9 +42,9 @@ Plans:
 ### Phase 2: Source Discovery
 **Goal**: A comprehensive, structured catalog of scholarship sources exists, each annotated with scrape strategy and priority, ready to feed the scraping pipeline
 **Depends on**: Phase 1
-**Requirements**: SRCD-01, SRCD-02, SRCD-03, SRCD-04, SRCD-05
+**Requirements**: SRCD-01, SRCD-02, SRCD-04, SRCD-05 (SRCD-03 deferred — university-specific pages moved to future phase per context session)
 **Success Criteria** (what must be TRUE):
-  1. Source catalog contains 1000+ entries spanning official programs (DAAD, Erasmus, MEXT, Chevening, Fulbright), university-specific pages, and third-party aggregators
+  1. Source catalog contains 200+ high-quality entries spanning official programs (DAAD, Erasmus, MEXT, Chevening, Fulbright) and third-party aggregators (1000+ is soft target — quality over quantity per context session; university expansion planned for future phase)
   2. Each source entry specifies URL, source type (API/scrape/Scrapling), estimated reliability, and recommended scrape frequency
   3. Sources are categorized by type (official program, university, aggregator, government, foundation) and prioritized for scraping order
   4. Source catalog is stored in a format consumable by the scraping pipeline (structured data in repo or Convex)

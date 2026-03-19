@@ -142,7 +142,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFR-03 | Phase 1 | Complete |
 | SRCD-01 | Phase 2 | Pending |
 | SRCD-02 | Phase 2 | Pending |
-| SRCD-03 | Phase 2 | Pending |
+| SRCD-03 | Deferred | Deferred — university-specific pages moved to future phase |
 | SRCD-04 | Phase 2 | Pending |
 | SRCD-05 | Phase 2 | Pending |
 | SCRP-01 | Phase 3 | Pending |
