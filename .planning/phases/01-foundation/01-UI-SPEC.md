@@ -1,7 +1,8 @@
 ---
 phase: 1
 slug: foundation
-status: draft
+status: approved
+reviewed_at: 2026-03-20
 shadcn_initialized: true
 preset: neobrutalism (via neobrutalism.dev registry)
 created: 2026-03-20
