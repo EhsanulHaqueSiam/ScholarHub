@@ -193,7 +193,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 4. Data Aggregation | 0/2 | Not started | - |
 | 5. Admin Dashboard | 0/3 | Not started | - |
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
-| 06.1. Public Directory + Prestige | 7/7 | Complete   | 2026-03-20 |
+| 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/2 | Not started | - |
 | 8. Discovery Features | 0/2 | Not started | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
