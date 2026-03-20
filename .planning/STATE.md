@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-20T18:26:08.802Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-20T18:32:39.002Z"
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 07 (scholarship-detail-page) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Plan: 2 of 3
 | Phase 06.1 P05 | 5min | 3 tasks | 9 files |
 | Phase 06.1 P07 | 5min | 2 tasks | 18 files |
 | Phase 07 P01 | 9min | 3 tasks | 7 files |
+| Phase 07 P02 | 4min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,9 @@ Recent decisions affecting current work:
 - [Phase 07]: Broadened formatFundingAmount param type to inline object for cross-component reuse
 - [Phase 07]: getScholarshipDetail is a new query alongside getBySlug for backward compatibility
 - [Phase 07]: useCountdown initializes to null for SSR hydration safety; useIsHeroVisible defaults to true to avoid sticky bar flash
+- [Phase 07]: HowToApplySection uses useEffect+useState for timezone display to avoid SSR hydration mismatch
+- [Phase 07]: EditorialTips restricts react-markdown to safe elements via allowedElements whitelist (p, strong, em, a, ul, ol, li)
+- [Phase 07]: StickyBar visibility inverted: visible=true means hero IS visible so bar hides via -translate-y-full
 
 ### Pending Todos
 
@@ -154,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:26:08.800Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-20T18:32:39.000Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
