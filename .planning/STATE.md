@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 06.1 (country-eligibility-filtering-university-tier-list-prestige-highlighting) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Plan: 6 of 7
 | Phase 06.1 P02 | 9min | 3 tasks | 8 files |
 | Phase 06.1 P04 | 5min | 2 tasks | 8 files |
 | Phase 06.1 P03 | 5 | 3 tasks | 5 files |
+| Phase 06.1 P06 | 10min | 2 tasks | 8 files |
 | Phase 06.1 P05 | 5min | 3 tasks | 9 files |
 
 ## Accumulated Context
@@ -123,6 +124,10 @@ Recent decisions affecting current work:
 - [Phase 06.1]: Multi-select funding type: single value pushed to search index, multi-value post-filtered
 - [Phase 06.1]: Nationality eligibility uses post-filter because Convex filter expressions cannot do array.includes
 - [Phase 06.1]: Manual cursor pagination for search results since Convex search index returns all via collect()
+- [Phase 06.1]: Homepage redirects to /scholarships via TanStack Router beforeLoad throw redirect
+- [Phase 06.1]: Schema.org JSON-LD uses @type Scholarship with provider, studyLocation, eligibleRegion, MonetaryAmount
+- [Phase 06.1]: Phase 9 route placeholders use prefixed paths /scholarships/country/$country and /scholarships/degree/$degree to avoid $slug collision
+- [Phase 06.1]: Error boundary wraps results area with inline retry, not full-page error
 - [Phase 06.1]: CountrySelector uses Radix Popover (not Select) for multi-select with checkbox indicators and searchable list
 - [Phase 06.1]: EligibilityFilterBar compact mode auto-activates when both nationality and destinations are set
 - [Phase 06.1]: FilterPanel uses Radix Dialog as bottom sheet on mobile with slide-in-from-bottom animation
@@ -144,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:24:26Z
-Stopped at: Completed 06.1-05-PLAN.md
+Last session: 2026-03-20T16:28:54Z
+Stopped at: Completed 06.1-06-PLAN.md
 Resume file: None
