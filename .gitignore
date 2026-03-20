@@ -34,3 +34,6 @@ htmlcov/
 
 # Source validation output
 scraping/sources/validation_report.json
+
+# Pipeline buffer (dry-run and offline output)
+scraping/.buffer/
