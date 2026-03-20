@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Scraping Pipeline** - Automated scraping with API-first approach, Scrapling fallback, GitHub Actions scheduling, monitoring
 - [ ] **Phase 4: Data Aggregation** - Deduplication, multi-source merging, cyclical scholarship tracking
 - [ ] **Phase 5: Admin Dashboard** - Review queue, approve/reject workflow, source trust levels, editorial notes
-- [ ] **Phase 6: Public Directory** - Searchable, filterable scholarship listing with neo-brutalism design
+- [ ] **Phase 6: Public Directory** - ABSORBED INTO PHASE 06.1
 - [ ] **Phase 7: Scholarship Detail Page** - Complete scholarship detail view with all required fields
 - [ ] **Phase 8: Discovery Features** - Curated collections, scholarship comparison, related scholarships
 - [ ] **Phase 9: SEO & Growth** - Structured data, auto-generated landing pages, meta tag optimization
@@ -42,9 +42,9 @@ Plans:
 ### Phase 2: Source Discovery
 **Goal**: A comprehensive, structured catalog of scholarship sources exists, each annotated with scrape strategy and priority, ready to feed the scraping pipeline
 **Depends on**: Phase 1
-**Requirements**: SRCD-01, SRCD-02, SRCD-04, SRCD-05 (SRCD-03 deferred — university-specific pages moved to future phase per context session)
+**Requirements**: SRCD-01, SRCD-02, SRCD-04, SRCD-05 (SRCD-03 deferred -- university-specific pages moved to future phase per context session)
 **Success Criteria** (what must be TRUE):
-  1. Source catalog contains 200+ high-quality entries spanning official programs (DAAD, Erasmus, MEXT, Chevening, Fulbright) and third-party aggregators (1000+ is soft target — quality over quantity per context session; university expansion planned for future phase)
+  1. Source catalog contains 200+ high-quality entries spanning official programs (DAAD, Erasmus, MEXT, Chevening, Fulbright) and third-party aggregators (1000+ is soft target -- quality over quantity per context session; university expansion planned for future phase)
   2. Each source entry specifies URL, source type (API/scrape/Scrapling), estimated reliability, and recommended scrape frequency
   3. Sources are categorized by type (official program, university, aggregator, government, foundation) and prioritized for scraping order
   4. Source catalog is stored in a format consumable by the scraping pipeline (structured data in repo or Convex)
@@ -110,36 +110,36 @@ Plans:
 - [ ] 05-02: TBD
 - [ ] 05-03: TBD
 
-### Phase 6: Public Directory
-**Goal**: Students can browse, search, and filter all published international scholarships in a neo-brutalism-styled, mobile-responsive directory -- no login required
-**Depends on**: Phase 5
+### Phase 6: Public Directory -- ABSORBED INTO PHASE 06.1
+**Status**: Merged into Phase 06.1. All Phase 6 requirements (PDIR-01 through PDIR-11, UIDX-01 through UIDX-03) are now addressed by Phase 06.1.
+
+### Phase 06.1: Public Directory + Country Eligibility Filtering, Prestige Highlighting (INSERTED)
+
+**Goal:** Students can browse, search, and filter all published international scholarships in a neo-brutalism-styled, mobile-responsive directory with country eligibility filtering, a 3-tier prestige scoring system (Gold/Silver/Bronze), and SSR via TanStack Start -- no login required
+**Depends on:** Phase 5
 **Requirements**: PDIR-01, PDIR-02, PDIR-03, PDIR-04, PDIR-05, PDIR-06, PDIR-07, PDIR-08, PDIR-09, PDIR-10, PDIR-11, UIDX-01, UIDX-02, UIDX-03
 **Success Criteria** (what must be TRUE):
   1. User can search scholarships by keyword across title, description, and eligibility text -- results update in real time
-  2. User can filter by destination country, degree level, field of study, funding type, and nationality eligibility -- filters combine with AND logic
-  3. Scholarship listing cards show deadline with color-coded urgency (closing soon = red/warning, open = green, closed = grey), and the default view shows "Open Now" sorted by deadline urgency
-  4. User can view a dedicated "Closing Soon" view and expired scholarships remain visible with an "applications closed" badge
-  5. All pages use neo-brutalism design (bold, high-contrast, distinctive), are mobile-responsive, and present high information density in an easily digestible format -- no login required for any public page
-**Plans**: TBD
+  2. User can filter by destination country, degree level, field of study, funding type, nationality eligibility, and prestige tier -- filters combine with AND logic
+  3. Scholarship listing cards show prestige tier tint (Gold/Silver/Bronze), deadline with color-coded urgency, host country flag badge, and all key info groups
+  4. Smart eligibility filter bar allows "I'm from [nationality] looking to study in [destinations]" with multi-nationality support and auto-detect suggestion
+  5. User can view a dedicated "Closing Soon" view and expired scholarships remain visible with an "applications closed" badge
+  6. All pages use neo-brutalism design, are mobile-responsive with bottom sheet filters, and SSR renders dynamic meta tags for social sharing
+  7. No login required for any public page
+**Plans**: 7 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
-
-### Phase 06.1: Country eligibility filtering, university tier list, prestige highlighting (INSERTED)
-
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
-**Depends on:** Phase 6
-**Plans:** 5/7 plans executed
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
+- [ ] 06.1-01-PLAN.md -- TanStack Start SSR migration, dependency installation, Netlify config
+- [ ] 06.1-02-PLAN.md -- Convex schema extension (prestige fields, search index), prestige scoring, country data, filter types, CSS design system
+- [ ] 06.1-03-PLAN.md -- Convex directory queries (search, filter, sort, paginate), client hooks (filter state, nationality detect, localStorage)
+- [ ] 06.1-04-PLAN.md -- Card/Badge CVA variants, ScholarshipCard, ScholarshipListItem, SkeletonCard, EmptyState, Navbar, BackToTop
+- [ ] 06.1-05-PLAN.md -- SearchBar, EligibilityFilterBar, CountrySelector, NationalityBanner, FilterPanel, FilterChips, QuickFilters, SortPills, ViewToggle
+- [ ] 06.1-06-PLAN.md -- FeaturedRow, directory route (/scholarships), closing-soon route, detail placeholder, homepage redirect
+- [ ] 06.1-07-PLAN.md -- Accessibility (WCAG AA), error handling, copy link, RTL/reduced motion, dark mode polish, human verification checkpoint
 
 ### Phase 7: Scholarship Detail Page
 **Goal**: Each scholarship has a comprehensive detail page showing all relevant information a student needs to decide whether and how to apply
-**Depends on**: Phase 6
+**Depends on**: Phase 06.1
 **Requirements**: DTLP-01, DTLP-02, DTLP-03, DTLP-04, DTLP-05, DTLP-06, DTLP-07, DTLP-08, DTLP-09, DTLP-10, DTLP-11
 **Success Criteria** (what must be TRUE):
   1. Detail page displays scholarship name, provider/organization, host country, eligible nationalities, degree levels, and fields of study
@@ -183,7 +183,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -192,7 +192,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 3. Scraping Pipeline | 7/9 | In Progress (gap closure) |  |
 | 4. Data Aggregation | 0/2 | Not started | - |
 | 5. Admin Dashboard | 0/3 | Not started | - |
-| 6. Public Directory | 0/3 | Not started | - |
+| 6. Public Directory | -- | Absorbed into 06.1 | - |
+| 06.1. Public Directory + Prestige | 0/7 | Planned | - |
 | 7. Scholarship Detail Page | 0/2 | Not started | - |
 | 8. Discovery Features | 0/2 | Not started | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
