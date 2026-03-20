@@ -10,9 +10,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Source Discovery
 
 - [x] **SRCD-01**: System discovers and catalogs 1000+ scholarship sources (aggregators, official programs, universities, government programs, foundations)
-- [ ] **SRCD-02**: Sources include official scholarship programs (DAAD, Erasmus, MEXT, Chevening, Fulbright, etc.)
+- [x] **SRCD-02**: Sources include official scholarship programs (DAAD, Erasmus, MEXT, Chevening, Fulbright, etc.)
 - [ ] **SRCD-03**: Sources include university-specific scholarship pages
-- [ ] **SRCD-04**: Sources include third-party aggregator sites (ScholarshipPortal, Scholars4Dev, IEFA, etc.)
+- [x] **SRCD-04**: Sources include third-party aggregator sites (ScholarshipPortal, Scholars4Dev, IEFA, etc.)
 - [x] **SRCD-05**: Each source is cataloged with URL, type (API/scrape/Scrapling), reliability rating, and scrape frequency
 
 ### Scraping Pipeline
@@ -141,9 +141,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFR-02 | Phase 1 | Complete |
 | INFR-03 | Phase 1 | Complete |
 | SRCD-01 | Phase 2 | Complete |
-| SRCD-02 | Phase 2 | Pending |
+| SRCD-02 | Phase 2 | Complete |
 | SRCD-03 | Deferred | Deferred — university-specific pages moved to future phase |
-| SRCD-04 | Phase 2 | Pending |
+| SRCD-04 | Phase 2 | Complete |
 | SRCD-05 | Phase 2 | Complete |
 | SCRP-01 | Phase 3 | Pending |
 | SCRP-02 | Phase 3 | Pending |
