@@ -198,7 +198,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                   "border-2 transition-all",
                   isActive
                     ? "bg-main/10 font-heading border-border shadow-shadow"
-                    : "border-transparent hover:border-border hover:shadow-shadow hover:translate-x-[-1px] hover:translate-y-[-1px]",
+                    : "border-transparent hover:bg-main/10 hover:border-border hover:shadow-shadow hover:translate-x-[-1px] hover:translate-y-[-1px]",
                 )}
               >
                 <span
