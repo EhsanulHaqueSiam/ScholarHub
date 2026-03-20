@@ -52,8 +52,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **PDIR-03**: User can filter by degree level (bachelor, masters, PhD, postdoc)
 - [ ] **PDIR-04**: User can filter by field of study (20-30 broad categories)
 - [ ] **PDIR-05**: User can filter by funding type (fully funded, partial, tuition waiver, stipend only)
-- [ ] **PDIR-06**: User can filter by nationality/citizenship eligibility ("scholarships I can apply for")
-- [ ] **PDIR-07**: Deadline displayed prominently on listing cards with color-coded urgency (closing soon, open, closed)
+- [x] **PDIR-06**: User can filter by nationality/citizenship eligibility ("scholarships I can apply for")
+- [x] **PDIR-07**: Deadline displayed prominently on listing cards with color-coded urgency (closing soon, open, closed)
 - [ ] **PDIR-08**: Default view shows "Open Now" scholarships sorted by deadline urgency
 - [ ] **PDIR-09**: User can view "Closing Soon" scholarships as a dedicated view
 - [ ] **PDIR-10**: Expired scholarships show "applications closed" badge, remain visible for reference
@@ -173,8 +173,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | PDIR-03 | Phase 6 | Pending |
 | PDIR-04 | Phase 6 | Pending |
 | PDIR-05 | Phase 6 | Pending |
-| PDIR-06 | Phase 6 | Pending |
-| PDIR-07 | Phase 6 | Pending |
+| PDIR-06 | Phase 6 | Complete |
+| PDIR-07 | Phase 6 | Complete |
 | PDIR-08 | Phase 6 | Pending |
 | PDIR-09 | Phase 6 | Pending |
 | PDIR-10 | Phase 6 | Pending |

@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06.1-01-PLAN.md
-last_updated: "2026-03-20T15:16:29.257Z"
+stopped_at: Completed 06.1-02-PLAN.md
+last_updated: "2026-03-20T15:17:19.759Z"
 progress:
   total_phases: 10
   completed_phases: 3
@@ -59,6 +59,7 @@ Plan: 3 of 7
 | Phase 03 P09 | 1min | 1 tasks | 3 files |
 | Phase 03 P08 | 3min | 2 tasks | 3 files |
 | Phase 06.1 P01 | 9min | 2 tasks | 8 files |
+| Phase 06.1 P02 | 9min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Recent decisions affecting current work:
 - [Phase 06.1]: Replaced TanStackRouterVite with tanstackStart() plugin for SSR support
 - [Phase 06.1]: Deleted index.html and main.tsx - HTML shell rendered by __root.tsx in SSR
 - [Phase 06.1]: ConvexProvider wraps QueryClientProvider in root for reactive + SSR query support
+- [Phase 06.1]: Prestige scoring uses 4 weighted factors: funding(40%), provider(30%), country(20%), competitiveness(10%)
+- [Phase 06.1]: Write-time triggers via convex-helpers Triggers pattern auto-recalculate prestige on every scholarship write
+- [Phase 06.1]: Search index replaced: search_title_description -> search_scholarships on denormalized search_text field
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T15:16:29.256Z
-Stopped at: Completed 06.1-01-PLAN.md
+Last session: 2026-03-20T15:17:19.758Z
+Stopped at: Completed 06.1-02-PLAN.md
 Resume file: None
