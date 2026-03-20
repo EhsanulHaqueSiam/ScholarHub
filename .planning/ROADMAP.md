@@ -121,6 +121,16 @@ Plans:
 - [ ] 06-02: TBD
 - [ ] 06-03: TBD
 
+### Phase 06.1: Country eligibility filtering, university tier list, prestige highlighting (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
+
 ### Phase 7: Scholarship Detail Page
 **Goal**: Each scholarship has a comprehensive detail page showing all relevant information a student needs to decide whether and how to apply
 **Depends on**: Phase 6
