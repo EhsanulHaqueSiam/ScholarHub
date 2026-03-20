@@ -65,7 +65,7 @@ Plans:
   3. Each scrape run produces yield metrics: records found, success/failure rate per source, and "last verified" timestamps per scholarship
   4. Monitoring detects silent scraper rot -- alerts when a previously-working source returns zero results or errors for consecutive runs
   5. Raw scraped records in staging are structured with source attribution and ready for the aggregation phase
-**Plans**: 7 plans
+**Plans**: 9 plans
 
 Plans:
 - [ ] 03-01-PLAN.md -- Python package restructure (Scrapy to Scrapling), Convex schema additions (4 tables), SourceConfig protocol
@@ -75,6 +75,8 @@ Plans:
 - [ ] 03-05-PLAN.md -- Pipeline runner (orchestrator, scheduler, buffer) and CLI with 7 subcommands
 - [ ] 03-06-PLAN.md -- All 201 source config modules with protocol validation tests
 - [ ] 03-07-PLAN.md -- GitHub Actions workflows (scrape + CI), test seed script, documentation
+- [ ] 03-08-PLAN.md -- Gap closure: wire auto-deactivation and GitHub Issue lifecycle into runner.py
+- [ ] 03-09-PLAN.md -- Gap closure: assign RSS primary_method to 2 sources with known feeds
 
 ### Phase 4: Data Aggregation
 **Goal**: Raw scraped records from multiple sources are deduplicated, merged into canonical scholarship entries, and cyclical programs are linked across years
@@ -187,7 +189,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-03-20 |
 | 2. Source Discovery | 0/3 | Not started | - |
-| 3. Scraping Pipeline | 5/7 | In Progress|  |
+| 3. Scraping Pipeline | 7/9 | In Progress (gap closure) |  |
 | 4. Data Aggregation | 0/2 | Not started | - |
 | 5. Admin Dashboard | 0/3 | Not started | - |
 | 6. Public Directory | 0/3 | Not started | - |
