@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-04-PLAN.md
+stopped_at: Completed 03-06-PLAN.md
 last_updated: "2026-03-20T11:25:31.355Z"
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 10
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 03 (scraping-pipeline) — EXECUTING
-Plan: 5 of 7
+Plan: 7 of 7
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 5 of 7
 | Phase 03 P02 | 7min | 2 tasks | 14 files |
 | Phase 03 P03 | 7min | 2 tasks | 12 files |
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
+| Phase 03 P06 | 4min | 2 tasks | 203 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 03-04]: RotDetector alerts exactly at consecutive_failures == 5 to prevent duplicate GitHub Issues
 - [Phase 03-04]: Error types 404/410 trigger immediate source deactivation as permanent-gone indicators
 - [Phase 03-04]: HeartbeatMonitor delegates staleness check to Convex query rather than client-side calculation
+- [Phase 03-06]: Used field(default_factory=lambda: {...}) for mutable dict defaults instead of __post_init__ pattern
+- [Phase 03-06]: Mastercard Foundation Scholars Program duplicate name resolved with _fnd suffix on source_id
+- [Phase 03-06]: Auth-required sources get full config files with auth_config flag; pipeline runner skips them
 
 ### Pending Todos
 
@@ -107,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:25:31.354Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-03-20T11:35:30Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None
