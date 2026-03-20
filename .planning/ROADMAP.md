@@ -17,8 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Scraping Pipeline** - Automated scraping with API-first approach, Scrapling fallback, GitHub Actions scheduling, monitoring
 - [ ] **Phase 4: Data Aggregation** - Deduplication, multi-source merging, cyclical scholarship tracking
 - [ ] **Phase 5: Admin Dashboard** - Review queue, approve/reject workflow, source trust levels, editorial notes
-- [ ] **Phase 6: Public Directory** - ABSORBED INTO PHASE 06.1
-- [ ] **Phase 7: Scholarship Detail Page** - Complete scholarship detail view with all required fields
+- [x] **Phase 6: Public Directory** - ABSORBED INTO PHASE 06.1
+- [ ] **Phase 7: Scholarship Detail Page** - Complete scholarship detail view with all required fields (completed 2026-03-20)
 - [ ] **Phase 8: Discovery Features** - Curated collections, scholarship comparison, related scholarships
 - [ ] **Phase 9: SEO & Growth** - Structured data, auto-generated landing pages, meta tag optimization
 
@@ -193,7 +193,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 4. Data Aggregation | 0/2 | Not started | - |
 | 5. Admin Dashboard | 0/3 | Not started | - |
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
-| 06.1. Public Directory + Prestige | 6/7 | In Progress|  |
+| 06.1. Public Directory + Prestige | 7/7 | Complete   | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/2 | Not started | - |
 | 8. Discovery Features | 0/2 | Not started | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
