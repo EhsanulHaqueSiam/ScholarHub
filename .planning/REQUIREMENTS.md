@@ -47,15 +47,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Public Directory
 
-- [ ] **PDIR-01**: User can search scholarships via full-text search across title, description, eligibility
-- [ ] **PDIR-02**: User can filter by destination country (multi-select)
-- [ ] **PDIR-03**: User can filter by degree level (bachelor, masters, PhD, postdoc)
-- [ ] **PDIR-04**: User can filter by field of study (20-30 broad categories)
-- [ ] **PDIR-05**: User can filter by funding type (fully funded, partial, tuition waiver, stipend only)
+- [x] **PDIR-01**: User can search scholarships via full-text search across title, description, eligibility
+- [x] **PDIR-02**: User can filter by destination country (multi-select)
+- [x] **PDIR-03**: User can filter by degree level (bachelor, masters, PhD, postdoc)
+- [x] **PDIR-04**: User can filter by field of study (20-30 broad categories)
+- [x] **PDIR-05**: User can filter by funding type (fully funded, partial, tuition waiver, stipend only)
 - [x] **PDIR-06**: User can filter by nationality/citizenship eligibility ("scholarships I can apply for")
 - [x] **PDIR-07**: Deadline displayed prominently on listing cards with color-coded urgency (closing soon, open, closed)
-- [ ] **PDIR-08**: Default view shows "Open Now" scholarships sorted by deadline urgency
-- [ ] **PDIR-09**: User can view "Closing Soon" scholarships as a dedicated view
+- [x] **PDIR-08**: Default view shows "Open Now" scholarships sorted by deadline urgency
+- [x] **PDIR-09**: User can view "Closing Soon" scholarships as a dedicated view
 - [x] **PDIR-10**: Expired scholarships show "applications closed" badge, remain visible for reference
 - [x] **PDIR-11**: No login required to browse or view any scholarship
 
@@ -168,15 +168,15 @@ Deferred to future release. Tracked but not in current roadmap.
 | ADMN-07 | Phase 5 | Pending |
 | ADMN-08 | Phase 5 | Pending |
 | UIDX-04 | Phase 5 | Pending |
-| PDIR-01 | Phase 6 | Pending |
-| PDIR-02 | Phase 6 | Pending |
-| PDIR-03 | Phase 6 | Pending |
-| PDIR-04 | Phase 6 | Pending |
-| PDIR-05 | Phase 6 | Pending |
+| PDIR-01 | Phase 6 | Complete |
+| PDIR-02 | Phase 6 | Complete |
+| PDIR-03 | Phase 6 | Complete |
+| PDIR-04 | Phase 6 | Complete |
+| PDIR-05 | Phase 6 | Complete |
 | PDIR-06 | Phase 6 | Complete |
 | PDIR-07 | Phase 6 | Complete |
-| PDIR-08 | Phase 6 | Pending |
-| PDIR-09 | Phase 6 | Pending |
+| PDIR-08 | Phase 6 | Complete |
+| PDIR-09 | Phase 6 | Complete |
 | PDIR-10 | Phase 6 | Complete |
 | PDIR-11 | Phase 6 | Complete |
 | UIDX-01 | Phase 6 | Complete |

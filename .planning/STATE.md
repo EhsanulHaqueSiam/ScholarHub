@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06.1-04-PLAN.md
-last_updated: "2026-03-20T16:13:08.918Z"
+stopped_at: Completed 06.1-03-PLAN.md
+last_updated: "2026-03-20T16:13:38.224Z"
 progress:
   total_phases: 10
   completed_phases: 3
@@ -61,6 +61,7 @@ Plan: 4 of 7
 | Phase 06.1 P01 | 9min | 2 tasks | 8 files |
 | Phase 06.1 P02 | 9min | 3 tasks | 8 files |
 | Phase 06.1 P04 | 5min | 2 tasks | 8 files |
+| Phase 06.1 P03 | 5 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,10 @@ Recent decisions affecting current work:
 - [Phase 06.1]: Card uses CVA cardVariants with prestige prop for gold/silver/bronze/unranked background tints
 - [Phase 06.1]: Badge extended with 9 new variants: 3 prestige, 4 urgency, new (pulse), limitedInfo
 - [Phase 06.1]: Installed lucide-react for icon components (Sun/Moon/Menu/Copy/ArrowUp) across directory UI
+- [Phase 06.1]: Dual query path: search index for text search, compound indexes for non-search listing
+- [Phase 06.1]: Multi-select funding type: single value pushed to search index, multi-value post-filtered
+- [Phase 06.1]: Nationality eligibility uses post-filter because Convex filter expressions cannot do array.includes
+- [Phase 06.1]: Manual cursor pagination for search results since Convex search index returns all via collect()
 
 ### Pending Todos
 
@@ -134,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:12:50.814Z
-Stopped at: Completed 06.1-04-PLAN.md
+Last session: 2026-03-20T16:13:38.223Z
+Stopped at: Completed 06.1-03-PLAN.md
 Resume file: None
