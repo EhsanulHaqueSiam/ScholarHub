@@ -1,15 +1,34 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+const cardVariants = cva(
+  "rounded-base flex flex-col shadow-shadow border-2 gap-6 py-6 font-base",
+  {
+    variants: {
+      prestige: {
+        gold: "bg-prestige-gold-bg border-prestige-gold-border text-foreground",
+        silver: "bg-prestige-silver-bg border-prestige-silver-border text-foreground",
+        bronze: "bg-prestige-bronze-bg border-prestige-bronze-border text-foreground",
+        unranked: "bg-secondary-background border-border text-foreground",
+      },
+    },
+    defaultVariants: {
+      prestige: "unranked",
+    },
+  },
+);
+
+function Card({
+  className,
+  prestige,
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof cardVariants>) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        "rounded-base flex flex-col shadow-shadow border-2 gap-6 py-6 border-border bg-background text-foreground font-base",
-        className,
-      )}
+      className={cn(cardVariants({ prestige }), className)}
       {...props}
     />
   );
@@ -64,4 +83,13 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
+export {
+  Card,
+  cardVariants,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+};

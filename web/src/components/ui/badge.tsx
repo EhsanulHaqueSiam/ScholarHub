@@ -12,6 +12,15 @@ const badgeVariants = cva(
       variant: {
         default: "bg-main text-main-foreground",
         neutral: "bg-secondary-background text-foreground",
+        gold: "bg-prestige-gold-badge text-black border-prestige-gold-border font-heading",
+        silver: "bg-prestige-silver-badge text-black border-prestige-silver-border font-heading",
+        bronze: "bg-prestige-bronze-badge text-black border-prestige-bronze-border font-heading",
+        urgencyCritical: "bg-urgency-critical text-white border-urgency-critical",
+        urgencyWarning: "bg-urgency-warning text-black border-urgency-warning",
+        urgencyOpen: "bg-urgency-open text-white border-urgency-open",
+        urgencyClosed: "bg-urgency-closed text-white border-urgency-closed",
+        new: "bg-main text-main-foreground animate-pulse",
+        limitedInfo: "bg-secondary-background text-foreground border-border",
       },
     },
     defaultVariants: {
