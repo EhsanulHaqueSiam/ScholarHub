@@ -146,11 +146,12 @@ Plans:
   2. Detail page shows funding breakdown (tuition, living allowance, travel, insurance), award amount with currency, and application deadline with timezone awareness
   3. Detail page includes a direct link to the official application page, source attribution listing all sources the data was compiled from, and "last verified" date
   4. Detail page displays admin editorial notes/tips (when available) and a rich-text description/overview
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md -- Shared utilities (extract helpers, deadline/timezone, region grouping), Convex query with source resolution, install react-markdown
+- [ ] 07-02-PLAN.md -- Detail page section components (Hero, StickyBar, Breadcrumb, Overview, Eligibility, Funding, HowToApply, EditorialTips, Sources, Skeleton)
+- [ ] 07-03-PLAN.md -- Route wiring ($slug.tsx rewrite with all sections, expanded JSON-LD, meta tags, breadcrumb), visual verification checkpoint
 
 ### Phase 8: Discovery Features
 **Goal**: Students can discover scholarships through curated collections, compare options side-by-side, and find related scholarships from detail pages
@@ -194,6 +195,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 5. Admin Dashboard | 0/3 | Not started | - |
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
-| 7. Scholarship Detail Page | 0/2 | Not started | - |
+| 7. Scholarship Detail Page | 0/3 | Not started | - |
 | 8. Discovery Features | 0/2 | Not started | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
