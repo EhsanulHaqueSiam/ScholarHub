@@ -12,7 +12,8 @@ Students can discover every relevant international scholarship in one place, wit
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Source catalog infrastructure — JSON Schema, Convex upsert mutation, CLI tools (seed/validate/stats), CI validation (Validated in Phase 2: Source Discovery)
+- [x] Source discovery — 201 scholarship sources cataloged across aggregators, official programs, government, foundations with scrape strategies and metadata (Validated in Phase 2: Source Discovery)
 
 ### Active
 
@@ -71,4 +72,8 @@ Students can discover every relevant international scholarship in one place, wit
 | Monorepo (Python + TypeScript) | Keep scraping and web app in one repo — shared Convex backend, single source of truth, unified GitHub Actions | — Pending |
 
 ---
-*Last updated: 2026-03-20 after research + user feedback*
+## Current State
+
+Phase 2 (Source Discovery) complete — 201 scholarship sources cataloged. Phase 3 (Scraping Pipeline) is next.
+
+*Last updated: 2026-03-20 after Phase 2 completion*
