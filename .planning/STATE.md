@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-20T07:24:58.442Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-20T11:16:21.545Z"
 progress:
   total_phases: 10
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 12
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 02 — source-discovery
+**Current focus:** Phase 03 — scraping-pipeline
 
 ## Current Position
 
-Phase: 02 (source-discovery) — EXECUTING
-Plan: 3 of 3
+Phase: 03 (scraping-pipeline) — EXECUTING
+Plan: 2 of 7
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: 3 of 3
 | Phase 02 P01 | 7min | 2 tasks | 12 files |
 | Phase 02 P02 | 4min | 2 tasks | 7 files |
 | Phase 02 P03 | 7min | 1 tasks | 5 files |
+| Phase 03 P01 | 6min | 2 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,10 @@ Recent decisions affecting current work:
 - [02-02]: Added scripts/ ruff T20 ignore for CLI print output
 - [02-02]: Region mapping covers 40+ countries to 6 high-level regions for stats aggregation
 - [Phase 02]: 201 sources cataloged across 4 categories (aggregators, official_programs, government, foundations) with wave-based organization
+- [Phase 03]: Used runtime_checkable Protocol for SourceConfig to allow isinstance checks at config discovery time
+- [Phase 03]: All scraping mutations use internalMutation -- called via admin auth from Python SDK
+- [Phase 03]: Added jsonld and ajax to scrapeMethodValidator for full method hierarchy
+- [Phase 03]: HMAC-SHA256 webhook verification using Web Crypto API for Convex runtime compatibility
 
 ### Pending Todos
 
@@ -90,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:24:58.440Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-scraping-pipeline/03-CONTEXT.md
+Last session: 2026-03-20T11:16:21.544Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

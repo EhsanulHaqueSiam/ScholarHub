@@ -21,9 +21,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **SCRP-02**: Standard HTTP scraping fallback when no API exists
 - [ ] **SCRP-03**: Scrapling-based scraping for Cloudflare-protected sites
 - [ ] **SCRP-04**: GitHub Actions runs scraping on automated schedule
-- [ ] **SCRP-05**: Scraped data lands in staging area (raw records) before processing
-- [ ] **SCRP-06**: Each scrape run logs yield metrics (records found, success/fail rate per source)
-- [ ] **SCRP-07**: "Last verified" timestamp tracked per scholarship per source
+- [x] **SCRP-05**: Scraped data lands in staging area (raw records) before processing
+- [x] **SCRP-06**: Each scrape run logs yield metrics (records found, success/fail rate per source)
+- [x] **SCRP-07**: "Last verified" timestamp tracked per scholarship per source
 
 ### Data Aggregation
 
@@ -149,9 +149,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCRP-02 | Phase 3 | Pending |
 | SCRP-03 | Phase 3 | Pending |
 | SCRP-04 | Phase 3 | Pending |
-| SCRP-05 | Phase 3 | Pending |
-| SCRP-06 | Phase 3 | Pending |
-| SCRP-07 | Phase 3 | Pending |
+| SCRP-05 | Phase 3 | Complete |
+| SCRP-06 | Phase 3 | Complete |
+| SCRP-07 | Phase 3 | Complete |
 | INFR-04 | Phase 3 | Pending |
 | AGGR-01 | Phase 4 | Pending |
 | AGGR-02 | Phase 4 | Pending |
