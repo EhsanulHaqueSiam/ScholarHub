@@ -78,8 +78,8 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             aria-label="Scroll left"
             className={cn(
               "absolute -left-5 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2",
-              "hover:bg-main/5 transition-colors",
+              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
+              "hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}
           >
@@ -99,10 +99,7 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
           )}
         >
           {featured.map((scholarship) => (
-            <div
-              key={scholarship._id}
-              className="min-w-[300px] max-w-[340px] flex-shrink-0 snap-center"
-            >
+            <div key={scholarship._id} className="w-[300px] h-[380px] flex-shrink-0 snap-center">
               <ScholarshipCard scholarship={scholarship} disableHover />
             </div>
           ))}
@@ -116,8 +113,8 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             aria-label="Scroll right"
             className={cn(
               "absolute -right-5 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2",
-              "hover:bg-main/5 transition-colors",
+              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
+              "hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}
           >

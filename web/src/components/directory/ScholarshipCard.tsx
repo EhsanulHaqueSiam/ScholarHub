@@ -65,6 +65,7 @@ export function ScholarshipCard({
         prestige={prestigeTier}
         className={cn(
           "relative h-full",
+          disableHover && "overflow-hidden",
           !disableHover &&
             "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
         )}

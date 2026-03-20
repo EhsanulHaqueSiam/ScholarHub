@@ -194,8 +194,11 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 type="button"
                 onClick={() => toggleFieldOfStudy(field)}
                 className={cn(
-                  "flex items-center w-full text-start px-2 py-2 text-sm rounded-base transition-colors min-h-[40px]",
-                  isActive ? "bg-main/10 font-heading" : "hover:bg-main/5",
+                  "flex items-center w-full text-start px-2 py-2 text-sm rounded-base min-h-[40px]",
+                  "border-2 transition-all",
+                  isActive
+                    ? "bg-main/10 font-heading border-border shadow-shadow"
+                    : "border-transparent hover:border-border hover:shadow-shadow hover:translate-x-[-1px] hover:translate-y-[-1px]",
                 )}
               >
                 <span
