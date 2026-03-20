@@ -151,7 +151,7 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md -- Shared utilities (extract helpers, deadline/timezone, region grouping), Convex query with source resolution, install react-markdown
 - [x] 07-02-PLAN.md -- Detail page section components (Hero, StickyBar, Breadcrumb, Overview, Eligibility, Funding, HowToApply, EditorialTips, Sources, Skeleton)
-- [ ] 07-03-PLAN.md -- Route wiring ($slug.tsx rewrite with all sections, expanded JSON-LD, meta tags, breadcrumb), visual verification checkpoint
+- [x] 07-03-PLAN.md -- Route wiring ($slug.tsx rewrite with all sections, expanded JSON-LD, meta tags, breadcrumb), visual verification checkpoint
 
 ### Phase 8: Discovery Features
 **Goal**: Students can discover scholarships through curated collections, compare options side-by-side, and find related scholarships from detail pages
