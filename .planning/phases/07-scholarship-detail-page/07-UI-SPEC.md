@@ -55,8 +55,7 @@ Source: existing project uses Tailwind default spacing (multiples of 4). Navbar 
 | Display | 32px (text-[32px]) | 400 | 1.2 | Archivo Black | Scholarship title in hero (desktop) |
 | Heading | 20px (text-xl) | 400 | 1.2 | Archivo Black | Section card titles (Eligibility, Funding, How to Apply, Sources) |
 | Body | 16px (text-base) | 400 | 1.5 | Inter | Description paragraphs, editorial notes body, eligibility lists |
-| Label | 14px (text-sm) | 400 | 1.5 | Inter | Provider name, badges, metadata, breadcrumb, checklist items, source links |
-| Small | 12px (text-xs) | 400 | 1.5 | Inter | "Last verified" date, stale warning, sticky bar scholarship name |
+| Label | 14px (text-sm) | 400 | 1.5 | Inter | Provider name, badges, metadata, breadcrumb, checklist items, source links, "Last verified" date, stale warning, sticky bar scholarship name |
 
 Mobile title size: 24px (text-2xl) at Archivo Black weight 400, line-height 1.2.
 
@@ -135,14 +134,14 @@ Source: `web/src/index.css` (all tokens), `07-CONTEXT.md` (funding checklist col
 | Component | Path | Props | Behavior |
 |-----------|------|-------|----------|
 | HeroSection | `@/components/detail/HeroSection` | scholarship data object | Displays title, provider, prestige badge, country flag, deadline urgency badge, degree levels, funding type, large Apply button. Uses Card with prestige variant. |
-| StickyBar | `@/components/detail/StickyBar` | title: string, slug: string, applicationUrl: string, visible: boolean | Slim bar fixed to top when hero scrolls out of view. Shows truncated scholarship name (max-w-[200px] on mobile, max-w-[400px] on desktop), Copy Link button, Apply Now button. |
+| StickyBar | `@/components/detail/StickyBar` | title: string, slug: string, applicationUrl: string, visible: boolean | Slim bar fixed to top when hero scrolls out of view. Shows truncated scholarship name at text-sm (max-w-[200px] on mobile, max-w-[400px] on desktop), Copy Link button, Apply Now button. |
 | Breadcrumb | `@/components/detail/Breadcrumb` | scholarshipTitle: string, searchParams: object | "Scholarships > {title}" navigation. Reads referrer filter params from URL search params. Truncates title on mobile (max-w-[160px]). |
 | OverviewSection | `@/components/detail/OverviewSection` | description: string or null | Card with "Overview" heading. Renders description as paragraph text. Shows placeholder when null. |
 | EligibilitySection | `@/components/detail/EligibilitySection` | nationalities: string[] or undefined, degreeLevels: string[], fieldsOfStudy: string[] or undefined | Card with "Eligibility" heading. Sub-sections: Nationalities (first 10 with flags, expand button, region grouping), Degree Levels (badge chips), Fields of Study (badge chips). Handles "Open to All" and "data not available" states. |
 | FundingSection | `@/components/detail/FundingSection` | fundingType, tuition, living, travel, insurance (booleans), awardAmountMin, awardAmountMax, awardCurrency | Card with "Funding" heading. Checklist with Check/X/Minus icons. Award amount via formatFundingAmount. Funding type badge. |
 | HowToApplySection | `@/components/detail/HowToApplySection` | deadline, applicationUrl, editorialNotes, expectedReopenMonth | Card with "How to Apply" heading. Deadline with countdown + urgency badge + timezone display. Apply button. Editorial tips callout (or placeholder). |
 | EditorialTips | `@/components/detail/EditorialTips` | notes: string or null | Callout box inside HowToApplySection. Lightbulb icon, "ScholarHub Tips" label, markdown body via react-markdown. "Tips coming soon" placeholder when null. |
-| SourcesSection | `@/components/detail/SourcesSection` | resolvedSources: {name, url}[], lastVerified: number or undefined, sourceCount: number | Card with "Sources" heading. Source name links (new tab). "Compiled from N sources" trust signal. Last verified relative + absolute. Stale warning >30 days. |
+| SourcesSection | `@/components/detail/SourcesSection` | resolvedSources: {name, url}[], lastVerified: number or undefined, sourceCount: number | Card with "Sources" heading. Source name links (new tab). "Compiled from N sources" trust signal. Last verified relative + absolute at text-sm. Stale warning >30 days at text-sm. |
 | DetailSkeleton | `@/components/detail/DetailSkeleton` | none | Full-page loading skeleton matching section layout. Animated pulse. |
 
 ### New Utilities (build for this phase)
@@ -205,7 +204,7 @@ bg-secondary-background border-b-2 border-border
 max-w-3xl mx-auto px-4 md:px-6
 flex items-center justify-between
 
-[Truncated Title]  ----gap----  [Copy Link btn] [Apply Now btn]
+[Truncated Title (text-sm)]  ----gap----  [Copy Link btn] [Apply Now btn]
 ```
 
 Transition: `transition-transform duration-200` -- slides in from top. When hero is visible, apply `-translate-y-full` to hide above viewport.
@@ -231,7 +230,7 @@ Card (prestige variant based on scholarship tier)
 - **Trigger:** IntersectionObserver on hero section ref
 - **Show when:** Hero section is NOT intersecting viewport (threshold 0)
 - **Animation:** `transition-transform duration-200` with `-translate-y-full` toggle
-- **Contains:** Truncated title + Copy Link (neutral button) + Apply Now (default button)
+- **Contains:** Truncated title (text-sm) + Copy Link (neutral button) + Apply Now (default button)
 
 ### Copy Link
 - **Pattern:** Reuse from ScholarshipCard.tsx
