@@ -44,6 +44,14 @@ export const scholarshipStatusValidator = v.union(
 );
 export type ScholarshipStatus = Infer<typeof scholarshipStatusValidator>;
 
+export const prestigeTierValidator = v.union(
+  v.literal("gold"),
+  v.literal("silver"),
+  v.literal("bronze"),
+  v.literal("unranked"),
+);
+export type PrestigeTier = Infer<typeof prestigeTierValidator>;
+
 export const scrapeMethodValidator = v.union(
   v.literal("api"),
   v.literal("scrape"),
@@ -166,6 +174,9 @@ export default defineSchema({
     previous_cycle_id: v.optional(v.id("scholarships")),
     expected_reopen_month: v.optional(v.number()),
     tags: v.optional(v.array(v.string())),
+    prestige_tier: v.optional(prestigeTierValidator),
+    prestige_score: v.optional(v.number()),
+    search_text: v.optional(v.string()),
   })
     .index("by_status", ["status"])
     .index("by_country_status", ["host_country", "status"])
@@ -174,9 +185,11 @@ export default defineSchema({
     .index("by_status_deadline", ["status", "application_deadline"])
     .index("by_country_deadline", ["host_country", "application_deadline"])
     .index("by_slug", ["slug"])
-    .searchIndex("search_title_description", {
-      searchField: "title",
-      filterFields: ["status", "host_country", "funding_type"],
+    .index("by_prestige_status", ["prestige_tier", "status"])
+    .index("by_status_prestige_deadline", ["status", "prestige_tier", "application_deadline"])
+    .searchIndex("search_scholarships", {
+      searchField: "search_text",
+      filterFields: ["status", "host_country", "funding_type", "prestige_tier"],
     }),
 
   // Scrape run tracking -- one entry per pipeline execution

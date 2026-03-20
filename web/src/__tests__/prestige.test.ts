@@ -1,13 +1,13 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import {
+  buildSearchText,
+  COUNTRY_ACADEMIC_TIERS,
   calculatePrestigeScore,
-  scoreTier,
+  PRESTIGIOUS_PROVIDERS,
+  scoreCountry,
   scoreFunding,
   scoreProvider,
-  scoreCountry,
-  PRESTIGIOUS_PROVIDERS,
-  COUNTRY_ACADEMIC_TIERS,
-  buildSearchText,
+  scoreTier,
 } from "../../convex/prestige";
 
 describe("prestige scoring", () => {
@@ -50,15 +50,26 @@ describe("prestige scoring", () => {
     });
     expect(score).toBeLessThan(25);
   });
-  test("calculatePrestigeScore: silver for partial DAAD in DE", () => {
+  test("calculatePrestigeScore: gold for partial DAAD in DE (high provider + tier A country)", () => {
     const score = calculatePrestigeScore({
       funding_type: "partial",
       provider_organization: "DAAD",
       host_country: "DE",
       tags: [],
     });
-    expect(score).toBeGreaterThanOrEqual(50);
-    expect(score).toBeLessThan(75);
+    // partial(60)*0.4 + DAAD(100)*0.3 + DE-TierA(100)*0.2 + default(50)*0.1 = 79
+    expect(score).toBeGreaterThanOrEqual(75);
+  });
+  test("calculatePrestigeScore: silver for partial unknown provider in tier B country", () => {
+    const score = calculatePrestigeScore({
+      funding_type: "partial",
+      provider_organization: "Local University Fund",
+      host_country: "CN",
+      tags: [],
+    });
+    // partial(60)*0.4 + unknown(0)*0.3 + CN-TierB(60)*0.2 + default(50)*0.1 = 41
+    expect(score).toBeGreaterThanOrEqual(25);
+    expect(score).toBeLessThan(50);
   });
   test("scoreTier thresholds", () => {
     expect(scoreTier(80)).toBe("gold");
