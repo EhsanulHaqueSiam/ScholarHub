@@ -315,3 +315,173 @@ class TestPipelineRunner:
 
         assert stats["sources_failed"] == 1
         assert stats["sources_completed"] == 0
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_deactivates_source_after_threshold(self, mock_discover, mock_get_scraper):
+        """Source is deactivated after reaching 10 consecutive failures."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.side_effect = RuntimeError("Connection refused")
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:updateSourceHealth":
+                return {"consecutive_failures": 10, "github_issue_number": None}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = None
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        deactivate_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:deactivateSource"
+        ]
+        assert len(deactivate_calls) == 1
+        assert deactivate_calls[0][0][1]["source_id"] == "test-source"
+        assert "10 consecutive failures" in deactivate_calls[0][0][1]["reason"]
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run")
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_stores_issue_number_on_alert(
+        self, mock_discover, mock_get_scraper, mock_subprocess,
+    ):
+        """Issue number is captured from create_rot_issue and stored via mutation."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.side_effect = RuntimeError("Connection refused")
+        mock_get_scraper.return_value = mock_scraper
+
+        # Mock gh issue create to return issue 42
+        mock_subprocess.return_value = MagicMock(
+            stdout="https://github.com/owner/repo/issues/42\n",
+        )
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:updateSourceHealth":
+                return {"consecutive_failures": 5, "github_issue_number": None}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = None
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        store_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:storeGitHubIssueNumber"
+        ]
+        assert len(store_calls) == 1
+        assert store_calls[0][0][1]["source_id"] == "test-source"
+        assert store_calls[0][0][1]["issue_number"] == 42
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_skips_duplicate_issue_creation(self, mock_discover, mock_get_scraper):
+        """When github_issue_number already exists, no new issue is created."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.side_effect = RuntimeError("Connection refused")
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:updateSourceHealth":
+                # Issue already exists
+                return {"consecutive_failures": 5, "github_issue_number": 99}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = None
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        with patch(
+            "scholarhub_pipeline.monitoring.github_issues.subprocess.run",
+        ) as mock_subprocess:
+            await runner.run()
+            # create_rot_issue should NOT be called since issue already exists
+            mock_subprocess.assert_not_called()
+
+        # storeGitHubIssueNumber should NOT be called
+        store_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:storeGitHubIssueNumber"
+        ]
+        assert len(store_calls) == 0
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run")
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_closes_issue_on_recovery(
+        self, mock_discover, mock_get_scraper, mock_subprocess,
+    ):
+        """When a previously-failing source recovers, its GitHub Issue is closed."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.return_value = [{"title": "Test"}]
+        mock_scraper.records_found = 1
+        mock_scraper.bytes_downloaded = 1024
+        mock_get_scraper.return_value = mock_scraper
+
+        # Mock gh issue close to succeed
+        mock_subprocess.return_value = MagicMock()
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:batchInsertRawRecords":
+                return {"inserted": 1, "updated": 0, "unchanged": 0}
+            if name == "scraping:updateSourceHealth":
+                # Source had a previous issue open
+                return {"consecutive_failures": 0, "github_issue_number": 42}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = None
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        # close_issue should have been called via subprocess
+        mock_subprocess.assert_called_once()
+        call_args = mock_subprocess.call_args[0][0]
+        assert "close" in call_args
+        assert "42" in call_args
+
+        # clearGitHubIssueNumber should have been called
+        clear_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:clearGitHubIssueNumber"
+        ]
+        assert len(clear_calls) == 1
+        assert clear_calls[0][0][1]["source_id"] == "test-source"

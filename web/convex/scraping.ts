@@ -252,6 +252,10 @@ export const updateSourceHealth = internalMutation({
           last_error_type: undefined,
           last_error_message: undefined,
         });
+        return {
+          consecutive_failures: 0,
+          github_issue_number: existing.github_issue_number,
+        };
       } else {
         await ctx.db.insert("source_health", {
           source_id: args.source_id,
@@ -262,6 +266,7 @@ export const updateSourceHealth = internalMutation({
           avg_yield: currentYield,
           yield_trend: "stable",
         });
+        return { consecutive_failures: 0 };
       }
     } else {
       // Failure path
@@ -276,6 +281,10 @@ export const updateSourceHealth = internalMutation({
           last_error_type: args.error_type,
           last_error_message: args.error_message,
         });
+        return {
+          consecutive_failures: newFailures,
+          github_issue_number: existing.github_issue_number,
+        };
       } else {
         await ctx.db.insert("source_health", {
           source_id: args.source_id,
@@ -285,6 +294,7 @@ export const updateSourceHealth = internalMutation({
           last_error_type: args.error_type,
           last_error_message: args.error_message,
         });
+        return { consecutive_failures: 1 };
       }
     }
   },

@@ -172,7 +172,27 @@ class PipelineRunner:
 
             # Update health and timestamp
             if self.convex and not self.dry_run:
-                HealthTracker(self.convex).record_success(config.source_id, len(records))
+                health_after_success = HealthTracker(self.convex).record_success(
+                    config.source_id, len(records),
+                )
+                # Auto-close GitHub Issue if source recovered
+                issue_num = (
+                    health_after_success.get("github_issue_number")
+                    if health_after_success
+                    else None
+                )
+                if issue_num is not None:
+                    from scholarhub_pipeline.monitoring.github_issues import (
+                        GitHubIssueManager,
+                    )
+
+                    mgr = GitHubIssueManager(self.convex)
+                    if mgr.close_issue(issue_num, config.name):
+                        self.convex.mutation(
+                            "scraping:clearGitHubIssueNumber",
+                            {"source_id": config.source_id},
+                        )
+
                 self.convex.mutation(
                     "scraping:updateLastScraped",
                     {
@@ -220,17 +240,55 @@ class PipelineRunner:
                 )
                 rot = RotDetector()
                 failures = health_result.get("consecutive_failures", 0) if health_result else 0
-                if rot.should_alert(failures):
-                    from scholarhub_pipeline.monitoring.github_issues import GitHubIssueManager
 
-                    mgr = GitHubIssueManager(self.convex)
-                    mgr.create_rot_issue(
-                        source_name=config.name,
-                        source_url=config.url,
+                # Create GitHub Issue if alert threshold reached and no existing issue
+                if rot.should_alert(failures):
+                    from scholarhub_pipeline.monitoring.github_issues import (
+                        GitHubIssueManager,
+                    )
+
+                    existing_issue = (
+                        health_result.get("github_issue_number")
+                        if health_result
+                        else None
+                    )
+                    if existing_issue is None:
+                        mgr = GitHubIssueManager(self.convex)
+                        issue_number = mgr.create_rot_issue(
+                            source_name=config.name,
+                            source_url=config.url,
+                            error_type=error_type,
+                            consecutive_failures=failures,
+                            last_success=None,
+                            suggested_fix=mgr.suggest_fix(error_type, config.url),
+                        )
+                        if issue_number is not None:
+                            self.convex.mutation(
+                                "scraping:storeGitHubIssueNumber",
+                                {
+                                    "source_id": config.source_id,
+                                    "issue_number": issue_number,
+                                },
+                            )
+
+                # Auto-deactivation check
+                if rot.should_deactivate(failures, error_type):
+                    reason = (
+                        f"Auto-deactivated: {failures} consecutive failures, "
+                        f"last error: {error_type}"
+                    )
+                    self.convex.mutation(
+                        "scraping:deactivateSource",
+                        {
+                            "source_id": config.source_id,
+                            "reason": reason,
+                        },
+                    )
+                    logger.warning(
+                        "source_deactivated",
+                        source=config.name,
+                        failures=failures,
                         error_type=error_type,
-                        consecutive_failures=failures,
-                        last_success=None,
-                        suggested_fix=mgr.suggest_fix(error_type, config.url),
                     )
 
     @staticmethod
