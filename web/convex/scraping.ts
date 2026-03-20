@@ -1,5 +1,5 @@
-import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "./_generated/server";
 import {
   scrapeMethodValidator,
   scrapeRunStatusValidator,
@@ -286,6 +286,92 @@ export const updateSourceHealth = internalMutation({
           last_error_message: args.error_message,
         });
       }
+    }
+  },
+});
+
+/**
+ * Deactivate a source after repeated failures or permanent-gone errors.
+ * Sets source_health status to "deactivated" and marks source inactive.
+ */
+export const deactivateSource = internalMutation({
+  args: {
+    source_id: v.id("sources"),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("source_health")
+      .withIndex("by_source", (q) => q.eq("source_id", args.source_id))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        status: "deactivated",
+        deactivation_reason: args.reason,
+      });
+    } else {
+      await ctx.db.insert("source_health", {
+        source_id: args.source_id,
+        status: "deactivated",
+        consecutive_failures: 0,
+        deactivation_reason: args.reason,
+      });
+    }
+
+    // Mark the source itself inactive
+    await ctx.db.patch(args.source_id, { is_active: false });
+  },
+});
+
+/**
+ * Store the GitHub Issue number on a source's health record.
+ * Used after creating a rot-detection issue to prevent duplicates.
+ */
+export const storeGitHubIssueNumber = internalMutation({
+  args: {
+    source_id: v.id("sources"),
+    issue_number: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("source_health")
+      .withIndex("by_source", (q) => q.eq("source_id", args.source_id))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        github_issue_number: args.issue_number,
+      });
+    } else {
+      await ctx.db.insert("source_health", {
+        source_id: args.source_id,
+        status: "failing",
+        consecutive_failures: 0,
+        github_issue_number: args.issue_number,
+      });
+    }
+  },
+});
+
+/**
+ * Clear the GitHub Issue number from a source's health record.
+ * Called when a previously-failing source recovers and the issue is closed.
+ */
+export const clearGitHubIssueNumber = internalMutation({
+  args: {
+    source_id: v.id("sources"),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("source_health")
+      .withIndex("by_source", (q) => q.eq("source_id", args.source_id))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        github_issue_number: undefined,
+      });
     }
   },
 });
