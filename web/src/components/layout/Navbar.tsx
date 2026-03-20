@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Sun, Moon, Menu, X } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { Menu, Moon, Sun, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,7 @@ export function Navbar() {
 
   return (
     <nav
+      aria-label="Main navigation"
       className={cn(
         "fixed top-0 inset-x-0 z-50",
         "bg-secondary-background border-b-2 border-border shadow-shadow",

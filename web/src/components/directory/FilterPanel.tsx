@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { SlidersHorizontal, X, Search } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import {
   DEGREE_LEVELS,
@@ -8,13 +9,24 @@ import {
   FUNDING_TYPES,
   serializeCommaSeparated,
 } from "@/lib/filters";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const PRESTIGE_TIERS = [
-  { value: "gold", label: "Gold", colorClass: "bg-prestige-gold-badge text-black border-prestige-gold-border" },
-  { value: "silver", label: "Silver", colorClass: "bg-prestige-silver-badge text-black border-prestige-silver-border" },
-  { value: "bronze", label: "Bronze", colorClass: "bg-prestige-bronze-badge text-black border-prestige-bronze-border" },
+  {
+    value: "gold",
+    label: "Gold",
+    colorClass: "bg-prestige-gold-badge text-black border-prestige-gold-border",
+  },
+  {
+    value: "silver",
+    label: "Silver",
+    colorClass: "bg-prestige-silver-badge text-black border-prestige-silver-border",
+  },
+  {
+    value: "bronze",
+    label: "Bronze",
+    colorClass: "bg-prestige-bronze-badge text-black border-prestige-bronze-border",
+  },
 ] as const;
 
 /**
@@ -44,9 +56,7 @@ export function FilterPanel() {
             <Dialog.Overlay className="fixed inset-0 bg-overlay z-40" />
             <Dialog.Content className="fixed bottom-0 inset-x-0 z-50 bg-secondary-background border-t-2 border-border rounded-t-base max-h-[85vh] overflow-y-auto p-4 animate-in slide-in-from-bottom">
               <div className="flex items-center justify-between mb-4">
-                <Dialog.Title className="font-heading text-lg">
-                  Filters
-                </Dialog.Title>
+                <Dialog.Title className="font-heading text-lg">Filters</Dialog.Title>
                 <Dialog.Close asChild>
                   <button
                     type="button"
@@ -114,11 +124,9 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
       <h2 className="font-heading text-lg mb-4 hidden lg:block">Filters</h2>
 
       {/* Degree Level */}
-      <section className="py-4 border-b border-border">
-        <h3 className="text-sm font-heading text-foreground/80 mb-2">
-          Degree Level
-        </h3>
-        <div className="flex flex-wrap gap-2">
+      <section className="py-4 border-b border-border" aria-label="Filter by degree level">
+        <h3 className="text-sm font-heading text-foreground/80 mb-2">Degree Level</h3>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Degree level options">
           {DEGREE_LEVELS.map((level) => {
             const isActive = filters.degree.includes(level.value);
             return (
@@ -126,6 +134,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 key={level.value}
                 type="button"
                 aria-pressed={isActive}
+                aria-label={`Filter by ${level.label}`}
                 onClick={() => toggleMultiFilter("degree", level.value)}
                 className={cn(
                   "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
@@ -142,14 +151,13 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
       </section>
 
       {/* Field of Study */}
-      <section className="py-4 border-b border-border">
-        <h3 className="text-sm font-heading text-foreground/80 mb-2">
-          Field of Study
-        </h3>
+      <section className="py-4 border-b border-border" aria-label="Filter by field of study">
+        <h3 className="text-sm font-heading text-foreground/80 mb-2">Field of Study</h3>
         <div className="relative mb-2">
           <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50 pointer-events-none" />
           <input
             type="text"
+            aria-label="Search fields of study"
             placeholder="Search fields..."
             value={fieldSearch}
             onChange={(e) => setFieldSearch(e.target.value)}
@@ -187,17 +195,13 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 onClick={() => toggleFieldOfStudy(field)}
                 className={cn(
                   "flex items-center w-full text-start px-2 py-2 text-sm rounded-base transition-colors min-h-[40px]",
-                  isActive
-                    ? "bg-main/10 font-heading"
-                    : "hover:bg-main/5",
+                  isActive ? "bg-main/10 font-heading" : "hover:bg-main/5",
                 )}
               >
                 <span
                   className={cn(
                     "size-4 rounded border-2 me-2 flex items-center justify-center shrink-0",
-                    isActive
-                      ? "bg-main border-main text-main-foreground"
-                      : "border-border",
+                    isActive ? "bg-main border-main text-main-foreground" : "border-border",
                   )}
                 >
                   {isActive && (
@@ -220,11 +224,9 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
       </section>
 
       {/* Funding Type */}
-      <section className="py-4 border-b border-border">
-        <h3 className="text-sm font-heading text-foreground/80 mb-2">
-          Funding Type
-        </h3>
-        <div className="flex flex-wrap gap-2">
+      <section className="py-4 border-b border-border" aria-label="Filter by funding type">
+        <h3 className="text-sm font-heading text-foreground/80 mb-2">Funding Type</h3>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Funding type options">
           {FUNDING_TYPES.map((type) => {
             const isActive = filters.funding.includes(type.value);
             return (
@@ -232,6 +234,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 key={type.value}
                 type="button"
                 aria-pressed={isActive}
+                aria-label={`Filter by ${type.label}`}
                 onClick={() => toggleMultiFilter("funding", type.value)}
                 className={cn(
                   "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
@@ -248,11 +251,9 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
       </section>
 
       {/* Prestige Tier */}
-      <section className="py-4 border-b border-border">
-        <h3 className="text-sm font-heading text-foreground/80 mb-2">
-          Prestige Tier
-        </h3>
-        <div className="flex flex-wrap gap-2">
+      <section className="py-4 border-b border-border" aria-label="Filter by prestige tier">
+        <h3 className="text-sm font-heading text-foreground/80 mb-2">Prestige Tier</h3>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Prestige tier options">
           {PRESTIGE_TIERS.map((tier) => {
             const isActive = filters.tier.includes(tier.value);
             return (
@@ -260,6 +261,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 key={tier.value}
                 type="button"
                 aria-pressed={isActive}
+                aria-label={`Filter by ${tier.label} prestige`}
                 onClick={() => toggleMultiFilter("tier", tier.value)}
                 className={cn(
                   "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
@@ -282,6 +284,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
             type="checkbox"
             checked={filters.showClosed}
             onChange={() => setFilter("show_closed", !filters.showClosed)}
+            aria-label="Toggle show closed scholarships"
             className="rounded border-border size-4"
           />
           Show closed scholarships

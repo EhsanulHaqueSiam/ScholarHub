@@ -79,7 +79,7 @@ function EmptyIllustration() {
 
 export function EmptyState({ mostRestrictiveFilter, fallbackScholarships }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center text-center py-12 px-4">
+    <div role="status" className="flex flex-col items-center text-center py-12 px-4">
       <EmptyIllustration />
 
       <h2 className="font-heading text-xl mt-8">No scholarships match your filters</h2>

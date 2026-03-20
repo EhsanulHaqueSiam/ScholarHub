@@ -1,8 +1,8 @@
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function SkeletonCard() {
   return (
-    <Card prestige="unranked" className="h-[320px] animate-pulse">
+    <Card prestige="unranked" className="h-[320px] motion-safe:animate-pulse">
       <CardHeader>
         <div className="h-5 bg-border/20 rounded-base w-3/4" />
         <div className="h-4 bg-border/20 rounded-base w-1/2 mt-2" />

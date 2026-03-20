@@ -1,27 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { anyApi } from "convex/server";
-import { Search } from "lucide-react";
-import { useState, useCallback, type ErrorInfo, type ReactNode, Component } from "react";
-import { scholarshipSearchSchema } from "@/lib/filters";
-import { getCountryName, getCountryFlag } from "@/lib/countries";
-import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
-import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
-import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
-import { SkeletonCard } from "@/components/directory/SkeletonCard";
+import { useCallback, useState } from "react";
+import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FeaturedRow } from "@/components/directory/FeaturedRow";
-import { SearchBar } from "@/components/directory/SearchBar";
-import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
-import { NationalityBanner } from "@/components/directory/NationalityBanner";
-import { FilterPanel } from "@/components/directory/FilterPanel";
 import { FilterChips } from "@/components/directory/FilterChips";
+import { FilterPanel } from "@/components/directory/FilterPanel";
+import { NationalityBanner } from "@/components/directory/NationalityBanner";
 import { QuickFilters } from "@/components/directory/QuickFilters";
+import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
+import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
+import { SearchBar } from "@/components/directory/SearchBar";
+import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { SortPills } from "@/components/directory/SortPills";
 import { ViewToggle } from "@/components/directory/ViewToggle";
-import { Navbar } from "@/components/layout/Navbar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BackToTop } from "@/components/layout/BackToTop";
+import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
+import { getCountryFlag, getCountryName } from "@/lib/countries";
+import { scholarshipSearchSchema } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 
 // --- Helper functions for dynamic meta tags ---
@@ -82,50 +82,6 @@ export const Route = createFileRoute("/scholarships/")({
   component: ScholarshipsDirectory,
 });
 
-// --- Error boundary for results ---
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-class ResultsErrorBoundary extends Component<
-  { children: ReactNode },
-  ErrorBoundaryState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("ResultsErrorBoundary caught:", error, info);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="border-2 border-[oklch(55%_0.22_25)] rounded-base p-6 text-center">
-          <p className="text-sm font-base mb-3">
-            Unable to load scholarships. Check your connection and try again.
-          </p>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => this.setState({ hasError: false })}
-          >
-            Retry
-          </Button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 // --- Helper: format results count ---
 
 function formatResultsCount(
@@ -175,6 +131,14 @@ function ScholarshipsDirectory() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip to results link for keyboard/screen reader users */}
+      <a
+        href="#results"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 bg-main text-main-foreground px-4 py-2 rounded-base"
+      >
+        Skip to results
+      </a>
+
       <Navbar />
 
       {/* Hero Section */}
@@ -190,8 +154,7 @@ function ScholarshipsDirectory() {
             International Scholarships
           </h1>
           <p className="font-base text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
-            Find fully funded scholarships you qualify for. Filter by country,
-            degree, and prestige.
+            Find fully funded scholarships you qualify for. Filter by country, degree, and prestige.
           </p>
           <div className="max-w-xl mx-auto pt-2">
             <SearchBar onSearch={handleSearch} defaultValue={filters.q ?? ""} />
@@ -213,11 +176,7 @@ function ScholarshipsDirectory() {
       <div className="max-w-[1280px] mx-auto px-4 pb-16">
         {/* Featured Row */}
         <div className="mb-8">
-          <FeaturedRow
-            nationalities={
-              filters.from.length > 0 ? filters.from : undefined
-            }
-          />
+          <FeaturedRow nationalities={filters.from.length > 0 ? filters.from : undefined} />
         </div>
 
         {/* Quick Filters */}
@@ -236,7 +195,7 @@ function ScholarshipsDirectory() {
             <SortPills />
             <ViewToggle />
           </div>
-          <p className="text-sm font-base text-foreground/70">
+          <p className="text-sm font-base text-foreground/70" aria-live="polite">
             {formatResultsCount(results?.length, filters)}
           </p>
         </div>
@@ -247,8 +206,8 @@ function ScholarshipsDirectory() {
           <FilterPanel />
 
           {/* Results area */}
-          <div className="flex-1 min-w-0">
-            <ResultsErrorBoundary>
+          <div id="results" className="flex-1 min-w-0">
+            <ErrorBoundary>
               {/* Initial loading skeleton */}
               {isInitialLoading && (
                 <div
@@ -280,15 +239,9 @@ function ScholarshipsDirectory() {
                 >
                   {results.map((scholarship) =>
                     isGridView ? (
-                      <ScholarshipCard
-                        key={scholarship._id}
-                        scholarship={scholarship}
-                      />
+                      <ScholarshipCard key={scholarship._id} scholarship={scholarship} />
                     ) : (
-                      <ScholarshipListItem
-                        key={scholarship._id}
-                        scholarship={scholarship}
-                      />
+                      <ScholarshipListItem key={scholarship._id} scholarship={scholarship} />
                     ),
                   )}
                 </div>
@@ -297,11 +250,7 @@ function ScholarshipsDirectory() {
               {/* Load More button */}
               {status === "CanLoadMore" && (
                 <div className="flex justify-center mt-8">
-                  <Button
-                    variant="neutral"
-                    size="lg"
-                    onClick={() => loadMore(20)}
-                  >
+                  <Button variant="neutral" size="lg" onClick={() => loadMore(20)}>
                     Load More Scholarships
                   </Button>
                 </div>
@@ -329,7 +278,7 @@ function ScholarshipsDirectory() {
                   ))}
                 </div>
               )}
-            </ResultsErrorBoundary>
+            </ErrorBoundary>
           </div>
         </div>
       </div>

@@ -5,14 +5,17 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
 import type { PrestigeTier } from "@/lib/prestige";
+import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
 
 export const Route = createFileRoute("/scholarships/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug} -- ScholarHub` },
-      { name: "description", content: `View scholarship details for ${params.slug} on ScholarHub.` },
+      {
+        name: "description",
+        content: `View scholarship details for ${params.slug} on ScholarHub.`,
+      },
     ],
   }),
   component: ScholarshipDetailPage,
@@ -54,21 +57,14 @@ function buildScholarshipJsonLd(scholarship: {
   }
 
   if (scholarship.application_deadline) {
-    jsonLd.applicationDeadline = new Date(
-      scholarship.application_deadline,
-    ).toISOString();
+    jsonLd.applicationDeadline = new Date(scholarship.application_deadline).toISOString();
   }
 
-  if (
-    scholarship.eligibility_nationalities &&
-    scholarship.eligibility_nationalities.length > 0
-  ) {
-    jsonLd.eligibleRegion = scholarship.eligibility_nationalities.map(
-      (code) => ({
-        "@type": "Place",
-        name: getCountryName(code),
-      }),
-    );
+  if (scholarship.eligibility_nationalities && scholarship.eligibility_nationalities.length > 0) {
+    jsonLd.eligibleRegion = scholarship.eligibility_nationalities.map((code) => ({
+      "@type": "Place",
+      name: getCountryName(code),
+    }));
   }
 
   if (scholarship.host_country) {
@@ -100,7 +96,7 @@ function ScholarshipDetailPage() {
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-3xl mx-auto">
-            <Card className="animate-pulse">
+            <Card className="motion-safe:animate-pulse">
               <CardContent className="p-8 space-y-4">
                 <div className="h-8 bg-border/20 rounded-base w-3/4" />
                 <div className="h-5 bg-border/20 rounded-base w-1/2" />
@@ -120,12 +116,9 @@ function ScholarshipDetailPage() {
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-3xl mx-auto text-center py-16">
-            <h1 className="font-heading text-[32px] mb-4">
-              Scholarship Not Found
-            </h1>
+            <h1 className="font-heading text-[32px] mb-4">Scholarship Not Found</h1>
             <p className="text-foreground/70">
-              The scholarship you're looking for doesn't exist or has been
-              removed.
+              The scholarship you're looking for doesn't exist or has been removed.
             </p>
           </div>
         </div>
@@ -155,18 +148,12 @@ function ScholarshipDetailPage() {
               {/* Prestige badge + country flag */}
               <div className="flex items-center gap-2 flex-wrap">
                 {prestigeTier !== "unranked" && (
-                  <Badge
-                    variant={prestigeTier}
-                    title={getPrestigeTooltip(prestigeTier)}
-                  >
+                  <Badge variant={prestigeTier} title={getPrestigeTooltip(prestigeTier)}>
                     {getPrestigeLabel(prestigeTier)}
                   </Badge>
                 )}
                 <Badge variant="neutral" className="text-base">
-                  <span
-                    aria-label={getCountryName(scholarship.host_country)}
-                    role="img"
-                  >
+                  <span aria-label={getCountryName(scholarship.host_country)} role="img">
                     {getCountryFlag(scholarship.host_country)}
                   </span>{" "}
                   {getCountryName(scholarship.host_country)}
@@ -179,9 +166,7 @@ function ScholarshipDetailPage() {
               </h1>
 
               {/* Provider */}
-              <p className="text-foreground/70 font-base">
-                {scholarship.provider_organization}
-              </p>
+              <p className="text-foreground/70 font-base">{scholarship.provider_organization}</p>
 
               {/* Placeholder message */}
               <div className="border-2 border-border rounded-base p-4 bg-secondary-background mt-6">

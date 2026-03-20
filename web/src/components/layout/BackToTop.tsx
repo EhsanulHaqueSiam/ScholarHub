@@ -1,5 +1,5 @@
 import { ArrowUp } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export function BackToTop() {
       onClick={scrollToTop}
       aria-label="Scroll back to top"
       className={cn(
-        "fixed bottom-4 end-4 z-40 transition-opacity duration-300",
+        "fixed bottom-4 end-4 z-40 motion-safe:transition-opacity motion-safe:duration-300",
         visible ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
     >

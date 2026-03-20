@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery } from "convex/react";
 import { anyApi } from "convex/server";
-import { scholarshipSearchSchema } from "@/lib/filters";
-import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
+import { EmptyState } from "@/components/directory/EmptyState";
+import { FilterChips } from "@/components/directory/FilterChips";
+import { FilterPanel } from "@/components/directory/FilterPanel";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
 import { SkeletonCard } from "@/components/directory/SkeletonCard";
-import { EmptyState } from "@/components/directory/EmptyState";
-import { FilterPanel } from "@/components/directory/FilterPanel";
-import { FilterChips } from "@/components/directory/FilterChips";
 import { SortPills } from "@/components/directory/SortPills";
 import { ViewToggle } from "@/components/directory/ViewToggle";
-import { Navbar } from "@/components/layout/Navbar";
 import { BackToTop } from "@/components/layout/BackToTop";
+import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
+import { scholarshipSearchSchema } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/scholarships/closing-soon")({
@@ -26,7 +26,10 @@ export const Route = createFileRoute("/scholarships/closing-soon")({
         content:
           "Scholarships with upcoming deadlines. Apply before it's too late. Browse scholarships closing within the next 30 days.",
       },
-      { property: "og:title", content: "Closing Soon -- Scholarships with Upcoming Deadlines -- ScholarHub" },
+      {
+        property: "og:title",
+        content: "Closing Soon -- Scholarships with Upcoming Deadlines -- ScholarHub",
+      },
       {
         property: "og:description",
         content: "Scholarships with upcoming deadlines. Apply before it's too late.",
@@ -86,7 +89,7 @@ function ClosingSoonPage() {
             <ViewToggle />
           </div>
           {hasResults && (
-            <p className="text-sm font-base text-foreground/70">
+            <p className="text-sm font-base text-foreground/70" aria-live="polite">
               {results.length} scholarship{results.length === 1 ? "" : "s"} closing soon
             </p>
           )}
@@ -128,15 +131,9 @@ function ClosingSoonPage() {
               >
                 {results.map((scholarship) =>
                   isGridView ? (
-                    <ScholarshipCard
-                      key={scholarship._id}
-                      scholarship={scholarship}
-                    />
+                    <ScholarshipCard key={scholarship._id} scholarship={scholarship} />
                   ) : (
-                    <ScholarshipListItem
-                      key={scholarship._id}
-                      scholarship={scholarship}
-                    />
+                    <ScholarshipListItem key={scholarship._id} scholarship={scholarship} />
                   ),
                 )}
               </div>
@@ -145,11 +142,7 @@ function ClosingSoonPage() {
             {/* Load More */}
             {status === "CanLoadMore" && (
               <div className="flex justify-center mt-8">
-                <Button
-                  variant="neutral"
-                  size="lg"
-                  onClick={() => loadMore(20)}
-                >
+                <Button variant="neutral" size="lg" onClick={() => loadMore(20)}>
                   Load More Scholarships
                 </Button>
               </div>

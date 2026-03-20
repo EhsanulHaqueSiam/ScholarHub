@@ -70,9 +70,7 @@ export function QuickFilters() {
     const isNowGoldTier = newValues.includes("gold_tier");
     if (wasGoldTier !== isNowGoldTier) {
       if (isNowGoldTier) {
-        const updated = filters.tier.includes("gold")
-          ? filters.tier
-          : [...filters.tier, "gold"];
+        const updated = filters.tier.includes("gold") ? filters.tier : [...filters.tier, "gold"];
         setFilter("tier", serializeCommaSeparated(updated));
       } else {
         const updated = filters.tier.filter((t) => t !== "gold");
@@ -95,6 +93,7 @@ export function QuickFilters() {
             key={option.value}
             value={option.value}
             aria-pressed={isActive}
+            aria-label={`Filter: ${option.label}`}
             className={cn(
               "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-all min-h-[44px]",
               isActive

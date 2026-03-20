@@ -40,6 +40,9 @@
   --urgency-warning: oklch(75% 0.16 85);
   --urgency-open: oklch(65% 0.18 145);
   --urgency-closed: oklch(70% 0.01 0);
+
+  /* Semantic colors */
+  --destructive: oklch(55% 0.22 25);
 }
 
 .dark {
@@ -69,6 +72,9 @@
   --urgency-warning: oklch(65% 0.12 85);
   --urgency-open: oklch(58% 0.14 145);
   --urgency-closed: oklch(55% 0.01 0);
+
+  /* Semantic colors - dark mode */
+  --destructive: oklch(60% 0.20 25);
 }
 
 @theme inline {
@@ -108,6 +114,7 @@
   --color-urgency-warning: var(--urgency-warning);
   --color-urgency-open: var(--urgency-open);
   --color-urgency-closed: var(--urgency-closed);
+  --color-destructive: var(--destructive);
 }
 
 @layer base {

@@ -1,15 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { Copy, Check } from "lucide-react";
-import { useState, useCallback } from "react";
-import type { Doc } from "../../../convex/_generated/dataModel";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Check, Copy } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getDeadlineUrgency, isNew } from "@/lib/filters";
-import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import { cn } from "@/lib/utils";
+import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
+import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import { cn } from "@/lib/utils";
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 type Scholarship = Doc<"scholarships">;
 
@@ -39,7 +46,10 @@ function formatFundingAmount(scholarship: Scholarship): string | null {
     currency,
     maximumFractionDigits: 0,
   });
-  if (scholarship.award_amount_min && scholarship.award_amount_min !== scholarship.award_amount_max) {
+  if (
+    scholarship.award_amount_min &&
+    scholarship.award_amount_min !== scholarship.award_amount_max
+  ) {
     return `${formatter.format(scholarship.award_amount_min)} - ${formatter.format(scholarship.award_amount_max)}`;
   }
   return formatter.format(scholarship.award_amount_max);
@@ -137,14 +147,15 @@ export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship 
               )}
 
               {/* Eligibility nationalities */}
-              {scholarship.eligibility_nationalities && scholarship.eligibility_nationalities.length > 0 && (
-                <p className="text-xs text-foreground/70">
-                  <span className="font-heading">Eligibility:</span>{" "}
-                  {scholarship.eligibility_nationalities.length > 5
-                    ? `${scholarship.eligibility_nationalities.slice(0, 5).join(", ")} +${scholarship.eligibility_nationalities.length - 5} more`
-                    : scholarship.eligibility_nationalities.join(", ")}
-                </p>
-              )}
+              {scholarship.eligibility_nationalities &&
+                scholarship.eligibility_nationalities.length > 0 && (
+                  <p className="text-xs text-foreground/70">
+                    <span className="font-heading">Eligibility:</span>{" "}
+                    {scholarship.eligibility_nationalities.length > 5
+                      ? `${scholarship.eligibility_nationalities.slice(0, 5).join(", ")} +${scholarship.eligibility_nationalities.length - 5} more`
+                      : scholarship.eligibility_nationalities.join(", ")}
+                  </p>
+                )}
 
               {/* Degree levels + Fields of study */}
               <div className="flex flex-wrap gap-3 text-sm">
@@ -163,7 +174,8 @@ export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship 
                 {scholarship.fields_of_study && scholarship.fields_of_study.length > 0 && (
                   <span className="text-xs text-foreground/70">
                     {scholarship.fields_of_study.slice(0, 3).join(", ")}
-                    {scholarship.fields_of_study.length > 3 && ` +${scholarship.fields_of_study.length - 3} more`}
+                    {scholarship.fields_of_study.length > 3 &&
+                      ` +${scholarship.fields_of_study.length - 3} more`}
                   </span>
                 )}
               </div>
@@ -173,7 +185,9 @@ export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship 
           {/* Right: Funding info + Copy link */}
           <div className="flex flex-row md:flex-col items-center md:items-end gap-3 px-6 md:py-6 pb-0">
             <div className="text-end">
-              <div className="font-heading text-sm">{formatFundingType(scholarship.funding_type)}</div>
+              <div className="font-heading text-sm">
+                {formatFundingType(scholarship.funding_type)}
+              </div>
               {formatFundingAmount(scholarship) && (
                 <div className="text-xs text-foreground/70">{formatFundingAmount(scholarship)}</div>
               )}
@@ -183,7 +197,7 @@ export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship 
               size="sm"
               onClick={handleCopyLink}
               className="text-xs"
-              aria-label={copied ? "Link copied" : "Copy scholarship link"}
+              aria-label={copied ? "Link copied" : `Copy link to ${scholarship.title}`}
             >
               {copied ? (
                 <>

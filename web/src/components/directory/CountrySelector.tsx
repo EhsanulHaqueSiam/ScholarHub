@@ -1,11 +1,7 @@
-import { useState, useMemo, useRef } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { ChevronDown, X, Search, Check } from "lucide-react";
-import {
-  getAllCountries,
-  getCountryFlag,
-  getCountryName,
-} from "@/lib/countries";
+import { Check, ChevronDown, Search, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { getAllCountries, getCountryFlag, getCountryName } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 interface CountrySelectorProps {
@@ -33,21 +29,15 @@ export function CountrySelector({
     if (!search.trim()) return allCountries;
     const q = search.toLowerCase();
     return allCountries.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.code.toLowerCase().includes(q),
+      (c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
     );
   }, [search, allCountries]);
 
   // Selected countries first, then the rest
   const sortedCountries = useMemo(() => {
     const selectedSet = new Set(selected);
-    const selectedItems = filteredCountries.filter((c) =>
-      selectedSet.has(c.code),
-    );
-    const unselectedItems = filteredCountries.filter(
-      (c) => !selectedSet.has(c.code),
-    );
+    const selectedItems = filteredCountries.filter((c) => selectedSet.has(c.code));
+    const unselectedItems = filteredCountries.filter((c) => !selectedSet.has(c.code));
     return [...selectedItems, ...unselectedItems];
   }, [filteredCountries, selected]);
 
@@ -79,6 +69,7 @@ export function CountrySelector({
         <button
           type="button"
           aria-label={placeholder}
+          aria-expanded={open}
           className={cn(
             "inline-flex items-center gap-1.5 border-2 border-border rounded-base bg-secondary-background px-3 py-2 min-h-[44px] text-sm font-base transition-colors",
             "hover:bg-main/5 focus:ring-2 focus:ring-ring focus:outline-none",
@@ -127,6 +118,7 @@ export function CountrySelector({
               <input
                 ref={searchInputRef}
                 type="text"
+                aria-label="Search countries"
                 placeholder="Search countries..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -139,9 +131,7 @@ export function CountrySelector({
             {/* Popular section */}
             {!search.trim() && popularList.length > 0 && (
               <div className="p-2 border-b border-border">
-                <p className="text-xs font-heading text-foreground/60 mb-1.5 px-1">
-                  Popular
-                </p>
+                <p className="text-xs font-heading text-foreground/60 mb-1.5 px-1">Popular</p>
                 <div className="flex flex-wrap gap-1">
                   {popularList.map((code) => {
                     const isSelected = selected.includes(code);
@@ -178,9 +168,7 @@ export function CountrySelector({
                     aria-selected={isSelected}
                     className={cn(
                       "flex items-center justify-between px-3 py-2.5 min-h-[44px] cursor-pointer text-sm",
-                      isSelected
-                        ? "bg-main/10"
-                        : "hover:bg-main/5",
+                      isSelected ? "bg-main/10" : "hover:bg-main/5",
                       !isSelected && atMax && "opacity-50 cursor-not-allowed",
                     )}
                     onClick={() => {
@@ -195,9 +183,7 @@ export function CountrySelector({
                     <span
                       className={cn(
                         "size-4 rounded border-2 flex items-center justify-center shrink-0",
-                        isSelected
-                          ? "bg-main border-main text-main-foreground"
-                          : "border-border",
+                        isSelected ? "bg-main border-main text-main-foreground" : "border-border",
                       )}
                     >
                       {isSelected && <Check className="size-3" />}

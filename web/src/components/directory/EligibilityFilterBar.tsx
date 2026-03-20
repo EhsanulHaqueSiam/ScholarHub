@@ -1,15 +1,15 @@
+import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import {
   getCountryFlag,
   getCountryName,
-  POPULAR_NATIONALITIES,
   POPULAR_DESTINATIONS,
+  POPULAR_NATIONALITIES,
 } from "@/lib/countries";
 import { serializeCommaSeparated } from "@/lib/filters";
-import { CountrySelector } from "./CountrySelector";
-import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CountrySelector } from "./CountrySelector";
 
 /**
  * Smart nationality + destination filter bar.
@@ -46,7 +46,10 @@ export function EligibilityFilterBar() {
 
   if (isCompact) {
     return (
-      <div className="bg-secondary-background border-2 border-border rounded-base py-2 px-4">
+      <div
+        className="bg-secondary-background border-2 border-border rounded-base py-2 px-4"
+        aria-expanded={false}
+      >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-base min-w-0">
             <span className="flex items-center gap-1 shrink-0">
@@ -75,6 +78,7 @@ export function EligibilityFilterBar() {
             onClick={() => setForceExpanded(true)}
             className="inline-flex items-center gap-1.5 text-sm font-base text-main hover:underline shrink-0 min-h-[44px]"
             aria-label="Edit nationality and destination filters"
+            aria-expanded={false}
           >
             <Pencil className="size-3.5" />
             Edit
@@ -88,6 +92,7 @@ export function EligibilityFilterBar() {
               type="checkbox"
               checked={filters.showIneligible}
               onChange={handleIneligibleToggle}
+              aria-label="Toggle show ineligible scholarships"
               className="rounded border-border"
             />
             Also show scholarships you may not qualify for
@@ -98,13 +103,14 @@ export function EligibilityFilterBar() {
   }
 
   return (
-    <div className="bg-secondary-background border-2 border-border rounded-base p-4">
+    <div
+      className="bg-secondary-background border-2 border-border rounded-base p-4"
+      aria-expanded={true}
+    >
       <div className="flex flex-col gap-3">
         {/* Top line: nationality */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-base text-foreground/80 shrink-0">
-            I'm from
-          </span>
+          <span className="text-sm font-base text-foreground/80 shrink-0">I'm from</span>
           <CountrySelector
             selected={filters.from}
             onChange={handleNationalityChange}
@@ -112,9 +118,7 @@ export function EligibilityFilterBar() {
             popularList={POPULAR_NATIONALITIES}
             maxSelections={3}
           />
-          <span className="text-sm font-base text-foreground/80 shrink-0">
-            looking to study in
-          </span>
+          <span className="text-sm font-base text-foreground/80 shrink-0">looking to study in</span>
           <CountrySelector
             selected={filters.to}
             onChange={handleDestinationChange}
@@ -152,6 +156,7 @@ export function EligibilityFilterBar() {
               type="checkbox"
               checked={filters.showIneligible}
               onChange={handleIneligibleToggle}
+              aria-label="Toggle show ineligible scholarships"
               className="rounded border-border"
             />
             Also show scholarships you may not qualify for

@@ -1,7 +1,7 @@
+import { X } from "lucide-react";
 import { useNationalityDetect } from "@/hooks/useNationalityDetect";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import { X } from "lucide-react";
 
 /**
  * Auto-detect suggestion banner.
@@ -33,6 +33,7 @@ export function NationalityBanner() {
         <button
           type="button"
           onClick={handleSetNationality}
+          aria-label="Set as nationality"
           className="text-main font-heading hover:underline"
         >
           Set as nationality

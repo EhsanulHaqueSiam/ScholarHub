@@ -19,7 +19,7 @@ const badgeVariants = cva(
         urgencyWarning: "bg-urgency-warning text-black border-urgency-warning",
         urgencyOpen: "bg-urgency-open text-white border-urgency-open",
         urgencyClosed: "bg-urgency-closed text-white border-urgency-closed",
-        new: "bg-main text-main-foreground animate-pulse",
+        new: "bg-main text-main-foreground motion-safe:animate-pulse",
         limitedInfo: "bg-secondary-background text-foreground border-border",
       },
     },

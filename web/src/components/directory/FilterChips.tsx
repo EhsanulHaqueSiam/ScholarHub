@@ -1,12 +1,8 @@
+import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import {
-  DEGREE_LEVELS,
-  FUNDING_TYPES,
-  FIELDS_OF_STUDY,
-} from "@/lib/filters";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { DEGREE_LEVELS, FIELDS_OF_STUDY, FUNDING_TYPES } from "@/lib/filters";
 
 /**
  * Active filter pills above results.
@@ -14,8 +10,7 @@ import { X } from "lucide-react";
  * Includes "Clear all" link at the end.
  */
 export function FilterChips() {
-  const { filters, removeFilter, clearFilters, activeFilterCount } =
-    useScholarshipFilters();
+  const { filters, removeFilter, clearFilters, activeFilterCount } = useScholarshipFilters();
 
   if (activeFilterCount === 0) return null;
 
@@ -60,9 +55,7 @@ export function FilterChips() {
 
   // Field chips
   for (const field of filters.field) {
-    const match = FIELDS_OF_STUDY.find(
-      (f) => f.toLowerCase() === field.toLowerCase(),
-    );
+    const match = FIELDS_OF_STUDY.find((f) => f.toLowerCase() === field.toLowerCase());
     chips.push({
       key: `field-${field}`,
       filterKey: "field",
@@ -159,7 +152,8 @@ export function FilterChips() {
       <button
         type="button"
         onClick={clearFilters}
-        className="text-xs font-heading text-[oklch(55%_0.22_25)] hover:underline ms-1"
+        aria-label="Clear all filters"
+        className="text-xs font-heading text-destructive hover:underline ms-1"
       >
         Clear all
       </button>

@@ -1,15 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { Copy, Check } from "lucide-react";
-import { useState, useCallback } from "react";
-import type { Doc } from "../../../convex/_generated/dataModel";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Check, Copy } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getDeadlineUrgency, isNew } from "@/lib/filters";
-import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import { cn } from "@/lib/utils";
+import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
+import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import { cn } from "@/lib/utils";
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 type Scholarship = Doc<"scholarships">;
 
@@ -43,7 +50,10 @@ function formatFundingAmount(scholarship: Scholarship): string | null {
     currency,
     maximumFractionDigits: 0,
   });
-  if (scholarship.award_amount_min && scholarship.award_amount_min !== scholarship.award_amount_max) {
+  if (
+    scholarship.award_amount_min &&
+    scholarship.award_amount_min !== scholarship.award_amount_max
+  ) {
     return `${formatter.format(scholarship.award_amount_min)} - ${formatter.format(scholarship.award_amount_max)}`;
   }
   return formatter.format(scholarship.award_amount_max);
@@ -142,7 +152,9 @@ export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
             </div>
           )}
           <div className="flex items-center gap-2 text-sm">
-            <span className="font-heading text-xs">{formatFundingType(scholarship.funding_type)}</span>
+            <span className="font-heading text-xs">
+              {formatFundingType(scholarship.funding_type)}
+            </span>
             {formatFundingAmount(scholarship) && (
               <span className="text-xs">{formatFundingAmount(scholarship)}</span>
             )}
@@ -156,7 +168,7 @@ export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
             size="sm"
             onClick={handleCopyLink}
             className="ms-auto text-xs"
-            aria-label={copied ? "Link copied" : "Copy scholarship link"}
+            aria-label={copied ? "Link copied" : `Copy link to ${scholarship.title}`}
           >
             {copied ? (
               <>
