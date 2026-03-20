@@ -167,7 +167,8 @@ export const listScholarships = query({
     try {
       paginatedResults = await buildFilteredQuery().paginate(args.paginationOpts);
     } catch (e: any) {
-      if (String(e?.data ?? e?.message ?? "").includes("InvalidCursor")) {
+      const errStr = String(e?.data ?? "") + String(e?.message ?? "") + String(e ?? "");
+      if (errStr.includes("InvalidCursor") || errStr.includes("cursor")) {
         paginatedResults = await buildFilteredQuery().paginate({
           ...args.paginationOpts,
           cursor: null,
