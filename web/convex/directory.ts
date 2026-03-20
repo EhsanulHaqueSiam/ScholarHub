@@ -1,6 +1,6 @@
-import { query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 import {
   degreeLevelValidator,
   fundingTypeValidator,
@@ -69,13 +69,16 @@ export const listScholarships = query({
       // so we collect and post-filter then manually paginate
       const allResults = await searchQuery.collect();
       const filtered = applyPostFilters(allResults, {
-        hostCountries: args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
+        hostCountries:
+          args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
         nationalities: args.nationalities,
         showIneligible: args.showIneligible,
         degreeLevels: args.degreeLevels,
         fieldsOfStudy: args.fieldsOfStudy,
-        fundingTypes: args.fundingTypes && args.fundingTypes.length > 1 ? args.fundingTypes : undefined,
-        prestigeTiers: args.prestigeTiers && args.prestigeTiers.length > 1 ? args.prestigeTiers : undefined,
+        fundingTypes:
+          args.fundingTypes && args.fundingTypes.length > 1 ? args.fundingTypes : undefined,
+        prestigeTiers:
+          args.prestigeTiers && args.prestigeTiers.length > 1 ? args.prestigeTiers : undefined,
         showClosed,
         closingSoon: args.closingSoon,
         now,
@@ -87,9 +90,8 @@ export const listScholarships = query({
       const cursor = args.paginationOpts.cursor;
       const startIndex = cursor ? Number.parseInt(cursor, 10) : 0;
       const page = filtered.slice(startIndex, startIndex + numItems);
-      const nextCursor = startIndex + numItems < filtered.length
-        ? String(startIndex + numItems)
-        : null;
+      const nextCursor =
+        startIndex + numItems < filtered.length ? String(startIndex + numItems) : null;
 
       return {
         page,
@@ -126,11 +128,7 @@ export const listScholarships = query({
       // Host country filter (OR logic)
       if (args.hostCountries && args.hostCountries.length > 0) {
         conditions.push(
-          q.or(
-            ...args.hostCountries.map((country) =>
-              q.eq(q.field("host_country"), country),
-            ),
-          ),
+          q.or(...args.hostCountries.map((country) => q.eq(q.field("host_country"), country))),
         );
       }
 
@@ -144,23 +142,13 @@ export const listScholarships = query({
 
       // Funding type filter (OR logic, multi-select)
       if (args.fundingTypes && args.fundingTypes.length > 0) {
-        conditions.push(
-          q.or(
-            ...args.fundingTypes.map((ft) =>
-              q.eq(q.field("funding_type"), ft),
-            ),
-          ),
-        );
+        conditions.push(q.or(...args.fundingTypes.map((ft) => q.eq(q.field("funding_type"), ft))));
       }
 
       // Prestige tier filter (OR logic)
       if (args.prestigeTiers && args.prestigeTiers.length > 0) {
         conditions.push(
-          q.or(
-            ...args.prestigeTiers.map((tier) =>
-              q.eq(q.field("prestige_tier"), tier),
-            ),
-          ),
+          q.or(...args.prestigeTiers.map((tier) => q.eq(q.field("prestige_tier"), tier))),
         );
       }
 
@@ -200,9 +188,7 @@ export const listScholarships = query({
           return true;
         }
         // Check if any user nationality is in the eligibility list
-        return args.nationalities!.some((n) =>
-          doc.eligibility_nationalities!.includes(n),
-        );
+        return args.nationalities!.some((n) => doc.eligibility_nationalities!.includes(n));
       });
     }
 
@@ -262,9 +248,7 @@ export const getFeaturedScholarships = query({
 
     // Filter out expired scholarships
     const now = Date.now();
-    combined = combined.filter(
-      (s) => !s.application_deadline || s.application_deadline > now,
-    );
+    combined = combined.filter((s) => !s.application_deadline || s.application_deadline > now);
 
     // Prioritize nationality-eligible scholarships
     if (args.nationalities && args.nationalities.length > 0) {
@@ -272,17 +256,13 @@ export const getFeaturedScholarships = query({
         if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
           return true; // open to all
         }
-        return args.nationalities!.some((n) =>
-          s.eligibility_nationalities!.includes(n),
-        );
+        return args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
       });
       const ineligible = combined.filter((s) => {
         if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
           return false; // already in eligible
         }
-        return !args.nationalities!.some((n) =>
-          s.eligibility_nationalities!.includes(n),
-        );
+        return !args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
       });
       combined = [...eligible, ...ineligible];
     }
@@ -348,6 +328,20 @@ export const searchSuggestions = query({
   },
 });
 
+/**
+ * Get a single scholarship by its slug.
+ * Used for the scholarship detail page and Schema.org JSON-LD structured data.
+ */
+export const getBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    return await ctx.db
+      .query("scholarships")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .first();
+  },
+});
+
 // --- Helper: Post-filter for search path results ---
 
 interface PostFilterOptions {
@@ -380,9 +374,7 @@ function applyPostFilters<
 
   // Host country filter (multi-value OR)
   if (opts.hostCountries && opts.hostCountries.length > 0) {
-    filtered = filtered.filter((d) =>
-      opts.hostCountries!.includes(d.host_country),
-    );
+    filtered = filtered.filter((d) => opts.hostCountries!.includes(d.host_country));
   }
 
   // Nationality eligibility filter
@@ -391,9 +383,7 @@ function applyPostFilters<
       if (!d.eligibility_nationalities || d.eligibility_nationalities.length === 0) {
         return true; // open to all
       }
-      return opts.nationalities!.some((n) =>
-        d.eligibility_nationalities!.includes(n),
-      );
+      return opts.nationalities!.some((n) => d.eligibility_nationalities!.includes(n));
     });
   }
 
@@ -415,9 +405,7 @@ function applyPostFilters<
 
   // Funding type filter (multi-value OR, already single-value handled by search index)
   if (opts.fundingTypes && opts.fundingTypes.length > 0) {
-    filtered = filtered.filter((d) =>
-      opts.fundingTypes!.includes(d.funding_type),
-    );
+    filtered = filtered.filter((d) => opts.fundingTypes!.includes(d.funding_type));
   }
 
   // Prestige tier filter (multi-value OR, already single-value handled by search index)
@@ -440,7 +428,9 @@ function applyPostFilters<
   if (opts.closingSoon) {
     filtered = filtered.filter((d) => {
       if (!d.application_deadline) return false;
-      return d.application_deadline > opts.now && d.application_deadline < opts.now + opts.thirtyDays;
+      return (
+        d.application_deadline > opts.now && d.application_deadline < opts.now + opts.thirtyDays
+      );
     });
   }
 
