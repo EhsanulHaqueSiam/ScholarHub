@@ -162,21 +162,8 @@ export const listScholarships = query({
       });
     }
 
-    // Paginate with InvalidCursor recovery
-    let paginatedResults;
-    try {
-      paginatedResults = await buildFilteredQuery().paginate(args.paginationOpts);
-    } catch (e: any) {
-      const errStr = String(e?.data ?? "") + String(e?.message ?? "") + String(e ?? "");
-      if (errStr.includes("InvalidCursor") || errStr.includes("cursor")) {
-        paginatedResults = await buildFilteredQuery().paginate({
-          ...args.paginationOpts,
-          cursor: null,
-        });
-      } else {
-        throw e;
-      }
-    }
+    // Paginate the filtered query
+    const paginatedResults = await buildFilteredQuery().paginate(args.paginationOpts);
 
     // Post-filter for nationality eligibility and degree/field (array operations not supported in .filter())
     let page = paginatedResults.page;
