@@ -64,13 +64,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **DTLP-01**: Detail page shows scholarship name, provider/organization, host country
 - [ ] **DTLP-02**: Detail page shows eligible nationalities
 - [ ] **DTLP-03**: Detail page shows degree level(s) and field(s) of study
-- [ ] **DTLP-04**: Detail page shows funding coverage breakdown (tuition, living allowance, travel, insurance)
-- [ ] **DTLP-05**: Detail page shows award amount (range or fixed, with currency)
-- [ ] **DTLP-06**: Detail page shows application deadline with timezone awareness
+- [x] **DTLP-04**: Detail page shows funding coverage breakdown (tuition, living allowance, travel, insurance)
+- [x] **DTLP-05**: Detail page shows award amount (range or fixed, with currency)
+- [x] **DTLP-06**: Detail page shows application deadline with timezone awareness
 - [ ] **DTLP-07**: Detail page shows direct link to official application page
-- [ ] **DTLP-08**: Detail page shows source attribution ("compiled from daad.de, scholars4dev.com")
-- [ ] **DTLP-09**: Detail page shows "last verified" date
-- [ ] **DTLP-10**: Detail page shows admin editorial notes/tips when available
+- [x] **DTLP-08**: Detail page shows source attribution ("compiled from daad.de, scholars4dev.com")
+- [x] **DTLP-09**: Detail page shows "last verified" date
+- [x] **DTLP-10**: Detail page shows admin editorial notes/tips when available
 - [ ] **DTLP-11**: Detail page shows description/overview (rich text)
 
 ### Discovery Features
@@ -185,13 +185,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | DTLP-01 | Phase 7 | Pending |
 | DTLP-02 | Phase 7 | Pending |
 | DTLP-03 | Phase 7 | Pending |
-| DTLP-04 | Phase 7 | Pending |
-| DTLP-05 | Phase 7 | Pending |
-| DTLP-06 | Phase 7 | Pending |
+| DTLP-04 | Phase 7 | Complete |
+| DTLP-05 | Phase 7 | Complete |
+| DTLP-06 | Phase 7 | Complete |
 | DTLP-07 | Phase 7 | Pending |
-| DTLP-08 | Phase 7 | Pending |
-| DTLP-09 | Phase 7 | Pending |
-| DTLP-10 | Phase 7 | Pending |
+| DTLP-08 | Phase 7 | Complete |
+| DTLP-09 | Phase 7 | Complete |
+| DTLP-10 | Phase 7 | Complete |
 | DTLP-11 | Phase 7 | Pending |
 | DISC-01 | Phase 8 | Pending |
 | DISC-02 | Phase 8 | Pending |
