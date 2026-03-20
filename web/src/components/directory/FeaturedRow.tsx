@@ -79,7 +79,7 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             className={cn(
               "absolute -left-5 top-1/2 -translate-y-1/2 z-10",
               "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
-              "hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all",
+              "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}
           >
@@ -114,7 +114,7 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             className={cn(
               "absolute -right-5 top-1/2 -translate-y-1/2 z-10",
               "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
-              "hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all",
+              "hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}
           >
