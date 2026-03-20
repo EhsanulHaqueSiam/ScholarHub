@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import {
   scrapeMethodValidator,
   scrapeRunStatusValidator,
@@ -9,7 +9,7 @@ import {
 /**
  * Start a new scrape run. Returns the run ID.
  */
-export const startRun = internalMutation({
+export const startRun = mutation({
   args: {
     triggered_by: v.string(),
     sources_targeted: v.number(),
@@ -32,7 +32,7 @@ export const startRun = internalMutation({
 /**
  * Complete a scrape run with final statistics.
  */
-export const completeRun = internalMutation({
+export const completeRun = mutation({
   args: {
     run_id: v.id("scrape_runs"),
     status: scrapeRunStatusValidator,
@@ -73,7 +73,7 @@ const TRACKED_FIELDS = [
  * If existing, computes field-level diff and logs changes.
  * If new, inserts with scraped_at timestamp.
  */
-export const batchInsertRawRecords = internalMutation({
+export const batchInsertRawRecords = mutation({
   args: {
     run_id: v.id("scrape_runs"),
     records: v.array(
@@ -178,7 +178,7 @@ export const batchInsertRawRecords = internalMutation({
 /**
  * Record the result of scraping a single source within a run.
  */
-export const recordSourceResult = internalMutation({
+export const recordSourceResult = mutation({
   args: {
     run_id: v.id("scrape_runs"),
     source_id: v.id("sources"),
@@ -204,7 +204,7 @@ export const recordSourceResult = internalMutation({
  * Upserts by source_id. On success: resets failures, updates yield.
  * On failure: increments failures, sets status to "failing" if >= 5.
  */
-export const updateSourceHealth = internalMutation({
+export const updateSourceHealth = mutation({
   args: {
     source_id: v.id("sources"),
     success: v.boolean(),
@@ -389,7 +389,7 @@ export const clearGitHubIssueNumber = internalMutation({
 /**
  * Update the last_scraped timestamp on a source (fulfills SCRP-07).
  */
-export const updateLastScraped = internalMutation({
+export const updateLastScraped = mutation({
   args: {
     source_id: v.id("sources"),
   },
