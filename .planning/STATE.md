@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-20T11:16:21.545Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-20T11:17:39.250Z"
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 12
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 03 (scraping-pipeline) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: 2 of 7
 | Phase 02 P02 | 4min | 2 tasks | 7 files |
 | Phase 02 P03 | 7min | 1 tasks | 5 files |
 | Phase 03 P01 | 6min | 2 tasks | 19 files |
+| Phase 03 P02 | 7min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Recent decisions affecting current work:
 - [Phase 03]: All scraping mutations use internalMutation -- called via admin auth from Python SDK
 - [Phase 03]: Added jsonld and ajax to scrapeMethodValidator for full method hierarchy
 - [Phase 03]: HMAC-SHA256 webhook verification using Web Crypto API for Convex runtime compatibility
+- [Phase 03-02]: Used dayfirst=True in dateutil parser for DD/MM/YYYY international date formats
+- [Phase 03-02]: Script/style tag content stripped via regex before bleach processing for defense-in-depth sanitization
+- [Phase 03-02]: Country normalization uses manual overrides dict before pycountry fuzzy search for common variants
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:16:21.544Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-20T11:17:39.249Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
