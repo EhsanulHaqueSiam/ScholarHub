@@ -56,7 +56,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **PDIR-07**: Deadline displayed prominently on listing cards with color-coded urgency (closing soon, open, closed)
 - [ ] **PDIR-08**: Default view shows "Open Now" scholarships sorted by deadline urgency
 - [ ] **PDIR-09**: User can view "Closing Soon" scholarships as a dedicated view
-- [ ] **PDIR-10**: Expired scholarships show "applications closed" badge, remain visible for reference
+- [x] **PDIR-10**: Expired scholarships show "applications closed" badge, remain visible for reference
 - [x] **PDIR-11**: No login required to browse or view any scholarship
 
 ### Scholarship Detail Page
@@ -88,8 +88,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### UI/UX Design
 
 - [x] **UIDX-01**: Neo-brutalism design style — bold, high-contrast, distinctive visual identity
-- [ ] **UIDX-02**: Mobile-responsive design (mobile-first approach)
-- [ ] **UIDX-03**: High information density presented in easily digestible format
+- [x] **UIDX-02**: Mobile-responsive design (mobile-first approach)
+- [x] **UIDX-03**: High information density presented in easily digestible format
 - [ ] **UIDX-04**: Use frontend-design skill for all UI implementation
 
 ### Infrastructure
@@ -177,11 +177,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | PDIR-07 | Phase 6 | Complete |
 | PDIR-08 | Phase 6 | Pending |
 | PDIR-09 | Phase 6 | Pending |
-| PDIR-10 | Phase 6 | Pending |
+| PDIR-10 | Phase 6 | Complete |
 | PDIR-11 | Phase 6 | Complete |
 | UIDX-01 | Phase 6 | Complete |
-| UIDX-02 | Phase 6 | Pending |
-| UIDX-03 | Phase 6 | Pending |
+| UIDX-02 | Phase 6 | Complete |
+| UIDX-03 | Phase 6 | Complete |
 | DTLP-01 | Phase 7 | Pending |
 | DTLP-02 | Phase 7 | Pending |
 | DTLP-03 | Phase 7 | Pending |
