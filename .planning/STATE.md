@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-20T11:17:39.250Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-03-20T11:25:31.355Z"
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 12
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 03 (scraping-pipeline) — EXECUTING
-Plan: 3 of 7
+Plan: 5 of 7
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: 3 of 7
 | Phase 02 P03 | 7min | 1 tasks | 5 files |
 | Phase 03 P01 | 6min | 2 tasks | 19 files |
 | Phase 03 P02 | 7min | 2 tasks | 14 files |
+| Phase 03 P04 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Used dayfirst=True in dateutil parser for DD/MM/YYYY international date formats
 - [Phase 03-02]: Script/style tag content stripped via regex before bleach processing for defense-in-depth sanitization
 - [Phase 03-02]: Country normalization uses manual overrides dict before pycountry fuzzy search for common variants
+- [Phase 03-04]: RotDetector alerts exactly at consecutive_failures == 5 to prevent duplicate GitHub Issues
+- [Phase 03-04]: Error types 404/410 trigger immediate source deactivation as permanent-gone indicators
+- [Phase 03-04]: HeartbeatMonitor delegates staleness check to Convex query rather than client-side calculation
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:17:39.249Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-20T11:25:31.354Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None

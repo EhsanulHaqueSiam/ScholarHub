@@ -97,7 +97,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INFR-01**: Monorepo structure — Python scraping + TypeScript web app in single repository
 - [x] **INFR-02**: Convex backend with proper schema, indexes for all filter combinations
 - [x] **INFR-03**: Netlify deployment for frontend
-- [ ] **INFR-04**: Scraping monitoring — track yield metrics, detect silent scraper rot
+- [x] **INFR-04**: Scraping monitoring — track yield metrics, detect silent scraper rot
 
 ## v2 Requirements
 
@@ -152,7 +152,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCRP-05 | Phase 3 | Complete |
 | SCRP-06 | Phase 3 | Complete |
 | SCRP-07 | Phase 3 | Complete |
-| INFR-04 | Phase 3 | Pending |
+| INFR-04 | Phase 3 | Complete |
 | AGGR-01 | Phase 4 | Pending |
 | AGGR-02 | Phase 4 | Pending |
 | AGGR-03 | Phase 4 | Pending |
