@@ -51,6 +51,7 @@ Plan: 5 of 7
 | Phase 02 P03 | 7min | 1 tasks | 5 files |
 | Phase 03 P01 | 6min | 2 tasks | 19 files |
 | Phase 03 P02 | 7min | 2 tasks | 14 files |
+| Phase 03 P03 | 7min | 2 tasks | 12 files |
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Used dayfirst=True in dateutil parser for DD/MM/YYYY international date formats
 - [Phase 03-02]: Script/style tag content stripped via regex before bleach processing for defense-in-depth sanitization
 - [Phase 03-02]: Country normalization uses manual overrides dict before pycountry fuzzy search for common variants
+- [Phase 03-03]: All scrapers are config-driven via SourceConfig protocol -- no per-source spider classes needed
+- [Phase 03-03]: AJAX method aliases to ApiScraper since AJAX endpoints serve JSON like REST APIs
+- [Phase 03-03]: Test mocking uses real Scrapling Selector for CSS parsing while mocking HTTP fetch layer
 - [Phase 03-04]: RotDetector alerts exactly at consecutive_failures == 5 to prevent duplicate GitHub Issues
 - [Phase 03-04]: Error types 404/410 trigger immediate source deactivation as permanent-gone indicators
 - [Phase 03-04]: HeartbeatMonitor delegates staleness check to Convex query rather than client-side calculation
