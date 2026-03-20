@@ -33,7 +33,6 @@ export function EligibilityFilterBar() {
 
   function handlePopularDestinationClick(code: string) {
     if (filters.to.includes(code)) {
-      // Remove if already selected
       handleDestinationChange(filters.to.filter((c) => c !== code));
     } else {
       handleDestinationChange([...filters.to, code]);
@@ -47,7 +46,7 @@ export function EligibilityFilterBar() {
   if (isCompact) {
     return (
       <div
-        className="bg-secondary-background border-2 border-border rounded-base py-2 px-4"
+        className="bg-secondary-background border-2 border-border rounded-base py-2 px-4 shadow-shadow"
         aria-expanded={false}
       >
         <div className="flex items-center justify-between gap-3">
@@ -62,7 +61,7 @@ export function EligibilityFilterBar() {
                 {filters.from.map((c) => getCountryName(c)).join(", ")}
               </span>
             </span>
-            <span className="text-foreground/50 mx-1" aria-hidden="true">
+            <span className="text-foreground/50 mx-1 font-heading" aria-hidden="true">
               &rarr;
             </span>
             <span className="flex items-center gap-1 truncate">
@@ -76,7 +75,7 @@ export function EligibilityFilterBar() {
           <button
             type="button"
             onClick={() => setForceExpanded(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-base text-main hover:underline shrink-0 min-h-[44px]"
+            className="inline-flex items-center gap-1.5 text-sm font-heading text-main hover:underline shrink-0 min-h-[44px] border-2 border-border rounded-base px-3 bg-secondary-background hover:translate-x-boxShadowX hover:translate-y-boxShadowY shadow-shadow hover:shadow-none transition-all"
             aria-label="Edit nationality and destination filters"
             aria-expanded={false}
           >
@@ -86,14 +85,26 @@ export function EligibilityFilterBar() {
         </div>
 
         {/* Ineligible toggle in compact mode */}
-        <div className="flex items-center gap-2 mt-1.5">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground/70">
+        <div className="flex items-center gap-2 mt-2">
+          <label className="flex items-center gap-2.5 cursor-pointer text-xs text-foreground/70">
+            <span
+              className={cn(
+                "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+                filters.showIneligible ? "bg-main" : "bg-secondary-background",
+              )}
+            >
+              {filters.showIneligible && (
+                <svg className="size-3 text-main-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </span>
             <input
               type="checkbox"
               checked={filters.showIneligible}
               onChange={handleIneligibleToggle}
               aria-label="Toggle show ineligible scholarships"
-              className="rounded border-border"
+              className="sr-only"
             />
             Also show scholarships you may not qualify for
           </label>
@@ -104,13 +115,13 @@ export function EligibilityFilterBar() {
 
   return (
     <div
-      className="bg-secondary-background border-2 border-border rounded-base p-4"
+      className="bg-secondary-background border-2 border-border rounded-base p-5 shadow-shadow"
       aria-expanded={true}
     >
-      <div className="flex flex-col gap-3">
-        {/* Top line: nationality */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-base text-foreground/80 shrink-0">I'm from</span>
+      <div className="flex flex-col gap-4">
+        {/* Top line: nationality + destination selectors */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-heading text-foreground shrink-0">I'm from</span>
           <CountrySelector
             selected={filters.from}
             onChange={handleNationalityChange}
@@ -118,7 +129,7 @@ export function EligibilityFilterBar() {
             popularList={POPULAR_NATIONALITIES}
             maxSelections={3}
           />
-          <span className="text-sm font-base text-foreground/80 shrink-0">looking to study in</span>
+          <span className="text-sm font-heading text-foreground shrink-0">looking to study in</span>
           <CountrySelector
             selected={filters.to}
             onChange={handleDestinationChange}
@@ -128,7 +139,7 @@ export function EligibilityFilterBar() {
         </div>
 
         {/* Popular destinations chips */}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {POPULAR_DESTINATIONS.slice(0, 15).map((code) => {
             const isSelected = filters.to.includes(code);
             return (
@@ -137,10 +148,10 @@ export function EligibilityFilterBar() {
                 type="button"
                 onClick={() => handlePopularDestinationClick(code)}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-base border px-2 py-1 text-xs transition-colors min-h-[32px]",
+                  "inline-flex items-center gap-1.5 rounded-base border-2 border-border px-2.5 py-1.5 text-xs font-base transition-all min-h-[36px]",
                   isSelected
-                    ? "bg-main text-main-foreground border-border"
-                    : "bg-secondary-background border-border hover:bg-main/5",
+                    ? "bg-main text-main-foreground shadow-shadow translate-x-0 translate-y-0"
+                    : "bg-secondary-background text-foreground hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none shadow-shadow",
                 )}
               >
                 {getCountryFlag(code)} {getCountryName(code)}
@@ -151,13 +162,25 @@ export function EligibilityFilterBar() {
 
         {/* Ineligible toggle */}
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-foreground/70">
+          <label className="flex items-center gap-2.5 cursor-pointer text-xs text-foreground/70">
+            <span
+              className={cn(
+                "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+                filters.showIneligible ? "bg-main" : "bg-secondary-background",
+              )}
+            >
+              {filters.showIneligible && (
+                <svg className="size-3 text-main-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </span>
             <input
               type="checkbox"
               checked={filters.showIneligible}
               onChange={handleIneligibleToggle}
               aria-label="Toggle show ineligible scholarships"
-              className="rounded border-border"
+              className="sr-only"
             />
             Also show scholarships you may not qualify for
           </label>
@@ -165,7 +188,7 @@ export function EligibilityFilterBar() {
             <button
               type="button"
               onClick={() => setForceExpanded(false)}
-              className="text-xs text-main hover:underline"
+              className="text-xs font-heading text-main hover:underline"
             >
               Collapse
             </button>

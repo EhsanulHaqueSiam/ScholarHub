@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery, useQuery } from "convex/react";
-import { anyApi } from "convex/server";
 import { useCallback, useState } from "react";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
@@ -23,6 +22,7 @@ import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { scholarshipSearchSchema } from "@/lib/filters";
 import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
 
 // --- Helper functions for dynamic meta tags ---
 
@@ -61,13 +61,14 @@ function formatNationalities(param: string | undefined): string {
 export const Route = createFileRoute("/scholarships/")({
   validateSearch: scholarshipSearchSchema,
   head: ({ search }) => {
+    const s = search ?? {};
     const parts: string[] = [];
-    if (search.degree) parts.push(formatDegree(search.degree));
+    if (s.degree) parts.push(formatDegree(s.degree));
     parts.push("Scholarships");
-    if (search.to) parts.push(`in ${formatCountries(search.to)}`);
-    if (search.from) parts.push(`for ${formatNationalities(search.from)} Students`);
+    if (s.to) parts.push(`in ${formatCountries(s.to)}`);
+    if (s.from) parts.push(`for ${formatNationalities(s.from)} Students`);
     const title = parts.join(" ") + " -- ScholarHub";
-    const description = `Browse international scholarships${search.to ? ` in ${formatCountries(search.to)}` : ""}. Filter by degree, funding, and eligibility.`;
+    const description = `Browse international scholarships${s.to ? ` in ${formatCountries(s.to)}` : ""}. Filter by degree, funding, and eligibility.`;
 
     return {
       meta: [
@@ -109,13 +110,13 @@ function ScholarshipsDirectory() {
 
   // Paginated scholarship results
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
-    anyApi.directory.listScholarships,
-    { ...queryArgs, paginationOpts: undefined } as any,
+    api.directory.listScholarships,
+    queryArgs,
     { initialNumItems: 20 },
   );
 
   // Total scholarship count for trust signal
-  const totalCount = useQuery(anyApi.directory.getScholarshipCount, {});
+  const totalCount = useQuery(api.directory.getScholarshipCount, {});
 
   // Handle search
   const handleSearch = useCallback(
@@ -130,7 +131,7 @@ function ScholarshipsDirectory() {
   const isInitialLoading = isLoading && !results?.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Skip to results link for keyboard/screen reader users */}
       <a
         href="#results"
@@ -195,7 +196,10 @@ function ScholarshipsDirectory() {
             <SortPills />
             <ViewToggle />
           </div>
-          <p className="text-sm font-base text-foreground/70" aria-live="polite">
+          <p
+            className="text-sm font-heading text-foreground border-2 border-border rounded-base px-3 py-1.5 bg-secondary-background"
+            aria-live="polite"
+          >
             {formatResultsCount(results?.length, filters)}
           </p>
         </div>

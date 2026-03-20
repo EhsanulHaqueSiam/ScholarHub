@@ -1,12 +1,12 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useQuery } from "convex/react";
-import { anyApi } from "convex/server";
-import { useNavigate } from "@tanstack/react-router";
 import * as Popover from "@radix-ui/react-popover";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "convex/react";
 import { Search } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getCountryFlag } from "@/lib/countries";
 import { FIELDS_OF_STUDY } from "@/lib/filters";
 import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -23,22 +23,19 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
   const navigate = useNavigate();
 
   // Debounce the search query
-  const handleInputChange = useCallback(
-    (value: string) => {
-      setInputValue(value);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        if (value.trim().length >= 2) {
-          setDebouncedQuery(value.trim());
-          setIsOpen(true);
-        } else {
-          setDebouncedQuery("");
-          setIsOpen(false);
-        }
-      }, 300);
-    },
-    [],
-  );
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      if (value.trim().length >= 2) {
+        setDebouncedQuery(value.trim());
+        setIsOpen(true);
+      } else {
+        setDebouncedQuery("");
+        setIsOpen(false);
+      }
+    }, 300);
+  }, []);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -49,16 +46,18 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
 
   // Fetch suggestions from Convex (reactive query)
   const suggestions = useQuery(
-    anyApi.directory.searchSuggestions,
+    api.directory.searchSuggestions,
     debouncedQuery.length >= 2 ? { query: debouncedQuery } : "skip",
   );
 
   // Check if query matches a field of study for category suggestions
-  const matchingFields = debouncedQuery.length >= 2
-    ? FIELDS_OF_STUDY.filter((f) =>
-        f.toLowerCase().includes(debouncedQuery.toLowerCase()),
-      ).slice(0, 2)
-    : [];
+  const matchingFields =
+    debouncedQuery.length >= 2
+      ? FIELDS_OF_STUDY.filter((f) => f.toLowerCase().includes(debouncedQuery.toLowerCase())).slice(
+          0,
+          2,
+        )
+      : [];
 
   // Combine suggestions: scholarship titles + category suggestions
   const combinedSuggestions: Array<
@@ -102,23 +101,17 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
       }
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActiveIndex((prev) =>
-        prev < combinedSuggestions.length - 1 ? prev + 1 : 0,
-      );
+      setActiveIndex((prev) => (prev < combinedSuggestions.length - 1 ? prev + 1 : 0));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActiveIndex((prev) =>
-        prev > 0 ? prev - 1 : combinedSuggestions.length - 1,
-      );
+      setActiveIndex((prev) => (prev > 0 ? prev - 1 : combinedSuggestions.length - 1));
     } else if (e.key === "Escape") {
       setIsOpen(false);
       setActiveIndex(-1);
     }
   }
 
-  function handleSuggestionClick(
-    suggestion: (typeof combinedSuggestions)[number],
-  ) {
+  function handleSuggestionClick(suggestion: (typeof combinedSuggestions)[number]) {
     setIsOpen(false);
     setActiveIndex(-1);
     if (suggestion.type === "scholarship") {
@@ -145,9 +138,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
             aria-label="Search scholarships"
             aria-expanded={showDropdown}
             aria-controls={showDropdown ? listboxId : undefined}
-            aria-activedescendant={
-              activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined
-            }
+            aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
             aria-autocomplete="list"
             placeholder="Search scholarships..."
             value={inputValue}
@@ -158,7 +149,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
                 setIsOpen(true);
               }
             }}
-            className="border-2 border-border rounded-base bg-secondary-background h-12 px-4 ps-12 w-full text-base font-base focus:ring-2 focus:ring-ring focus:outline-none transition-shadow"
+            className="border-2 border-border rounded-base bg-secondary-background h-12 px-4 ps-12 w-full text-base font-base shadow-shadow focus:ring-2 focus:ring-ring focus:outline-none transition-all focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none"
           />
         </div>
       </Popover.Anchor>
@@ -173,19 +164,13 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
           <ul id={listboxId} role="listbox" className="py-1">
             {combinedSuggestions.map((suggestion, index) => (
               <li
-                key={
-                  suggestion.type === "scholarship"
-                    ? suggestion._id
-                    : `cat-${suggestion.field}`
-                }
+                key={suggestion.type === "scholarship" ? suggestion._id : `cat-${suggestion.field}`}
                 id={`suggestion-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
                 className={cn(
                   "flex items-center justify-between px-4 py-3 min-h-[44px] cursor-pointer text-sm",
-                  index === activeIndex
-                    ? "bg-main/10"
-                    : "hover:bg-main/5",
+                  index === activeIndex ? "bg-main/10" : "hover:bg-main/5",
                 )}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -195,9 +180,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
               >
                 {suggestion.type === "scholarship" ? (
                   <>
-                    <span className="truncate font-base">
-                      {suggestion.title}
-                    </span>
+                    <span className="truncate font-base">{suggestion.title}</span>
                     <span className="ms-2 shrink-0 text-base">
                       {getCountryFlag(suggestion.host_country)}
                     </span>

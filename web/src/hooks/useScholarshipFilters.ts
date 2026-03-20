@@ -1,8 +1,8 @@
-import { useSearch, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
   parseCommaSeparated,
-  serializeCommaSeparated,
   type ScholarshipSearch,
+  serializeCommaSeparated,
 } from "@/lib/filters";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -24,9 +24,10 @@ import { useLocalStorage } from "./useLocalStorage";
 export function useScholarshipFilters() {
   const search = useSearch({ strict: false }) as ScholarshipSearch;
   const navigate = useNavigate();
-  const [savedNationality, setSavedNationality] = useLocalStorage<
-    string | undefined
-  >("scholarhub_nationality", undefined);
+  const [savedNationality, setSavedNationality] = useLocalStorage<string | undefined>(
+    "scholarhub_nationality",
+    undefined,
+  );
 
   // Parsed filter state
   const filters = {
@@ -50,29 +51,20 @@ export function useScholarshipFilters() {
     search: filters.q || undefined,
     status: "published" as const,
     hostCountries: filters.to.length > 0 ? filters.to : undefined,
-    nationalities:
-      filters.from.length > 0 && !filters.showIneligible
-        ? filters.from
-        : undefined,
+    nationalities: filters.from.length > 0 && !filters.showIneligible ? filters.from : undefined,
     showIneligible: filters.showIneligible || undefined,
     degreeLevels:
       filters.degree.length > 0
-        ? (filters.degree as Array<
-            "bachelor" | "master" | "phd" | "postdoc"
-          >)
+        ? (filters.degree as Array<"bachelor" | "master" | "phd" | "postdoc">)
         : undefined,
     fieldsOfStudy: filters.field.length > 0 ? filters.field : undefined,
     fundingTypes:
       filters.funding.length > 0
-        ? (filters.funding as Array<
-            "fully_funded" | "partial" | "tuition_waiver" | "stipend_only"
-          >)
+        ? (filters.funding as Array<"fully_funded" | "partial" | "tuition_waiver" | "stipend_only">)
         : undefined, // ARRAY for multi-select
     prestigeTiers:
       filters.tier.length > 0
-        ? (filters.tier as Array<
-            "gold" | "silver" | "bronze" | "unranked"
-          >)
+        ? (filters.tier as Array<"gold" | "silver" | "bronze" | "unranked">)
         : undefined,
     sort: filters.sort,
     showClosed: filters.showClosed || undefined,
@@ -90,17 +82,16 @@ export function useScholarshipFilters() {
         [key]: value || undefined,
       }),
       replace: true,
+      resetScroll: false,
     });
   }
 
   function clearFilters() {
-    navigate({ search: {}, replace: true });
+    navigate({ search: {}, replace: true, resetScroll: false });
   }
 
   function removeFilter(key: string, valueToRemove: string) {
-    const current = parseCommaSeparated(
-      search[key as keyof ScholarshipSearch] as string,
-    );
+    const current = parseCommaSeparated(search[key as keyof ScholarshipSearch] as string);
     const updated = current.filter((v) => v !== valueToRemove);
     setFilter(key, serializeCommaSeparated(updated));
   }

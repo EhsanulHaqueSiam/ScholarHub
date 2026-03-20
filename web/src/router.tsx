@@ -1,14 +1,18 @@
-import { createRouter } from "@tanstack/react-router";
-import { QueryClient } from "@tanstack/react-query";
-import { ConvexClient } from "convex/browser";
 import { ConvexQueryClient } from "@convex-dev/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter } from "@tanstack/react-router";
+import { routerWithQueryClient } from "@tanstack/react-router-with-query";
+import { ConvexProvider } from "convex/react";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
-  const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
-  const convexClient = new ConvexClient(convexUrl);
-  const convexQueryClient = new ConvexQueryClient(convexClient);
-  const queryClient = new QueryClient({
+  const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
+  if (!CONVEX_URL) {
+    console.error("missing envar VITE_CONVEX_URL");
+  }
+  const convexQueryClient = new ConvexQueryClient(CONVEX_URL);
+
+  const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
         queryKeyHashFn: convexQueryClient.hashFn(),
@@ -18,10 +22,26 @@ export function getRouter() {
   });
   convexQueryClient.connect(queryClient);
 
-  const router = createRouter({
-    routeTree,
-    context: { queryClient, convexClient, convexQueryClient },
-  });
+  const router = routerWithQueryClient(
+    createRouter({
+      routeTree,
+      defaultPreload: "intent",
+      context: { queryClient },
+      scrollRestoration: true,
+      defaultNotFoundComponent: () => (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+          <h1 className="text-2xl font-heading">Page Not Found</h1>
+          <a href="/scholarships" className="text-main underline">
+            Browse All Scholarships
+          </a>
+        </div>
+      ),
+      Wrap: ({ children }) => (
+        <ConvexProvider client={convexQueryClient.convexClient}>{children}</ConvexProvider>
+      ),
+    }),
+    queryClient,
+  );
 
   return router;
 }

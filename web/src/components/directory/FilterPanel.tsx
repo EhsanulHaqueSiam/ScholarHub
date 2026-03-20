@@ -39,7 +39,7 @@ export function FilterPanel() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[80px] self-start max-h-[calc(100vh-96px)] overflow-y-auto">
+      <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[80px] self-start max-h-[calc(100vh-96px)] overflow-y-auto pr-2">
         <FilterContent filters={filters} setFilter={setFilter} />
       </aside>
 
@@ -137,10 +137,10 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${level.label}`}
                 onClick={() => toggleMultiFilter("degree", level.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
                   isActive
-                    ? "bg-main text-main-foreground border-border shadow-shadow"
-                    : "bg-secondary-background text-foreground border-border hover:bg-main/5",
+                    ? "bg-main text-main-foreground"
+                    : "bg-secondary-background text-foreground",
                 )}
               >
                 {level.label}
@@ -161,7 +161,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
             placeholder="Search fields..."
             value={fieldSearch}
             onChange={(e) => setFieldSearch(e.target.value)}
-            className="w-full border border-border rounded-base bg-background ps-8 pe-3 py-1.5 text-sm focus:ring-1 focus:ring-ring focus:outline-none"
+            className="w-full border-2 border-border rounded-base bg-secondary-background ps-8 pe-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
           />
         </div>
         {/* Selected fields as removable pills */}
@@ -170,7 +170,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
             {filters.field.map((field) => (
               <span
                 key={field}
-                className="inline-flex items-center gap-1 bg-main/10 border border-border rounded-base px-2 py-0.5 text-xs"
+                className="inline-flex items-center gap-1 bg-main text-main-foreground border-2 border-border rounded-base px-2 py-0.5 text-xs"
               >
                 {field}
                 <button
@@ -200,19 +200,21 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
               >
                 <span
                   className={cn(
-                    "size-4 rounded border-2 me-2 flex items-center justify-center shrink-0",
-                    isActive ? "bg-main border-main text-main-foreground" : "border-border",
+                    "size-5 rounded-sm border-2 me-2.5 flex items-center justify-center shrink-0 transition-colors",
+                    isActive
+                      ? "bg-main border-border text-main-foreground"
+                      : "bg-secondary-background border-border",
                   )}
                 >
                   {isActive && (
                     <svg
                       className="size-3"
-                      viewBox="0 0 12 12"
                       fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth={3}
                     >
-                      <path d="M2 6l3 3 5-5" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   )}
                 </span>
@@ -237,10 +239,10 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${type.label}`}
                 onClick={() => toggleMultiFilter("funding", type.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
                   isActive
-                    ? "bg-main text-main-foreground border-border shadow-shadow"
-                    : "bg-secondary-background text-foreground border-border hover:bg-main/5",
+                    ? "bg-main text-main-foreground"
+                    : "bg-secondary-background text-foreground",
                 )}
               >
                 {type.label}
@@ -264,10 +266,8 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${tier.label} prestige`}
                 onClick={() => toggleMultiFilter("tier", tier.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-colors min-h-[44px]",
-                  isActive
-                    ? `${tier.colorClass} shadow-shadow`
-                    : "bg-secondary-background text-foreground border-border hover:bg-main/5",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  isActive ? tier.colorClass : "bg-secondary-background text-foreground",
                 )}
               >
                 {tier.label}
@@ -280,12 +280,30 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
       {/* Show Closed */}
       <section className="py-4">
         <label className="flex items-center gap-2.5 cursor-pointer text-sm text-foreground/80">
+          <span
+            className={cn(
+              "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+              filters.showClosed ? "bg-main" : "bg-secondary-background",
+            )}
+          >
+            {filters.showClosed && (
+              <svg
+                className="size-3 text-main-foreground"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </span>
           <input
             type="checkbox"
             checked={filters.showClosed}
             onChange={() => setFilter("show_closed", !filters.showClosed)}
             aria-label="Toggle show closed scholarships"
-            className="rounded border-border size-4"
+            className="sr-only"
           />
           Show closed scholarships
         </label>

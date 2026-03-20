@@ -101,82 +101,81 @@ export const listScholarships = query({
     }
 
     // --- Non-search path: index-based queries ---
-    let baseQuery;
+    function buildFilteredQuery() {
+      let baseQuery;
 
-    if (sort === "prestige") {
-      // Sort by prestige tier: gold first, then silver, bronze, unranked
-      baseQuery = ctx.db
-        .query("scholarships")
-        .withIndex("by_status_prestige_deadline", (q) => q.eq("status", status));
-    } else if (sort === "newest") {
-      // Sort by creation time descending (newest first)
-      baseQuery = ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", status))
-        .order("desc");
-    } else {
-      // Default: sort by deadline ascending (soonest first)
-      baseQuery = ctx.db
-        .query("scholarships")
-        .withIndex("by_status_deadline", (q) => q.eq("status", status));
+      if (sort === "prestige") {
+        baseQuery = ctx.db
+          .query("scholarships")
+          .withIndex("by_status_prestige_deadline", (q) => q.eq("status", status));
+      } else if (sort === "newest") {
+        baseQuery = ctx.db
+          .query("scholarships")
+          .withIndex("by_status", (q) => q.eq("status", status))
+          .order("desc");
+      } else {
+        baseQuery = ctx.db
+          .query("scholarships")
+          .withIndex("by_status_deadline", (q) => q.eq("status", status));
+      }
+
+      return baseQuery.filter((q) => {
+        const conditions = [];
+
+        if (args.hostCountries && args.hostCountries.length > 0) {
+          conditions.push(
+            q.or(...args.hostCountries.map((country) => q.eq(q.field("host_country"), country))),
+          );
+        }
+
+        if (args.fundingTypes && args.fundingTypes.length > 0) {
+          conditions.push(
+            q.or(...args.fundingTypes.map((ft) => q.eq(q.field("funding_type"), ft))),
+          );
+        }
+
+        if (args.prestigeTiers && args.prestigeTiers.length > 0) {
+          conditions.push(
+            q.or(...args.prestigeTiers.map((tier) => q.eq(q.field("prestige_tier"), tier))),
+          );
+        }
+
+        if (!showClosed) {
+          conditions.push(q.neq(q.field("status"), "archived"));
+          conditions.push(
+            q.or(
+              q.eq(q.field("application_deadline"), undefined),
+              q.gte(q.field("application_deadline"), Date.now()),
+            ),
+          );
+        }
+
+        if (args.closingSoon) {
+          const closingSoonEnd = Date.now() + thirtyDays;
+          conditions.push(q.gt(q.field("application_deadline"), Date.now()));
+          conditions.push(q.lt(q.field("application_deadline"), closingSoonEnd));
+        }
+
+        if (conditions.length === 0) return true;
+        if (conditions.length === 1) return conditions[0];
+        return q.and(...conditions);
+      });
     }
 
-    // Apply post-filters via .filter()
-    const filteredQuery = baseQuery.filter((q) => {
-      const conditions = [];
-
-      // Host country filter (OR logic)
-      if (args.hostCountries && args.hostCountries.length > 0) {
-        conditions.push(
-          q.or(...args.hostCountries.map((country) => q.eq(q.field("host_country"), country))),
-        );
+    // Paginate with InvalidCursor recovery
+    let paginatedResults;
+    try {
+      paginatedResults = await buildFilteredQuery().paginate(args.paginationOpts);
+    } catch (e: any) {
+      if (String(e?.data ?? e?.message ?? "").includes("InvalidCursor")) {
+        paginatedResults = await buildFilteredQuery().paginate({
+          ...args.paginationOpts,
+          cursor: null,
+        });
+      } else {
+        throw e;
       }
-
-      // Nationality eligibility filter
-      if (args.nationalities && args.nationalities.length > 0 && !args.showIneligible) {
-        // Include scholarships where eligibility_nationalities is undefined/empty (open to all)
-        // OR where at least one user nationality matches
-        // Note: Convex filter expressions can't do array.includes, so we handle this in post-filter
-        // For now, we skip this in the index filter and do it in post-processing below
-      }
-
-      // Funding type filter (OR logic, multi-select)
-      if (args.fundingTypes && args.fundingTypes.length > 0) {
-        conditions.push(q.or(...args.fundingTypes.map((ft) => q.eq(q.field("funding_type"), ft))));
-      }
-
-      // Prestige tier filter (OR logic)
-      if (args.prestigeTiers && args.prestigeTiers.length > 0) {
-        conditions.push(
-          q.or(...args.prestigeTiers.map((tier) => q.eq(q.field("prestige_tier"), tier))),
-        );
-      }
-
-      // Show closed filter: exclude archived/expired when showClosed is false
-      if (!showClosed) {
-        conditions.push(q.neq(q.field("status"), "archived"));
-        conditions.push(
-          q.or(
-            q.eq(q.field("application_deadline"), undefined),
-            q.gte(q.field("application_deadline"), Date.now()),
-          ),
-        );
-      }
-
-      // Closing soon filter: deadline within 30 days
-      if (args.closingSoon) {
-        const closingSoonEnd = Date.now() + thirtyDays;
-        conditions.push(q.gt(q.field("application_deadline"), Date.now()));
-        conditions.push(q.lt(q.field("application_deadline"), closingSoonEnd));
-      }
-
-      if (conditions.length === 0) return true;
-      if (conditions.length === 1) return conditions[0];
-      return q.and(...conditions);
-    });
-
-    // Paginate the filtered query
-    const paginatedResults = await filteredQuery.paginate(args.paginationOpts);
+    }
 
     // Post-filter for nationality eligibility and degree/field (array operations not supported in .filter())
     let page = paginatedResults.page;

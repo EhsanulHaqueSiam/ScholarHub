@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface StickyBarProps {
@@ -10,13 +10,7 @@ interface StickyBarProps {
   isExpired: boolean;
 }
 
-export function StickyBar({
-  title,
-  slug,
-  applicationUrl,
-  visible,
-  isExpired,
-}: StickyBarProps) {
+export function StickyBar({ title, slug, applicationUrl, visible, isExpired }: StickyBarProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = useCallback(() => {
@@ -34,15 +28,13 @@ export function StickyBar({
     <div
       role="banner"
       aria-label="Quick actions"
-      className={`fixed top-14 inset-x-0 z-40 h-12 bg-secondary-background border-b-2 border-border motion-safe:transition-transform duration-200 ${
+      className={`fixed top-16 inset-x-0 z-40 h-12 bg-secondary-background border-b-2 border-border motion-safe:transition-transform duration-200 ${
         !visible ? "" : "-translate-y-full"
       }`}
     >
       <div className="max-w-3xl mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-2">
         {/* Truncated title */}
-        <span className="text-sm truncate max-w-[200px] md:max-w-[400px] font-base">
-          {title}
-        </span>
+        <span className="text-sm truncate max-w-[200px] md:max-w-[400px] font-base">{title}</span>
 
         {/* Actions */}
         <div className="flex items-center gap-2">

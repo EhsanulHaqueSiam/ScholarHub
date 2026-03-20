@@ -10,33 +10,104 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships/index'
+import { Route as ScholarshipsClosingSoonRouteImport } from './routes/scholarships/closing-soon'
+import { Route as ScholarshipsSlugRouteImport } from './routes/scholarships/$slug'
+import { Route as ScholarshipsDegreeDegreeRouteImport } from './routes/scholarships/degree/$degree'
+import { Route as ScholarshipsCountryCountryRouteImport } from './routes/scholarships/country/$country'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScholarshipsIndexRoute = ScholarshipsIndexRouteImport.update({
+  id: '/scholarships/',
+  path: '/scholarships/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsClosingSoonRoute = ScholarshipsClosingSoonRouteImport.update({
+  id: '/scholarships/closing-soon',
+  path: '/scholarships/closing-soon',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsSlugRoute = ScholarshipsSlugRouteImport.update({
+  id: '/scholarships/$slug',
+  path: '/scholarships/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScholarshipsDegreeDegreeRoute =
+  ScholarshipsDegreeDegreeRouteImport.update({
+    id: '/scholarships/degree/$degree',
+    path: '/scholarships/degree/$degree',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ScholarshipsCountryCountryRoute =
+  ScholarshipsCountryCountryRouteImport.update({
+    id: '/scholarships/country/$country',
+    path: '/scholarships/country/$country',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/scholarships/$slug': typeof ScholarshipsSlugRoute
+  '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
+  '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
+  '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/scholarships/$slug': typeof ScholarshipsSlugRoute
+  '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/scholarships': typeof ScholarshipsIndexRoute
+  '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
+  '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/scholarships/$slug': typeof ScholarshipsSlugRoute
+  '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/scholarships/': typeof ScholarshipsIndexRoute
+  '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
+  '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/scholarships/$slug'
+    | '/scholarships/closing-soon'
+    | '/scholarships/'
+    | '/scholarships/country/$country'
+    | '/scholarships/degree/$degree'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/scholarships/$slug'
+    | '/scholarships/closing-soon'
+    | '/scholarships'
+    | '/scholarships/country/$country'
+    | '/scholarships/degree/$degree'
+  id:
+    | '__root__'
+    | '/'
+    | '/scholarships/$slug'
+    | '/scholarships/closing-soon'
+    | '/scholarships/'
+    | '/scholarships/country/$country'
+    | '/scholarships/degree/$degree'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ScholarshipsSlugRoute: typeof ScholarshipsSlugRoute
+  ScholarshipsClosingSoonRoute: typeof ScholarshipsClosingSoonRoute
+  ScholarshipsIndexRoute: typeof ScholarshipsIndexRoute
+  ScholarshipsCountryCountryRoute: typeof ScholarshipsCountryCountryRoute
+  ScholarshipsDegreeDegreeRoute: typeof ScholarshipsDegreeDegreeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +119,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scholarships/': {
+      id: '/scholarships/'
+      path: '/scholarships'
+      fullPath: '/scholarships/'
+      preLoaderRoute: typeof ScholarshipsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/closing-soon': {
+      id: '/scholarships/closing-soon'
+      path: '/scholarships/closing-soon'
+      fullPath: '/scholarships/closing-soon'
+      preLoaderRoute: typeof ScholarshipsClosingSoonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/$slug': {
+      id: '/scholarships/$slug'
+      path: '/scholarships/$slug'
+      fullPath: '/scholarships/$slug'
+      preLoaderRoute: typeof ScholarshipsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/degree/$degree': {
+      id: '/scholarships/degree/$degree'
+      path: '/scholarships/degree/$degree'
+      fullPath: '/scholarships/degree/$degree'
+      preLoaderRoute: typeof ScholarshipsDegreeDegreeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scholarships/country/$country': {
+      id: '/scholarships/country/$country'
+      path: '/scholarships/country/$country'
+      fullPath: '/scholarships/country/$country'
+      preLoaderRoute: typeof ScholarshipsCountryCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ScholarshipsSlugRoute: ScholarshipsSlugRoute,
+  ScholarshipsClosingSoonRoute: ScholarshipsClosingSoonRoute,
+  ScholarshipsIndexRoute: ScholarshipsIndexRoute,
+  ScholarshipsCountryCountryRoute: ScholarshipsCountryCountryRoute,
+  ScholarshipsDegreeDegreeRoute: ScholarshipsDegreeDegreeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

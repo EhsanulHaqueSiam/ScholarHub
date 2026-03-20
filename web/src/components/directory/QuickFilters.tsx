@@ -88,6 +88,7 @@ export function QuickFilters() {
     >
       {QUICK_FILTER_OPTIONS.map((option) => {
         const isActive = activeValues.includes(option.value);
+        const isGold = option.value === "gold_tier";
         return (
           <ToggleGroup.Item
             key={option.value}
@@ -95,10 +96,12 @@ export function QuickFilters() {
             aria-pressed={isActive}
             aria-label={`Filter: ${option.label}`}
             className={cn(
-              "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-all min-h-[44px]",
-              isActive
-                ? "bg-main text-main-foreground border-border shadow-shadow"
-                : "bg-secondary-background text-foreground border-border hover:bg-main/5",
+              "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+              isActive && isGold
+                ? "bg-prestige-gold-badge text-black border-prestige-gold-border"
+                : isActive
+                  ? "bg-main text-main-foreground border-border"
+                  : "bg-secondary-background text-foreground border-border",
             )}
           >
             {option.label}

@@ -23,7 +23,7 @@ export function NationalityBanner() {
   }
 
   return (
-    <div className="bg-[var(--urgency-warning)]/20 border-2 border-[var(--urgency-warning)] rounded-base p-3 flex items-center justify-between gap-3">
+    <div className="bg-secondary-background border-2 border-border rounded-base p-3 flex items-center justify-between gap-3 shadow-shadow">
       <p className="text-sm font-base text-foreground">
         It looks like you might be in{" "}
         <span className="font-heading">

@@ -25,7 +25,7 @@ function CountryLandingPage() {
   const flag = getCountryFlag(country);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
       <div className="pt-20 pb-16 px-4">
         <div className="max-w-3xl mx-auto text-center">

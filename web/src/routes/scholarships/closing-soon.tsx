@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery } from "convex/react";
-import { anyApi } from "convex/server";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FilterChips } from "@/components/directory/FilterChips";
 import { FilterPanel } from "@/components/directory/FilterPanel";
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { scholarshipSearchSchema } from "@/lib/filters";
 import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
 
 export const Route = createFileRoute("/scholarships/closing-soon")({
   validateSearch: scholarshipSearchSchema,
@@ -47,12 +47,11 @@ function ClosingSoonPage() {
   const closingSoonArgs = {
     ...queryArgs,
     closingSoon: true,
-    paginationOpts: undefined,
   };
 
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
-    anyApi.directory.listScholarships,
-    closingSoonArgs as any,
+    api.directory.listScholarships,
+    closingSoonArgs,
     { initialNumItems: 20 },
   );
 
@@ -61,7 +60,7 @@ function ClosingSoonPage() {
   const isInitialLoading = isLoading && !results?.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
 
       {/* Header (no hero section for closing-soon) */}

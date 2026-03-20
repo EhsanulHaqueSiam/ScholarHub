@@ -8,7 +8,6 @@ function useTheme() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Initialize from current DOM state (set by ScriptOnce in __root.tsx)
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
@@ -22,6 +21,29 @@ function useTheme() {
   return { isDark, toggle };
 }
 
+function NavLink({
+  to,
+  exact,
+  children,
+}: {
+  to: string;
+  exact?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      activeOptions={{ exact: exact ?? false }}
+      className="font-heading text-sm border-2 border-transparent rounded-base px-3 py-1.5 transition-all hover:border-border hover:shadow-shadow hover:-translate-y-0.5"
+      activeProps={{
+        className: "border-border bg-main text-main-foreground",
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export function Navbar() {
   const { isDark, toggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,32 +53,28 @@ export function Navbar() {
       aria-label="Main navigation"
       className={cn(
         "fixed top-0 inset-x-0 z-50",
-        "bg-secondary-background border-b-2 border-border shadow-shadow",
-        "h-14 md:h-14 flex items-center",
+        "bg-secondary-background border-b-4 border-border",
+        "h-16 flex items-center",
       )}
     >
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-4 md:px-6">
         {/* Logo */}
-        <Link to="/" className="font-heading text-xl shrink-0" aria-label="ScholarHub home">
+        <Link
+          to="/"
+          className="font-heading text-xl shrink-0 border-2 border-transparent rounded-base px-2 py-1 hover:border-border hover:shadow-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+          aria-label="ScholarHub home"
+        >
           ScholarHub
         </Link>
 
         {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-6">
-          <Link
-            to="/scholarships"
-            className="font-heading text-sm hover:underline underline-offset-4"
-            activeProps={{ className: "underline" }}
-          >
+        <div className="hidden md:flex items-center gap-3">
+          <NavLink to="/scholarships" exact>
             Scholarships
-          </Link>
-          <Link
-            to="/scholarships/closing-soon"
-            className="font-heading text-sm hover:underline underline-offset-4"
-            activeProps={{ className: "underline" }}
-          >
+          </NavLink>
+          <NavLink to="/scholarships/closing-soon" exact>
             Closing Soon
-          </Link>
+          </NavLink>
 
           {/* Dark mode toggle */}
           <Button
@@ -94,20 +112,22 @@ export function Navbar() {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden absolute top-14 inset-x-0 bg-secondary-background border-b-2 border-border shadow-shadow">
-          <div className="flex flex-col px-4 py-3 gap-2">
+        <div className="md:hidden absolute top-16 inset-x-0 bg-secondary-background border-b-4 border-border">
+          <div className="flex flex-col px-4 py-3 gap-1">
             <Link
               to="/scholarships"
-              className="font-heading text-sm py-2 hover:underline underline-offset-4"
-              activeProps={{ className: "underline" }}
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
               Scholarships
             </Link>
             <Link
               to="/scholarships/closing-soon"
-              className="font-heading text-sm py-2 hover:underline underline-offset-4"
-              activeProps={{ className: "underline" }}
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
               Closing Soon

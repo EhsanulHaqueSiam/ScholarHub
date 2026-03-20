@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect, useCallback } from "react";
 import { useQuery } from "convex/react";
-import { anyApi } from "convex/server";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ScholarshipCard } from "./ScholarshipCard";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
+import { ScholarshipCard } from "./ScholarshipCard";
 
 interface FeaturedRowProps {
   nationalities?: string[];
@@ -16,13 +16,10 @@ interface FeaturedRowProps {
  * Mobile: horizontal snap scroll. Desktop: overflow-hidden with arrow buttons.
  */
 export function FeaturedRow({ nationalities }: FeaturedRowProps) {
-  const featured = useQuery(
-    anyApi.directory.getFeaturedScholarships,
-    {
-      nationalities: nationalities && nationalities.length > 0 ? nationalities : undefined,
-      limit: 6,
-    },
-  );
+  const featured = useQuery(api.directory.getFeaturedScholarships, {
+    nationalities: nationalities && nationalities.length > 0 ? nationalities : undefined,
+    limit: 6,
+  });
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -49,22 +46,17 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
     };
   }, [updateScrollState, featured]);
 
-  const scroll = useCallback(
-    (direction: "left" | "right") => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      // Scroll by approximately one card width (280px + gap)
-      const scrollAmount = 304;
-      el.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    },
-    [],
-  );
+  const scroll = useCallback((direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Scroll by approximately one card width (280px + gap)
+    const scrollAmount = 304;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  }, []);
 
   // Hide entire component if no featured scholarships
   if (!featured || featured.length === 0) {
@@ -72,9 +64,7 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
   }
 
   const heading =
-    nationalities && nationalities.length > 0
-      ? "Top Scholarships for You"
-      : "Top Scholarships";
+    nationalities && nationalities.length > 0 ? "Top Scholarships for You" : "Top Scholarships";
 
   return (
     <section aria-label={heading}>

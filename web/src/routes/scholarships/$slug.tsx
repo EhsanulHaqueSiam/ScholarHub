@@ -178,7 +178,7 @@ function ScholarshipDetailPage() {
   // Loading state
   if (scholarship === undefined) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <Navbar />
         <div className="pt-20 pb-16 px-4 md:px-6">
           <DetailSkeleton />
@@ -190,7 +190,7 @@ function ScholarshipDetailPage() {
   // Not found state
   if (scholarship === null) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-3xl mx-auto text-center py-16">
@@ -230,7 +230,7 @@ function ScholarshipDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
 
       {/* Sticky bar -- appears when hero scrolls out of view */}
