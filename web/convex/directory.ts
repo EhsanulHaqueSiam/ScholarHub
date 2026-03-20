@@ -342,6 +342,40 @@ export const getBySlug = query({
   },
 });
 
+/**
+ * Get a single scholarship by slug with resolved source attribution.
+ * Returns the full scholarship document plus resolved_sources array
+ * containing { name, url } for each source_id.
+ *
+ * Used by the scholarship detail page for DTLP-08 (source attribution).
+ */
+export const getScholarshipDetail = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const scholarship = await ctx.db
+      .query("scholarships")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .first();
+
+    if (!scholarship) return null;
+
+    // Resolve source_ids to source name + URL for attribution display
+    const resolvedSources = await Promise.all(
+      scholarship.source_ids.map(async (sourceId) => {
+        const source = await ctx.db.get(sourceId);
+        return source ? { name: source.name, url: source.url } : null;
+      }),
+    );
+
+    return {
+      ...scholarship,
+      resolved_sources: resolvedSources.filter(
+        (s): s is { name: string; url: string } => s !== null,
+      ),
+    };
+  },
+});
+
 // --- Helper: Post-filter for search path results ---
 
 interface PostFilterOptions {
