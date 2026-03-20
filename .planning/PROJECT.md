@@ -14,12 +14,12 @@ Students can discover every relevant international scholarship in one place, wit
 
 - [x] Source catalog infrastructure — JSON Schema, Convex upsert mutation, CLI tools (seed/validate/stats), CI validation (Validated in Phase 2: Source Discovery)
 - [x] Source discovery — 201 scholarship sources cataloged across aggregators, official programs, government, foundations with scrape strategies and metadata (Validated in Phase 2: Source Discovery)
+- [x] Automated scraping pipeline — 6 scraper types (API, JSON-LD, AJAX, RSS, HTML, Stealthy), 201 source configs, ingestion layer, monitoring with rot detection, pipeline runner + CLI, CI/CD (Validated in Phase 3: Scraping Pipeline)
+- [x] GitHub Actions automated scheduling for scraping runs (Validated in Phase 3: Scraping Pipeline)
 
 ### Active
 
 - [ ] Massive source discovery — find 1000+ scholarship sources (aggregators, official programs like DAAD/Erasmus/MEXT, university-specific scholarships, government programs, foundations)
-- [ ] Automated scraping pipeline — API-first approach, fallback to standard scraping, Scrapling for Cloudflare-protected sites
-- [ ] GitHub Actions automated scheduling for scraping runs
 - [ ] Multi-source aggregation — combine data from first-party and third-party sources into unified scholarship entries
 - [ ] Deduplication — detect same scholarship across multiple sources, merge richest info from each
 - [ ] Admin dashboard — review scraped data, fix/correct errors, add editorial notes, add missing info, approve/reject scholarships
@@ -74,6 +74,6 @@ Students can discover every relevant international scholarship in one place, wit
 ---
 ## Current State
 
-Phase 2 (Source Discovery) complete — 201 scholarship sources cataloged. Phase 3 (Scraping Pipeline) is next.
+Phase 3 (Scraping Pipeline) complete — full Python pipeline with 6 scraper types, 201 source configs, ingestion/monitoring/runner, CLI, and CI/CD. All 33 must-haves verified including gap closures for auto-deactivation, issue lifecycle, and RSS configs.
 
-*Last updated: 2026-03-20 after Phase 2 completion*
+*Last updated: 2026-03-20 after Phase 3 completion*
