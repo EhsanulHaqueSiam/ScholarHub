@@ -1,8 +1,10 @@
-"""Tests for monitoring: HealthTracker, RotDetector, HeartbeatMonitor."""
+"""Tests for monitoring: HealthTracker, RotDetector, HeartbeatMonitor, GitHubIssueManager."""
 
+import subprocess
 import time
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
+from scholarhub_pipeline.monitoring.github_issues import ISSUE_LABEL, GitHubIssueManager
 from scholarhub_pipeline.monitoring.health import HealthTracker
 from scholarhub_pipeline.monitoring.heartbeat import HeartbeatMonitor
 from scholarhub_pipeline.monitoring.rot_detector import (
@@ -189,3 +191,128 @@ class TestHeartbeatMonitor:
         monitor = HeartbeatMonitor(client)
         monitor.is_stale()
         client.query.assert_called_once_with("monitoring:getStaleHeartbeat", {})
+
+
+# --- GitHubIssueManager tests ---
+
+
+class TestGitHubIssueManager:
+    def test_create_rot_issue_calls_gh_cli(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                stdout="https://github.com/owner/ScholarHub/issues/42\n",
+            )
+            result = manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de/scholarships",
+                error_type="network_error",
+                consecutive_failures=5,
+                last_success="2026-03-15T10:00:00Z",
+                suggested_fix="Check if site is reachable.",
+            )
+            assert result == 42
+            mock_run.assert_called_once()
+            call_args = mock_run.call_args[0][0]
+            assert "gh" in call_args
+            assert "issue" in call_args
+            assert "create" in call_args
+            assert "--label" in call_args
+            assert ISSUE_LABEL in call_args
+
+    def test_create_rot_issue_includes_source_info_in_title(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                stdout="https://github.com/owner/ScholarHub/issues/1\n",
+            )
+            manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de",
+                error_type="timeout",
+                consecutive_failures=5,
+                last_success=None,
+                suggested_fix="Increase timeout.",
+            )
+            call_args = mock_run.call_args[0][0]
+            title_idx = call_args.index("--title") + 1
+            title = call_args[title_idx]
+            assert "DAAD" in title
+            assert "timeout" in title
+
+    def test_create_rot_issue_returns_none_on_subprocess_failure(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "gh")
+            result = manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de",
+                error_type="blocked",
+                consecutive_failures=5,
+                last_success=None,
+                suggested_fix="Try StealthyFetcher.",
+            )
+            assert result is None
+
+    def test_create_rot_issue_returns_none_on_timeout(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.TimeoutExpired("gh", 30)
+            result = manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de",
+                error_type="blocked",
+                consecutive_failures=5,
+                last_success=None,
+                suggested_fix="Try StealthyFetcher.",
+            )
+            assert result is None
+
+    def test_close_issue_calls_gh_cli(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock()
+            result = manager.close_issue(issue_number=42, source_name="DAAD")
+            assert result is True
+            call_args = mock_run.call_args[0][0]
+            assert "gh" in call_args
+            assert "issue" in call_args
+            assert "close" in call_args
+            assert "42" in call_args
+            assert "--comment" in call_args
+
+    def test_close_issue_returns_false_on_failure(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "gh")
+            result = manager.close_issue(issue_number=42, source_name="DAAD")
+            assert result is False
+
+    def test_suggest_fix_returns_text_for_each_error_type(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        error_types = [
+            "network_error", "timeout", "rate_limited", "blocked",
+            "parse_error", "empty_results", "schema_change",
+        ]
+        for error_type in error_types:
+            suggestion = manager.suggest_fix(error_type, "https://example.com")
+            assert len(suggestion) > 10, f"No suggestion for {error_type}"
+
+    def test_suggest_fix_unknown_error_type(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        suggestion = manager.suggest_fix("unknown_type", "https://example.com")
+        assert "example.com" in suggestion
+
+    def test_suggest_fix_network_error_includes_url(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        suggestion = manager.suggest_fix("network_error", "https://daad.de")
+        assert "daad.de" in suggestion
