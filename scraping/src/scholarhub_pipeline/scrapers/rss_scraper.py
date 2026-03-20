@@ -34,7 +34,8 @@ class RssScraper(BaseScraper):
             List of normalized raw record dicts.
         """
         records: list[dict] = []
-        feed = feedparser.parse(self.config.url)
+        feed_url = self.config.selectors.get("feed_url", self.config.url)
+        feed = feedparser.parse(feed_url)
 
         for entry in feed.entries:
             basic: dict = {
