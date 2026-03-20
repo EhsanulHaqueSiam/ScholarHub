@@ -1,4 +1,12 @@
-"""DAAD Scholarships source configuration."""
+"""DAAD Scholarships source configuration.
+
+DAAD's scholarships overview page describes the German Academic Exchange
+Service scholarship programmes. The overview page has substantive content
+about DAAD's funding opportunities for international students including
+study, research, and language learning in Germany.
+
+URL: https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarships/
+"""
 
 from dataclasses import dataclass, field
 
@@ -7,18 +15,35 @@ from scholarhub_pipeline.configs._bases import BaseOfficialConfig
 
 @dataclass
 class Config(BaseOfficialConfig):
-    """DAAD Scholarships official program config."""
+    """DAAD Scholarships official program config.
+
+    The DAAD-Scholarships overview page uses a Bootstrap-based layout
+    with .s-wysiwyg content blocks containing rich descriptions of
+    scholarship programmes. We extract a single record from the main
+    content area.
+    """
 
     name: str = "DAAD Scholarships"
-    url: str = "https://www.daad.de/en/study-and-research-in-germany/scholarships/"
+    url: str = "https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarships/"
     source_id: str = "daad_scholarships"
-    primary_method: str = "api"
-    secondary_method: str | None = "scrape"
-    selectors: dict[str, str] = field(default_factory=lambda: {'items_path': 'results, data, items', 'title': 'title, name', 'deadline': 'deadline, application_deadline, due_date', 'country': 'country, location, host_country', 'amount': 'amount, funding, award_amount, value', 'url': 'url, link, application_url'})
-    field_mappings: dict[str, str] = field(default_factory=lambda: {'title': 'title', 'deadline': 'application_deadline', 'country': 'host_country', 'amount': 'award_amount', 'url': 'application_url'})
-    pagination: dict | None = field(default_factory=lambda: {'type': 'cursor', 'param': 'page', 'max_pages': 100})
-    detail_page: bool = True
-    detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
+    primary_method: str = "scrape"
+    secondary_method: str | None = "scrapling"
+    selectors: dict[str, str] = field(
+        default_factory=lambda: {
+            "listing": "main",
+            "title": "h1",
+            "description": ".s-wysiwyg p",
+        }
+    )
+    field_mappings: dict[str, str] = field(
+        default_factory=lambda: {
+            "title": "title",
+            "description": "description",
+        }
+    )
+    pagination: dict | None = None
+    detail_page: bool = False
+    detail_selectors: dict[str, str] | None = None
 
 
 CONFIG = Config()
