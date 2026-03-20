@@ -1,14 +1,13 @@
 """Tests for monitoring: HealthTracker, RotDetector, HeartbeatMonitor."""
 
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from scholarhub_pipeline.monitoring.health import ERROR_TYPES, HealthTracker
-from scholarhub_pipeline.monitoring.heartbeat import STALE_THRESHOLD_HOURS, HeartbeatMonitor
+from scholarhub_pipeline.monitoring.health import HealthTracker
+from scholarhub_pipeline.monitoring.heartbeat import HeartbeatMonitor
 from scholarhub_pipeline.monitoring.rot_detector import (
     DEACTIVATE_THRESHOLD,
     FAILURE_THRESHOLD,
-    YIELD_DROP_RATIO,
     RotDetector,
 )
 
@@ -147,9 +146,8 @@ class TestRotDetector:
 
     def test_classify_error_connection_exception(self):
         detector = RotDetector()
-        assert (
-            detector.classify_error(status_code=None, exception=ConnectionError()) == "network_error"
-        )
+        result = detector.classify_error(status_code=None, exception=ConnectionError())
+        assert result == "network_error"
 
 
 # --- HeartbeatMonitor tests ---
