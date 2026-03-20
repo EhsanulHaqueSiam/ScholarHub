@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-03-20T11:25:31.355Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-03-20T11:38:29Z"
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -53,6 +53,7 @@ Plan: 7 of 7
 | Phase 03 P02 | 7min | 2 tasks | 14 files |
 | Phase 03 P03 | 7min | 2 tasks | 12 files |
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
+| Phase 03 P05 | 7min | 2 tasks | 8 files |
 | Phase 03 P06 | 4min | 2 tasks | 203 files |
 
 ## Accumulated Context
@@ -93,6 +94,9 @@ Recent decisions affecting current work:
 - [Phase 03-04]: HeartbeatMonitor delegates staleness check to Convex query rather than client-side calculation
 - [Phase 03-06]: Used field(default_factory=lambda: {...}) for mutable dict defaults instead of __post_init__ pattern
 - [Phase 03-06]: Mastercard Foundation Scholars Program duplicate name resolved with _fnd suffix on source_id
+- [Phase 03-05]: Pipeline groups sources by method (api, jsonld, ajax, rss, scrape, scrapling) for efficient batch execution
+- [Phase 03-05]: CLI uses lazy imports inside click commands to avoid loading Convex client for --help and dry-run
+- [Phase 03-05]: LocalBuffer doubles as dry-run output store and Convex downtime resilience layer
 - [Phase 03-06]: Auth-required sources get full config files with auth_config flag; pipeline runner skips them
 
 ### Pending Todos
@@ -111,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:35:30Z
-Stopped at: Completed 03-06-PLAN.md
+Last session: 2026-03-20T11:38:29Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
