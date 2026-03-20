@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useMemo } from "react";
 import {
   parseCommaSeparated,
   type ScholarshipSearch,
@@ -45,31 +46,48 @@ export function useScholarshipFilters() {
     closingSoon: search.closing_soon ?? false,
   };
 
-  // Convert to Convex query args
-  // NOTE: fundingTypes is always an array (not single value) to support multi-select
-  const queryArgs = {
-    search: filters.q || undefined,
-    status: "published" as const,
-    hostCountries: filters.to.length > 0 ? filters.to : undefined,
-    nationalities: filters.from.length > 0 && !filters.showIneligible ? filters.from : undefined,
-    showIneligible: filters.showIneligible || undefined,
-    degreeLevels:
-      filters.degree.length > 0
-        ? (filters.degree as Array<"bachelor" | "master" | "phd" | "postdoc">)
-        : undefined,
-    fieldsOfStudy: filters.field.length > 0 ? filters.field : undefined,
-    fundingTypes:
-      filters.funding.length > 0
-        ? (filters.funding as Array<"fully_funded" | "partial" | "tuition_waiver" | "stipend_only">)
-        : undefined, // ARRAY for multi-select
-    prestigeTiers:
-      filters.tier.length > 0
-        ? (filters.tier as Array<"gold" | "silver" | "bronze" | "unranked">)
-        : undefined,
-    sort: filters.sort,
-    showClosed: filters.showClosed || undefined,
-    closingSoon: filters.closingSoon || undefined,
-  };
+  // Convert to Convex query args — memoized so usePaginatedQuery
+  // sees a stable reference and doesn't reset pagination on re-render.
+  const queryArgs = useMemo(
+    () => ({
+      search: filters.q || undefined,
+      status: "published" as const,
+      hostCountries: filters.to.length > 0 ? filters.to : undefined,
+      nationalities: filters.from.length > 0 && !filters.showIneligible ? filters.from : undefined,
+      showIneligible: filters.showIneligible || undefined,
+      degreeLevels:
+        filters.degree.length > 0
+          ? (filters.degree as Array<"bachelor" | "master" | "phd" | "postdoc">)
+          : undefined,
+      fieldsOfStudy: filters.field.length > 0 ? filters.field : undefined,
+      fundingTypes:
+        filters.funding.length > 0
+          ? (filters.funding as Array<
+              "fully_funded" | "partial" | "tuition_waiver" | "stipend_only"
+            >)
+          : undefined,
+      prestigeTiers:
+        filters.tier.length > 0
+          ? (filters.tier as Array<"gold" | "silver" | "bronze" | "unranked">)
+          : undefined,
+      sort: filters.sort,
+      showClosed: filters.showClosed || undefined,
+      closingSoon: filters.closingSoon || undefined,
+    }),
+    [
+      filters.q,
+      filters.to.join(),
+      filters.from.join(),
+      filters.showIneligible,
+      filters.degree.join(),
+      filters.field.join(),
+      filters.funding.join(),
+      filters.tier.join(),
+      filters.sort,
+      filters.showClosed,
+      filters.closingSoon,
+    ],
+  );
 
   function setFilter(key: string, value: unknown) {
     // Persist nationality to localStorage

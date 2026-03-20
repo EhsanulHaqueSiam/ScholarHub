@@ -17,14 +17,6 @@ export function getRouter() {
       queries: {
         queryKeyHashFn: convexQueryClient.hashFn(),
         queryFn: convexQueryClient.queryFn(),
-        retry: (failureCount, error) => {
-          // Don't retry InvalidCursor errors — clear cache and let usePaginatedQuery restart
-          if (String(error).includes("InvalidCursor")) {
-            queryClient.clear();
-            return false;
-          }
-          return failureCount < 2;
-        },
       },
     },
   });

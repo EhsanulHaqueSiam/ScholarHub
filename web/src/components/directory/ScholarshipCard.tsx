@@ -27,7 +27,13 @@ import type { Doc } from "../../../convex/_generated/dataModel";
 
 type Scholarship = Doc<"scholarships">;
 
-export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
+export function ScholarshipCard({
+  scholarship,
+  disableHover,
+}: {
+  scholarship: Scholarship;
+  disableHover?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const prestigeTier = (scholarship.prestige_tier ?? "unranked") as PrestigeTier;
   const urgency = getDeadlineUrgency(scholarship.application_deadline);
@@ -58,8 +64,9 @@ export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
       <Card
         prestige={prestigeTier}
         className={cn(
-          "relative h-[320px] md:h-[320px] sm:h-auto overflow-hidden transition-transform",
-          "motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
+          "relative h-full",
+          !disableHover &&
+            "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
         )}
       >
         {/* Host country flag badge - top right */}
@@ -92,7 +99,7 @@ export function ScholarshipCard({ scholarship }: { scholarship: Scholarship }) {
         </CardContent>
 
         {/* Content: Description + Degrees + Funding */}
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2 flex-1">
           {scholarship.description && (
             <p className="text-sm line-clamp-2">{scholarship.description}</p>
           )}

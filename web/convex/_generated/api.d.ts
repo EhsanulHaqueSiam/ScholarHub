@@ -16,6 +16,7 @@ import type * as maintenance from "../maintenance.js";
 import type * as monitoring from "../monitoring.js";
 import type * as prestige from "../prestige.js";
 import type * as scraping from "../scraping.js";
+import type * as seed from "../seed.js";
 import type * as sources from "../sources.js";
 import type * as triggers from "../triggers.js";
 
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   monitoring: typeof monitoring;
   prestige: typeof prestige;
   scraping: typeof scraping;
+  seed: typeof seed;
   sources: typeof sources;
   triggers: typeof triggers;
 }>;

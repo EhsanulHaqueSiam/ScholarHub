@@ -77,8 +77,8 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             onClick={() => scroll("left")}
             aria-label="Scroll left"
             className={cn(
-              "absolute start-0 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
+              "absolute -left-5 top-1/2 -translate-y-1/2 z-10",
+              "bg-secondary-background border-2 border-border rounded-full p-2",
               "hover:bg-main/5 transition-colors",
               "hidden md:flex items-center justify-center",
             )}
@@ -92,20 +92,18 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
           ref={scrollRef}
           className={cn(
             "flex gap-6",
-            // Mobile: horizontal snap scroll
-            "overflow-x-auto snap-x snap-mandatory md:overflow-x-hidden",
-            // Hide scrollbar on mobile
+            // Horizontal snap scroll on all breakpoints
+            "overflow-x-auto snap-x snap-mandatory",
+            // Hide scrollbar
             "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-            // Padding for arrow overlap on desktop
-            "md:px-0",
           )}
         >
           {featured.map((scholarship) => (
             <div
               key={scholarship._id}
-              className="min-w-[280px] max-w-[320px] flex-shrink-0 snap-center"
+              className="min-w-[300px] max-w-[340px] flex-shrink-0 snap-center"
             >
-              <ScholarshipCard scholarship={scholarship} />
+              <ScholarshipCard scholarship={scholarship} disableHover />
             </div>
           ))}
         </div>
@@ -117,8 +115,8 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
             onClick={() => scroll("right")}
             aria-label="Scroll right"
             className={cn(
-              "absolute end-0 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-shadow",
+              "absolute -right-5 top-1/2 -translate-y-1/2 z-10",
+              "bg-secondary-background border-2 border-border rounded-full p-2",
               "hover:bg-main/5 transition-colors",
               "hidden md:flex items-center justify-center",
             )}

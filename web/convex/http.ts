@@ -1,6 +1,6 @@
-import { httpAction } from "./_generated/server";
 import { httpRouter } from "convex/server";
-import { internal } from "./_generated/api";
+import { api } from "./_generated/api";
+import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
 
@@ -55,7 +55,7 @@ http.route({
 
     // Parse and process the payload
     const payload = JSON.parse(body);
-    const result = await ctx.runMutation(internal.scraping.batchInsertRawRecords, {
+    const result = await ctx.runMutation(api.scraping.batchInsertRawRecords, {
       run_id: payload.run_id,
       records: payload.records,
     });
