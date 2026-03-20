@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 06.1 context gathered
-last_updated: "2026-03-20T13:59:12.132Z"
+stopped_at: Completed 06.1-01-PLAN.md
+last_updated: "2026-03-20T15:16:29.257Z"
 progress:
   total_phases: 10
   completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 21
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 03 — scraping-pipeline
+**Current focus:** Phase 06.1 — country-eligibility-filtering-university-tier-list-prestige-highlighting
 
 ## Current Position
 
-Phase: 03 (scraping-pipeline) — EXECUTING
-Plan: 9 of 9 (PHASE COMPLETE)
+Phase: 06.1 (country-eligibility-filtering-university-tier-list-prestige-highlighting) — EXECUTING
+Plan: 3 of 7
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: 9 of 9 (PHASE COMPLETE)
 | Phase 03 P07 | 6min | 2 tasks | 6 files |
 | Phase 03 P09 | 1min | 1 tasks | 3 files |
 | Phase 03 P08 | 3min | 2 tasks | 3 files |
+| Phase 06.1 P01 | 9min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,9 @@ Recent decisions affecting current work:
 - [Phase 03-07]: Seed script uses batch insert pattern (50 records/call) matching pipeline behavior
 - [Phase 03-09]: RssScraper updated to check selectors['feed_url'] as override since config.url is the listing page for fallback scraping
 - [Phase 03-08]: updateSourceHealth mutation now returns {consecutive_failures, github_issue_number} for runner decision logic
+- [Phase 06.1]: Replaced TanStackRouterVite with tanstackStart() plugin for SSR support
+- [Phase 06.1]: Deleted index.html and main.tsx - HTML shell rendered by __root.tsx in SSR
+- [Phase 06.1]: ConvexProvider wraps QueryClientProvider in root for reactive + SSR query support
 
 ### Pending Todos
 
@@ -122,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T13:59:12.129Z
-Stopped at: Phase 06.1 context gathered
-Resume file: .planning/phases/06.1-country-eligibility-filtering-university-tier-list-prestige-highlighting/06.1-CONTEXT.md
+Last session: 2026-03-20T15:16:29.256Z
+Stopped at: Completed 06.1-01-PLAN.md
+Resume file: None
