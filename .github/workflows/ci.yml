@@ -40,3 +40,19 @@ jobs:
             sources/government.json \
             sources/foundations.json \
             2>/dev/null || echo "No source files to validate yet"
+
+  validate-configs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: cd scraping && uv sync
+
+      - name: Validate all pipeline configs
+        run: cd scraping && uv run scrape validate
+
+      - name: Check config-catalog sync
+        run: cd scraping && uv run pytest tests/test_configs/test_config_protocol.py::TestConfigProtocol::test_config_catalog_sync -x --timeout=30

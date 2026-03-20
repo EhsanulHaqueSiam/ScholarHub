@@ -1,0 +1,94 @@
+name: Scrape Scholarships
+
+on:
+  schedule:
+    - cron: '0 4 * * *' # Daily at 04:00 UTC
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Specific source name (blank for all due sources)'
+        required: false
+        type: string
+      wave:
+        description: 'Specific wave number (blank for all)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run (write to local JSON, skip Convex)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # For config auto-update commits
+  issues: write # For scraper rot GitHub Issues
+  actions: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: cd scraping && uv sync
+
+      - name: Run tests (no browser-dependent tests)
+        run: cd scraping && uv run pytest tests/ -x --timeout=30 -m "not browser"
+
+  scrape:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 240 # 4-hour limit for full scrape
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: cd scraping && uv sync
+
+      - name: Install Scrapling browser dependencies
+        run: cd scraping && uv run scrapling install
+
+      - name: Run scraping pipeline
+        env:
+          CONVEX_URL: ${{ secrets.CONVEX_URL }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          INPUT_SOURCE: ${{ inputs.source }}
+          INPUT_WAVE: ${{ inputs.wave }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          ARGS="--json-logs"
+          if [ -n "$INPUT_SOURCE" ]; then
+            ARGS="$ARGS --source $INPUT_SOURCE"
+          fi
+          if [ -n "$INPUT_WAVE" ]; then
+            ARGS="$ARGS --wave $INPUT_WAVE"
+          fi
+          if [ "$INPUT_DRY_RUN" == "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          cd scraping && uv run scrape run $ARGS
+
+      - name: Upload buffer on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-buffer-${{ github.run_id }}
+          path: scraping/.buffer/
+          retention-days: 7
+
+      - name: Upload run logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-logs-${{ github.run_id }}
+          path: scraping/.logs/
+          retention-days: 30
+          if-no-files-found: ignore
