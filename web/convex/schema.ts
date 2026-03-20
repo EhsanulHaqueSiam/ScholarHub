@@ -49,8 +49,32 @@ export const scrapeMethodValidator = v.union(
   v.literal("scrape"),
   v.literal("scrapling"),
   v.literal("rss"),
+  v.literal("jsonld"),
+  v.literal("ajax"),
 );
 export type ScrapeMethod = Infer<typeof scrapeMethodValidator>;
+
+export const scrapeRunStatusValidator = v.union(
+  v.literal("running"),
+  v.literal("completed"),
+  v.literal("failed"),
+);
+export type ScrapeRunStatus = Infer<typeof scrapeRunStatusValidator>;
+
+export const sourceHealthStatusValidator = v.union(
+  v.literal("healthy"),
+  v.literal("degraded"),
+  v.literal("failing"),
+  v.literal("deactivated"),
+);
+export type SourceHealthStatus = Infer<typeof sourceHealthStatusValidator>;
+
+export const sourceResultStatusValidator = v.union(
+  v.literal("success"),
+  v.literal("failed"),
+  v.literal("skipped"),
+);
+export type SourceResultStatus = Infer<typeof sourceResultStatusValidator>;
 
 // ---- Schema Definition ----
 
@@ -105,7 +129,9 @@ export default defineSchema({
     scraped_at: v.number(),
     raw_data: v.optional(v.string()),
     canonical_id: v.optional(v.id("scholarships")),
-    scrape_run_id: v.optional(v.string()),
+    scrape_run_id: v.optional(v.id("scrape_runs")),
+    quality_flags: v.optional(v.array(v.string())),
+    last_verified: v.optional(v.number()),
   })
     .index("by_source", ["source_id"])
     .index("by_canonical", ["canonical_id"])
@@ -152,4 +178,73 @@ export default defineSchema({
       searchField: "title",
       filterFields: ["status", "host_country", "funding_type"],
     }),
+
+  // Scrape run tracking -- one entry per pipeline execution
+  scrape_runs: defineTable({
+    started_at: v.number(),
+    completed_at: v.optional(v.number()),
+    status: scrapeRunStatusValidator,
+    triggered_by: v.string(),
+    sources_targeted: v.number(),
+    sources_completed: v.number(),
+    sources_failed: v.number(),
+    records_inserted: v.number(),
+    records_updated: v.number(),
+    records_unchanged: v.number(),
+    duration_seconds: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_started_at", ["started_at"]),
+
+  // Source health tracking -- monitors reliability per source
+  source_health: defineTable({
+    source_id: v.id("sources"),
+    status: sourceHealthStatusValidator,
+    consecutive_failures: v.number(),
+    last_success: v.optional(v.number()),
+    last_failure: v.optional(v.number()),
+    last_yield: v.optional(v.number()),
+    avg_yield: v.optional(v.number()),
+    yield_trend: v.optional(v.string()),
+    last_error_type: v.optional(v.string()),
+    last_error_message: v.optional(v.string()),
+    github_issue_number: v.optional(v.number()),
+    deactivation_reason: v.optional(v.string()),
+  })
+    .index("by_source", ["source_id"])
+    .index("by_status", ["status"]),
+
+  // Per-source results within a scrape run
+  scrape_run_sources: defineTable({
+    run_id: v.id("scrape_runs"),
+    source_id: v.id("sources"),
+    status: sourceResultStatusValidator,
+    method_used: scrapeMethodValidator,
+    records_found: v.number(),
+    records_new: v.number(),
+    records_updated: v.number(),
+    records_unchanged: v.number(),
+    duration_seconds: v.number(),
+    bytes_downloaded: v.optional(v.number()),
+    error_type: v.optional(v.string()),
+    error_message: v.optional(v.string()),
+    fallback_used: v.optional(v.boolean()),
+  })
+    .index("by_run", ["run_id"])
+    .index("by_source", ["source_id"])
+    .index("by_run_source", ["run_id", "source_id"]),
+
+  // Field-level change log for audit trail
+  change_log: defineTable({
+    record_id: v.id("raw_records"),
+    source_id: v.id("sources"),
+    run_id: v.id("scrape_runs"),
+    changed_at: v.number(),
+    field_name: v.string(),
+    old_value: v.optional(v.string()),
+    new_value: v.optional(v.string()),
+  })
+    .index("by_record", ["record_id"])
+    .index("by_source", ["source_id"])
+    .index("by_changed_at", ["changed_at"]),
 });
