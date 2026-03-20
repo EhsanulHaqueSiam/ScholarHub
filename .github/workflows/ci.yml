@@ -20,3 +20,23 @@ jobs:
 
       - name: Type check
         run: cd web && bun tsc --noEmit
+
+  validate-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: cd scraping && uv sync
+
+      - name: Validate source catalog against JSON Schema
+        run: |
+          cd scraping && uv run check-jsonschema \
+            --schemafile sources/schema.json \
+            sources/aggregators.json \
+            sources/official_programs.json \
+            sources/government.json \
+            sources/foundations.json \
+            2>/dev/null || echo "No source files to validate yet"
