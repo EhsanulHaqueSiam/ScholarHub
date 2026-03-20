@@ -24,7 +24,7 @@ Students can discover every relevant international scholarship in one place, wit
 - [ ] Deduplication — detect same scholarship across multiple sources, merge richest info from each
 - [ ] Admin dashboard — review scraped data, fix/correct errors, add editorial notes, add missing info, approve/reject scholarships
 - [ ] Auto-post option — mark trusted sources for automatic publishing without manual review
-- [ ] Public scholarship directory — filterable by country, degree level (bachelor, masters, PhD), and other filters
+- [x] Public scholarship directory — filterable by country, degree level (bachelor, masters, PhD), and other filters (Validated in Phase 06.1: Public Directory with Prestige System)
 - [ ] Scholarship detail page — deadline, amount, country, eligibility, application link, admin-added tips
 - [ ] Deadline handling — archive/mark expired scholarships, auto-resurface for next cycle
 - [ ] Two categories: international scholarships (v1 focus) and domestic scholarships (later)
@@ -74,6 +74,6 @@ Students can discover every relevant international scholarship in one place, wit
 ---
 ## Current State
 
-Phase 3 (Scraping Pipeline) complete — full Python pipeline with 6 scraper types, 201 source configs, ingestion/monitoring/runner, CLI, and CI/CD. All 33 must-haves verified including gap closures for auto-deactivation, issue lifecycle, and RSS configs.
+Phase 06.1 (Public Directory) complete — TanStack Start SSR, 4-factor prestige scoring system, Convex directory queries with 7-dimension filtering, 9 interactive filter/search components, directory page routes with Schema.org JSON-LD, WCAG AA accessibility, dark mode, neo-brutalism design. 14/14 requirements verified, 29 tests passing.
 
-*Last updated: 2026-03-20 after Phase 3 completion*
+*Last updated: 2026-03-20 after Phase 06.1 completion*
