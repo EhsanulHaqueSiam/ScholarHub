@@ -32,7 +32,7 @@ class Config(BaseAggregatorConfig):
         "type": "page_num",
         "param": "page",
         "start": 1,
-        "max_pages": 3,
+        "max_pages": 100,
     })
     detail_page: bool = False
     rate_limit_delay: float = 3.0
