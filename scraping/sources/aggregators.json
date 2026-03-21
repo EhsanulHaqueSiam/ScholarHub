@@ -16,22 +16,22 @@
   },
   {
     "name": "Scholars4Dev",
-    "url": "https://www.scholars4dev.com",
+    "url": "https://scholars4dev.com/wp-json/wp/v2/posts?per_page=100&categories=62",
     "category": "aggregator",
-    "scrape_method": "scrape",
+    "scrape_method": "api",
     "trust_level": "needs_review",
     "scrape_frequency_hours": 168,
     "wave": 1,
     "is_active": true,
     "auth_required": false,
-    "has_api": false,
+    "has_api": true,
     "estimated_volume": "~2000",
     "geographic_coverage": ["global"],
-    "notes": "CF: no | Fields: title, deadline, country, degree, description | Volume: ~2000 | Well-curated international scholarships"
+    "notes": "CF: no | Fields: title, deadline, description | Volume: ~2000 | WordPress REST API | Well-curated international scholarships"
   },
   {
-    "name": "IEFA",
-    "url": "https://www.iefa.org",
+    "name": "IEFA Scholarships",
+    "url": "https://www.iefa.org/scholarships?per-page=5000",
     "category": "aggregator",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -42,7 +42,7 @@
     "has_api": false,
     "estimated_volume": "~3500",
     "geographic_coverage": ["global"],
-    "notes": "CF: no | Fields: title, amount, country, eligibility | Volume: ~3500 | International Education Financial Aid"
+    "notes": "CF: no | Fields: title, description, detail_link | Volume: ~3500 | Yii framework single-request grid | International Education Financial Aid"
   },
   {
     "name": "StudyPortals Scholarships",
@@ -256,7 +256,7 @@
   },
   {
     "name": "WeMakeScholars",
-    "url": "https://www.wemakescholars.com/scholarships",
+    "url": "https://www.wemakescholars.com/scholarship/index?page=1",
     "category": "aggregator",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -265,9 +265,9 @@
     "is_active": true,
     "auth_required": false,
     "has_api": false,
-    "estimated_volume": "~2000",
+    "estimated_volume": "~15000",
     "geographic_coverage": ["asia", "global"],
-    "notes": "CF: no | Fields: title, country, deadline, amount, eligibility | Volume: ~2000 | India-based, global coverage"
+    "notes": "CF: no | Fields: title, detail_link | Volume: ~15000 | HTML scraping with .bgwms2 selectors | India-based, global coverage"
   },
   {
     "name": "GoAbroad Scholarships",

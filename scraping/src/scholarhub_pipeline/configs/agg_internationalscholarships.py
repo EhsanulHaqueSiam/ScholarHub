@@ -1,7 +1,7 @@
-"""IEFA Scholarships source configuration.
+"""InternationalScholarships.com source configuration.
 
-Yii framework site with the same structure as InternationalScholarships.
-Single-request grid table. No pagination needed as per-page=5000 returns all.
+Yii framework site with a single-request grid table containing ~1565
+scholarship records. No pagination needed as per-page=5000 returns all.
 """
 
 from dataclasses import dataclass, field
@@ -11,11 +11,11 @@ from scholarhub_pipeline.configs._bases import BaseAggregatorConfig
 
 @dataclass
 class Config(BaseAggregatorConfig):
-    """IEFA Scholarships aggregator config."""
+    """InternationalScholarships aggregator config."""
 
-    name: str = "IEFA Scholarships"
-    url: str = "https://www.iefa.org/scholarships?per-page=5000"
-    source_id: str = "iefa_scholarships"
+    name: str = "InternationalScholarships"
+    url: str = "https://www.internationalscholarships.com/scholarships?per-page=5000"
+    source_id: str = "internationalscholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
