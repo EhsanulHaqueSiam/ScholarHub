@@ -165,6 +165,21 @@
     "notes": "CF: no | Fields: school_name, program_name, scholarship, tuition_reduction, settling_in_allowance | Volume: 682 scholarships | CSV download endpoint"
   },
   {
+    "name": "JPSS Scholarships",
+    "url": "https://www.jpss.jp/en/scholarship/",
+    "category": "government",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 168,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~140",
+    "geographic_coverage": ["asia"],
+    "notes": "CF: no | Fields: org_name, stipend, duration, academic_level, nationality, application_period | Volume: 140 scholarships | jQuery-based HTML with detail pages"
+  },
+  {
     "name": "Study in Japan (JASSO)",
     "url": "https://www.jasso.go.jp/en/ryugaku/scholarship_j/index.html",
     "category": "government",
