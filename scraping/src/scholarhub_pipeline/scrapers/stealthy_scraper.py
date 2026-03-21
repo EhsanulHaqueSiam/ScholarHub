@@ -25,6 +25,11 @@ class StealthyScraper(BaseScraper):
     predictable structures behind the protection.
     """
 
+    @staticmethod
+    def _fetch_sync(url: str) -> object:
+        """Run StealthyFetcher.fetch in a thread (sync Playwright can't run in asyncio loop)."""
+        return StealthyFetcher().fetch(url, headless=True, network_idle=True)
+
     async def scrape(self) -> list[dict]:
         """Scrape protected pages and return normalized records.
 
@@ -36,12 +41,8 @@ class StealthyScraper(BaseScraper):
         page = 0
 
         while url:
-            # StealthyFetcher handles Cloudflare bypass automatically
-            response = StealthyFetcher().fetch(
-                url,
-                headless=True,
-                network_idle=True,
-            )
+            # Run sync Playwright in thread to avoid asyncio conflict
+            response = await asyncio.to_thread(self._fetch_sync, url)
             body = response.body if hasattr(response, "body") else b""
             self.bytes_downloaded += len(body) if isinstance(body, bytes) else len(str(body))
 
@@ -132,7 +133,7 @@ class StealthyScraper(BaseScraper):
             Dict of extracted fields from the detail page.
         """
         try:
-            response = StealthyFetcher().fetch(url, headless=True, network_idle=True)
+            response = await asyncio.to_thread(self._fetch_sync, url)
             extracted: dict = {}
             if self.config.detail_selectors:
                 for field_name, selector in self.config.detail_selectors.items():
