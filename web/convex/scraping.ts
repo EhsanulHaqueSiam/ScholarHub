@@ -399,3 +399,107 @@ export const updateLastScraped = mutation({
     });
   },
 });
+
+/**
+ * Bulk-promote raw_records to the scholarships table.
+ * Processes up to `limit` unpromoted records (no canonical_id).
+ * Returns count of promoted records for batching.
+ */
+export const bulkPublishRawRecords = mutation({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const batchSize = args.limit ?? 100;
+    const VALID_DEGREES = new Set(["bachelor", "master", "phd", "postdoc"]);
+    const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
+
+    // Find raw_records without canonical_id (not yet promoted)
+    const unpromoted = await ctx.db
+      .query("raw_records")
+      .filter((q) => q.eq(q.field("canonical_id"), undefined))
+      .take(batchSize);
+
+    let promoted = 0;
+    let skipped = 0;
+
+    for (const raw of unpromoted) {
+      // Skip records without required fields
+      if (!raw.title || !raw.title.trim()) {
+        skipped++;
+        continue;
+      }
+
+      // Generate slug from title
+      const slug = raw.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .slice(0, 80);
+
+      // Check for duplicate slug
+      const existing = await ctx.db
+        .query("scholarships")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .first();
+
+      if (existing) {
+        // Link raw_record to existing scholarship
+        await ctx.db.patch(raw._id, { canonical_id: existing._id });
+        skipped++;
+        continue;
+      }
+
+      // Map degree_levels (validate against enum)
+      let degreeLevels: Array<"bachelor" | "master" | "phd" | "postdoc"> = [];
+      if (raw.degree_levels && Array.isArray(raw.degree_levels)) {
+        degreeLevels = raw.degree_levels.filter((d: string) =>
+          VALID_DEGREES.has(d.toLowerCase()),
+        ) as Array<"bachelor" | "master" | "phd" | "postdoc">;
+      }
+      if (degreeLevels.length === 0) {
+        degreeLevels = ["master"]; // Default
+      }
+
+      // Map funding_type
+      let fundingType: "fully_funded" | "partial" | "tuition_waiver" | "stipend_only" = "partial";
+      if (raw.funding_type && VALID_FUNDING.has(raw.funding_type)) {
+        fundingType = raw.funding_type as typeof fundingType;
+      } else if (
+        raw.award_amount &&
+        (raw.award_amount.toLowerCase().includes("full") ||
+          raw.award_amount.toLowerCase().includes("100%"))
+      ) {
+        fundingType = "fully_funded";
+      }
+
+      // Build search text
+      const searchText = [raw.title, raw.description, raw.provider_organization, raw.host_country]
+        .filter(Boolean)
+        .join(" ")
+        .slice(0, 1000);
+
+      const scholarshipId = await ctx.db.insert("scholarships", {
+        title: raw.title.trim(),
+        slug,
+        description: raw.description || undefined,
+        provider_organization: raw.provider_organization || "Unknown",
+        host_country: raw.host_country || "International",
+        degree_levels: degreeLevels,
+        funding_type: fundingType,
+        application_url: raw.application_url || raw.source_url,
+        application_deadline_text: raw.application_deadline || undefined,
+        status: "published",
+        source_ids: [raw.source_id],
+        search_text: searchText,
+        last_verified: Date.now(),
+      });
+
+      // Link raw_record back to canonical scholarship
+      await ctx.db.patch(raw._id, { canonical_id: scholarshipId });
+      promoted++;
+    }
+
+    return { promoted, skipped, remaining: unpromoted.length - promoted - skipped };
+  },
+});
