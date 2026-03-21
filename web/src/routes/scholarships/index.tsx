@@ -7,6 +7,7 @@ import { FeaturedRow } from "@/components/directory/FeaturedRow";
 import { FilterChips } from "@/components/directory/FilterChips";
 import { FilterPanel, MobileFilterTrigger } from "@/components/directory/FilterPanel";
 import { NationalityBanner } from "@/components/directory/NationalityBanner";
+import { DesktopPagination, MobileInfiniteScroll } from "@/components/directory/Pagination";
 import { QuickFilters } from "@/components/directory/QuickFilters";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
@@ -17,7 +18,6 @@ import { ViewToggle } from "@/components/directory/ViewToggle";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
-import { Button } from "@/components/ui/button";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { scholarshipSearchSchema } from "@/lib/filters";
@@ -258,38 +258,14 @@ function ScholarshipsDirectory() {
                 </div>
               )}
 
-              {/* Load More button */}
-              {status === "CanLoadMore" && (
-                <div className="flex justify-center mt-8">
-                  <Button
-                    variant="neutral"
-                    size="lg"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      loadMore(20);
-                    }}
-                  >
-                    Load More Scholarships
-                  </Button>
-                </div>
-              )}
-
-              {/* No more results message */}
-              {status === "Exhausted" && hasResults && (
-                <p className="text-center text-sm text-foreground/60 mt-8">
-                  You've seen all {results.length} matching scholarships
-                </p>
-              )}
-
-              {/* Loading more skeleton */}
+              {/* Loading more skeleton (desktop only — mobile uses inline spinner) */}
               {status === "LoadingMore" && (
                 <div
                   className={cn(
-                    "mt-6",
+                    "mt-6 hidden lg:grid",
                     isGridView
-                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                      : "flex flex-col gap-4",
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "grid-cols-1 gap-4",
                   )}
                 >
                   {Array.from({ length: 3 }).map((_, i) => (
@@ -297,6 +273,29 @@ function ScholarshipsDirectory() {
                   ))}
                 </div>
               )}
+
+              {/* Mobile: Infinite scroll with auto-loading sentinel */}
+              <div className="lg:hidden">
+                <MobileInfiniteScroll
+                  totalLoaded={results?.length ?? 0}
+                  status={status}
+                  loadMore={loadMore}
+                />
+              </div>
+
+              {/* Desktop: Numbered pagination */}
+              <div className="hidden lg:block">
+                <DesktopPagination
+                  totalLoaded={results?.length ?? 0}
+                  status={status}
+                  loadMore={loadMore}
+                />
+                {status === "Exhausted" && hasResults && (
+                  <p className="text-center text-sm text-foreground/60 mt-4">
+                    You've seen all {results.length} matching scholarships
+                  </p>
+                )}
+              </div>
             </ErrorBoundary>
           </div>
         </div>
