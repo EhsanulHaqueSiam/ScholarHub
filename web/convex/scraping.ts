@@ -415,9 +415,12 @@ export const bulkPublishRawRecords = mutation({
     const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
 
     // Find raw_records without canonical_id (not yet promoted)
+    // Check both undefined and null since Convex treats them differently
     const unpromoted = await ctx.db
       .query("raw_records")
-      .filter((q) => q.eq(q.field("canonical_id"), undefined))
+      .filter((q) =>
+        q.or(q.eq(q.field("canonical_id"), undefined), q.eq(q.field("canonical_id"), null)),
+      )
       .take(batchSize);
 
     let promoted = 0;
