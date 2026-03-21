@@ -71,6 +71,11 @@ class ApiScraper(BaseScraper):
 
                 for idx, item in enumerate(items):
                     mapped = self.apply_field_mappings(item)
+                    # Strip HTML tags from string values (e.g., EduCanada's <a> tags)
+                    for k, v in mapped.items():
+                        if isinstance(v, str) and "<" in v and ">" in v:
+                            import re
+                            mapped[k] = re.sub(r"<[^>]+>", "", v).strip()
                     if host_country_default and not mapped.get("host_country"):
                         mapped["host_country"] = host_country_default
                     if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):

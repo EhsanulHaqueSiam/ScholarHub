@@ -18,8 +18,8 @@ class Config(BaseGovernmentConfig):
     name: str = "DAAD Scholarship Database"
     url: str = "https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/?status=&origin=&subjectGrps=&daad=&q=&page=1&back=1"
     source_id: str = "daad_scholarship_database"
-    primary_method: str = "scrape"
-    secondary_method: str | None = "scrapling"
+    primary_method: str = "scrapling"
+    secondary_method: str | None = "scrape"
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": ".stipendium-result, .result-item, .listing-item, article.scholarship, .media",
         "title": "h3 a::text, h4 a::text, .title a::text, .media-heading a::text",

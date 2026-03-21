@@ -96,20 +96,6 @@ class StealthyScraper(BaseScraper):
                 self.records_found += 1
 
             # Pagination
-            next_selector = self.config.selectors.get("next_page") or (
-                self.config.pagination.get("selector") if self.config.pagination else None
-            )
-            if next_selector:
-                next_result = response.css(next_selector)
-                next_link = next_result.get() if next_result else None
-                url = (
-                    response.urljoin(next_link)
-                    if next_link and hasattr(response, "urljoin")
-                    else None
-                )
-            else:
-                url = None
-
             page += 1
             max_pages = (
                 self.config.pagination.get("max_pages", 50)
@@ -118,6 +104,29 @@ class StealthyScraper(BaseScraper):
             )
             if page >= max_pages:
                 break
+
+            pag_type = self.config.pagination.get("type") if self.config.pagination else None
+
+            if pag_type == "page_num":
+                param = self.config.pagination.get("param", "page")
+                start = self.config.pagination.get("start", 1)
+                base = self.config.url.split("?")[0]
+                sep = "&" if "?" in self.config.url else "?"
+                url = f"{self.config.url}{sep}{param}={start + page}"
+            else:
+                next_selector = self.config.selectors.get("next_page") or (
+                    self.config.pagination.get("selector") if self.config.pagination else None
+                )
+                if next_selector:
+                    next_result = response.css(next_selector)
+                    next_link = next_result.get() if next_result else None
+                    url = (
+                        response.urljoin(next_link)
+                        if next_link and hasattr(response, "urljoin")
+                        else None
+                    )
+                else:
+                    url = None
 
             await asyncio.sleep(self.config.rate_limit_delay)
 

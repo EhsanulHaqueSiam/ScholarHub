@@ -20,8 +20,8 @@ class Config(BaseGovernmentConfig):
     name: str = "Stipendium Hungaricum Courses"
     url: str = "https://apply.stipendiumhungaricum.hu/courses?l%5B%5D=English&page=1"
     source_id: str = "stipendium_hungaricum_courses"
-    primary_method: str = "scrape"
-    secondary_method: str | None = "scrapling"
+    primary_method: str = "scrapling"
+    secondary_method: str | None = "scrape"
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": ".course-item, .programme-card, .search-result, .card, article, .list-group-item, tr.programme-row",
         "title": "h3 a::text, h4 a::text, .course-title::text, .programme-name::text, .card-title::text",
