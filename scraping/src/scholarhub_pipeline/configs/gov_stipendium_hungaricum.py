@@ -25,16 +25,16 @@ class Config(BaseGovernmentConfig):
     """
 
     name: str = "Stipendium Hungaricum Courses"
-    url: str = "https://apply.stipendiumhungaricum.hu/courses?l%5B%5D=English&page=1"
+    url: str = "https://apply.stipendiumhungaricum.hu/courses?l%5B%5D=English"
     source_id: str = "stipendium_hungaricum_courses"
     primary_method: str = "scrapling"
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
-        "listing": ".ui.card",
-        "title": ".content .header",
-        "university": ".content .meta",
-        "degree_level": ".content .description",
-        "detail_link": "a::attr(href)",
+        "listing": "div.result.segment",
+        "title": ".seven.wide.column a[href*='/courses/course/']",
+        "university": ".four.wide.column a",
+        "degree_level": "span.label",
+        "detail_link": "a[href*='/courses/course/']::attr(href)",
         "host_country_default": "Hungary",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {

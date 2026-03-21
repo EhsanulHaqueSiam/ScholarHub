@@ -30,9 +30,9 @@ class Config(BaseAggregatorConfig):
     primary_method: str = "scrapling"
     secondary_method: str | None = "scrape"
     selectors: dict[str, str] = field(default_factory=lambda: {
-        "listing": "a[href*='/scholarships/'][href$='/']",
-        "title": "h3",
-        "detail_link": "::attr(href)",
+        "listing": "div.rounded",
+        "title": "p.font-semibold",
+        "detail_link": "a::attr(href)",
         "host_country_default": "United States",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {

@@ -29,10 +29,10 @@ class Config(BaseGovernmentConfig):
     primary_method: str = "scrapling"
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
-        "listing": "#ui-result-list li",
-        "title": "h4 a",
-        "description_short": "p",
-        "detail_link": "h4 a::attr(href)",
+        "listing": "li.entry",
+        "title": "h2 a",
+        "description_short": "p.entry-detail",
+        "detail_link": "h2 a::attr(href)",
         "host_country_default": "Germany",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {
@@ -44,7 +44,7 @@ class Config(BaseGovernmentConfig):
         "type": "page_num",
         "param": "page",
         "start": 1,
-        "max_pages": 20,
+        "max_pages": 1,
     })
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
