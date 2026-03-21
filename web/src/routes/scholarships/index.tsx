@@ -261,7 +261,15 @@ function ScholarshipsDirectory() {
               {/* Load More button */}
               {status === "CanLoadMore" && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="neutral" size="lg" onClick={() => loadMore(20)}>
+                  <Button
+                    variant="neutral"
+                    size="lg"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      loadMore(20);
+                    }}
+                  >
                     Load More Scholarships
                   </Button>
                 </div>
