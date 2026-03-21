@@ -74,6 +74,6 @@ Students can discover every relevant international scholarship in one place, wit
 ---
 ## Current State
 
-Phase 06.1 (Public Directory) complete — TanStack Start SSR, 4-factor prestige scoring system, Convex directory queries with 7-dimension filtering, 9 interactive filter/search components, directory page routes with Schema.org JSON-LD, WCAG AA accessibility, dark mode, neo-brutalism design. 14/14 requirements verified, 29 tests passing.
+Phase 10 (Study Australia Scrapers) complete — new InertiaScraper class for Inertia.js (Laravel+Vue) sites, broken Study Australia config removed, scholarship (1,024 records) and provider (2,281 records) configs created using Inertia.js JSON API protocol, registered in SCRAPER_MAP and Convex schema. 177 tests passing, 7/7 requirements verified.
 
-*Last updated: 2026-03-20 after Phase 06.1 completion*
+*Last updated: 2026-03-21 after Phase 10 completion*
