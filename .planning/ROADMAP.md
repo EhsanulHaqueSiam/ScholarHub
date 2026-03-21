@@ -198,3 +198,19 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
 | 8. Discovery Features | 0/2 | Not started | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
+
+### Phase 10: Study Australia Scrapers
+
+**Goal:** Replace broken Study Australia scraper with Inertia.js API-based scrapers for the ACIR search portal (scholarships + providers), adding a reusable InertiaScraper class to the pipeline
+**Requirements**: SA-01, SA-02, SA-03, SA-04, SA-05, SA-06, SA-07
+**Depends on:** Phase 3
+**Success Criteria** (what must be TRUE):
+  1. InertiaScraper class extracts Inertia version hash, fetches paginated JSON, handles 409 retries, and maps fields correctly
+  2. Broken gov_study_in_australia_government_portal config is deleted
+  3. New scholarship and provider configs target search.studyaustralia.gov.au with inertia method
+  4. Government.json catalog entries match new Python configs and all protocol/sync tests pass
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md -- InertiaScraper class with tests, SCRAPER_MAP + Convex schema registration
+- [ ] 10-02-PLAN.md -- Delete broken config, create scholarship/provider configs, update government.json catalog
