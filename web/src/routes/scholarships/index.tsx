@@ -203,7 +203,11 @@ function ScholarshipsDirectory() {
             className="text-sm font-heading text-foreground border-2 border-border rounded-base px-3 py-1.5 bg-secondary-background"
             aria-live="polite"
           >
-            {formatResultsCount(results?.length, filters)}
+            {totalCount !== undefined && !filters.q
+              ? formatResultsCount(totalCount, filters)
+              : status === "CanLoadMore"
+                ? formatResultsCount(results?.length, filters) + "+"
+                : formatResultsCount(results?.length, filters)}
           </p>
         </div>
 
