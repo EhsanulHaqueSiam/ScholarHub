@@ -30,19 +30,34 @@
     "notes": "CF: no | Fields: title, deadline, eligibility, programme_type | Volume: ~20 programs | US Bureau of Educational and Cultural Affairs"
   },
   {
-    "name": "Study in Australia Government Portal",
-    "url": "https://www.studyaustralia.gov.au/en/study-information/scholarships",
+    "name": "Study Australia Scholarships",
+    "url": "https://search.studyaustralia.gov.au/scholarships",
     "category": "government",
-    "scrape_method": "scrape",
+    "scrape_method": "inertia",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 168,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": true,
+    "estimated_volume": "~1024",
+    "geographic_coverage": ["oceania"],
+    "notes": "CF: no | Fields: name, description, eligibility, closing_date, amount_annual, organisations, level_of_studies, field_of_studies | Volume: 1024 scholarships | Inertia.js API on ACIR search portal"
+  },
+  {
+    "name": "Study Australia Providers",
+    "url": "https://search.studyaustralia.gov.au/providers",
+    "category": "government",
+    "scrape_method": "inertia",
     "trust_level": "needs_review",
     "scrape_frequency_hours": 720,
     "wave": 7,
     "is_active": true,
     "auth_required": false,
-    "has_api": false,
-    "estimated_volume": "~50",
+    "has_api": true,
+    "estimated_volume": "~2281",
     "geographic_coverage": ["oceania"],
-    "notes": "CF: no | Fields: title, provider, amount, deadline | Volume: ~50 listings | Australian Government study portal"
+    "notes": "CF: no | Fields: name, description, web_address, cricos_code, sites | Volume: 2281 providers | Inertia.js API on ACIR search portal"
   },
   {
     "name": "Canada Global Affairs Scholarships",
