@@ -1,0 +1,76 @@
+{
+  "component": "Scholarship/List",
+  "props": {
+    "scholarships": {
+      "meta": { "total": 24, "page": 1, "per_page": 10, "last_page": 3 },
+      "data": [
+        {
+          "id": 1001,
+          "name": "International STEM Excellence Award",
+          "slug": "international-stem-excellence-award",
+          "description": "Full scholarship for international STEM students.",
+          "eligibility": "Must be an international student with strong academic record.",
+          "closing_date": "2027-06-15",
+          "amount_annual": 25000,
+          "amount_max": 100000,
+          "amount_comment": "Covers tuition and living expenses",
+          "web_address": "https://example.edu.au/stem-award",
+          "scholarship_country_name": "Australia",
+          "country_of_citizenship": "Any",
+          "is_for_international_students": true,
+          "is_for_australian_students": false,
+          "is_tenable_overseas": false,
+          "level_of_studies": [{"name": "Postgraduate"}],
+          "field_of_studies": [{"name": "Engineering"}, {"name": "Science"}],
+          "organisations": [
+            {
+              "name": "University of Sydney",
+              "cricos_code": "00026A",
+              "web_address": "https://www.sydney.edu.au"
+            }
+          ],
+          "duration": 4,
+          "duration_name": "Year(s)",
+          "frequency_name": "Annual",
+          "from_date": "2027-01-01",
+          "to_date": "2027-12-31",
+          "created_at": "2026-01-15T00:00:00Z"
+        },
+        {
+          "id": 1002,
+          "name": "Pacific Research Fellowship",
+          "slug": "pacific-research-fellowship",
+          "description": "Research fellowship for Pacific Island nations.",
+          "eligibility": "Citizens of Pacific Island nations.",
+          "closing_date": "2027-09-01",
+          "amount_annual": 35000,
+          "amount_max": 140000,
+          "amount_comment": "Full tuition plus stipend",
+          "web_address": "https://example.edu.au/pacific-fellowship",
+          "scholarship_country_name": "Australia",
+          "country_of_citizenship": "Pacific Island nations",
+          "is_for_international_students": true,
+          "is_for_australian_students": false,
+          "is_tenable_overseas": false,
+          "level_of_studies": [{"name": "Postgraduate"}, {"name": "Research"}],
+          "field_of_studies": [{"name": "Any"}],
+          "organisations": [
+            {
+              "name": "Australian National University",
+              "cricos_code": "00120C",
+              "web_address": "https://www.anu.edu.au"
+            }
+          ],
+          "duration": 3,
+          "duration_name": "Year(s)",
+          "frequency_name": "Annual",
+          "from_date": "2027-03-01",
+          "to_date": "2027-12-31",
+          "created_at": "2026-02-20T00:00:00Z"
+        }
+      ]
+    }
+  },
+  "url": "/scholarships",
+  "version": "abc123def456"
+}
