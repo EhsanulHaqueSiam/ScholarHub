@@ -94,11 +94,24 @@ class BaseScraper(abc.ABC):
         except Exception:  # noqa: BLE001
             return False
 
+    @staticmethod
+    def _get_nested(data: dict, dotted_key: str) -> object | None:
+        """Resolve a dot-notation key like 'title.rendered' from a nested dict."""
+        parts = dotted_key.split(".")
+        current: object = data
+        for part in parts:
+            if isinstance(current, dict) and part in current:
+                current = current[part]
+            else:
+                return None
+        return current
+
     def apply_field_mappings(self, extracted: dict) -> dict:
         """Map extracted field names to raw_record schema field names.
 
         Uses the ``field_mappings`` dict from the source config to rename
         keys from the source-specific names to the canonical record fields.
+        Supports dot-notation for nested fields (e.g., 'title.rendered').
 
         Args:
             extracted: Dict with source-specific field names.
@@ -108,6 +121,10 @@ class BaseScraper(abc.ABC):
         """
         mapped: dict = {}
         for source_field, target_field in self.config.field_mappings.items():
-            if source_field in extracted:
+            if "." in source_field:
+                value = self._get_nested(extracted, source_field)
+                if value is not None:
+                    mapped[target_field] = value
+            elif source_field in extracted:
                 mapped[target_field] = extracted[source_field]
         return mapped
