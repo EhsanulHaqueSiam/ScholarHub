@@ -463,5 +463,35 @@
     "estimated_volume": "~1",
     "geographic_coverage": ["americas"],
     "notes": "CF: no | Fields: title, description, amount | Volume: ~1 program (100 scholars/year) | Full funding for Stanford graduate study"
+  },
+  {
+    "name": "Dutch-Bangla Bank Scholarships",
+    "url": "https://www.dutchbanglabank.com/csr-research/research.html",
+    "category": "foundation",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~5",
+    "geographic_coverage": ["asia"],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~5 | Bangladesh's largest private CSR donor | Scholarship and research grant programmes"
+  },
+  {
+    "name": "Islami Bank Foundation Scholarships",
+    "url": "https://ibfbd.org",
+    "category": "foundation",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~5",
+    "geographic_coverage": ["asia"],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~5 | JS-heavy Bootstrap site | Islami Bank Foundation education programmes"
   }
 ]
