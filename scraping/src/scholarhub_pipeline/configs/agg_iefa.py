@@ -20,9 +20,9 @@ class Config(BaseAggregatorConfig):
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": "#award-grid table tbody tr",
-        "title": "td.award-search-grid-name a::text",
-        "description": "td.award-search-grid-description::text",
-        "detail_link": "td.award-search-grid-name a::attr(href)",
+        "title": "td:first-child a::text",
+        "description": "td:nth-child(2)::text",
+        "detail_link": "td:first-child a::attr(href)",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {
         "title": "title",
