@@ -8,7 +8,7 @@ import pytest
 from scholarhub_pipeline.configs import discover_configs
 from scholarhub_pipeline.configs._protocol import SourceConfig
 
-VALID_METHODS = {"api", "jsonld", "ajax", "rss", "scrape", "scrapling"}
+VALID_METHODS = {"api", "jsonld", "ajax", "rss", "scrape", "scrapling", "inertia"}
 
 
 def get_catalog_sources() -> list[dict]:

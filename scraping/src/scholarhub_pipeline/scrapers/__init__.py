@@ -13,6 +13,7 @@ from scholarhub_pipeline.scrapers.base import BaseScraper
 from scholarhub_pipeline.scrapers.html_scraper import HtmlScraper
 from scholarhub_pipeline.scrapers.jsonld_extractor import JsonLdExtractor
 from scholarhub_pipeline.scrapers.rss_scraper import RssScraper
+from scholarhub_pipeline.scrapers.inertia_scraper import InertiaScraper
 from scholarhub_pipeline.scrapers.stealthy_scraper import StealthyScraper
 
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ SCRAPER_MAP: dict[str, type[BaseScraper]] = {
     "rss": RssScraper,
     "scrape": HtmlScraper,
     "scrapling": StealthyScraper,
+    "inertia": InertiaScraper,
 }
 
 
@@ -51,6 +53,7 @@ __all__ = [
     "ApiScraper",
     "BaseScraper",
     "HtmlScraper",
+    "InertiaScraper",
     "JsonLdExtractor",
     "RssScraper",
     "SCRAPER_MAP",

@@ -59,6 +59,7 @@ export const scrapeMethodValidator = v.union(
   v.literal("rss"),
   v.literal("jsonld"),
   v.literal("ajax"),
+  v.literal("inertia"),
 );
 export type ScrapeMethod = Infer<typeof scrapeMethodValidator>;
 
