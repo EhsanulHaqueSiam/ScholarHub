@@ -112,7 +112,8 @@ export default defineSchema({
     .index("by_active_category", ["is_active", "category"])
     .index("by_url", ["url"])
     .index("by_wave", ["wave"])
-    .index("by_active_wave", ["is_active", "wave"]),
+    .index("by_active_wave", ["is_active", "wave"])
+    .index("by_name", ["name"]),
 
   // Raw scraped records -- staging area before aggregation
   raw_records: defineTable({

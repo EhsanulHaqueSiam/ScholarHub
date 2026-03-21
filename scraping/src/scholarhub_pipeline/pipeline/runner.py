@@ -22,6 +22,15 @@ from scholarhub_pipeline.pipeline.buffer import LocalBuffer
 from scholarhub_pipeline.pipeline.scheduler import SourceScheduler
 from scholarhub_pipeline.scrapers import get_scraper
 
+# Fields accepted by Convex batchInsertRawRecords mutation
+CONVEX_RAW_RECORD_FIELDS = {
+    "source_id", "external_id", "title", "description",
+    "provider_organization", "host_country", "eligibility_nationalities",
+    "degree_levels", "fields_of_study", "funding_type", "award_amount",
+    "award_currency", "application_deadline", "application_url",
+    "source_url", "raw_data",
+}
+
 if TYPE_CHECKING:
     from scholarhub_pipeline.configs._protocol import SourceConfig
     from scholarhub_pipeline.monitoring.github_issues import GitHubIssueManager
@@ -118,7 +127,7 @@ class PipelineRunner:
                 # Without Convex client, group manually
                 grouped = self._group_configs(configs)
 
-            for method in ["api", "jsonld", "ajax", "rss", "scrape", "scrapling"]:
+            for method in ["api", "jsonld", "ajax", "rss", "inertia", "scrape", "scrapling"]:
                 method_configs = grouped.get(method, [])
                 for config in method_configs:
                     await self._scrape_source(config, run_id)
@@ -126,19 +135,37 @@ class PipelineRunner:
         # Complete run
         duration = time.time() - start_time
         if self.convex and run_id and not self.dry_run:
+            complete_stats = {k: v for k, v in self.stats.items() if k != "sources_targeted"}
             self.convex.mutation(
                 "scraping:completeRun",
                 {
                     "run_id": run_id,
                     "status": "completed",
-                    **self.stats,
+                    **complete_stats,
                     "duration_seconds": int(duration),
                 },
             )
-            HeartbeatMonitor(self.convex).update()
+            try:
+                HeartbeatMonitor(self.convex).update()
+            except Exception:  # noqa: BLE001
+                logger.debug("heartbeat_update_skipped", reason="mutation not deployed")
 
         logger.info("pipeline_complete", duration=round(duration, 1), **self.stats)
         return self.stats
+
+    def _resolve_convex_id(self, config: SourceConfig) -> str | None:
+        """Resolve a source config's name to its Convex document _id.
+
+        Args:
+            config: SourceConfig with name field.
+
+        Returns:
+            Convex document _id string, or None if not found.
+        """
+        if not self.convex:
+            return None
+        source = self.convex.query("sources:getByName", {"name": config.name})
+        return source["_id"] if source else None
 
     async def _scrape_source(self, config: SourceConfig, run_id: str | None) -> None:
         """Scrape a single source, handle errors, update health.
@@ -148,6 +175,8 @@ class PipelineRunner:
             run_id: Convex run ID for telemetry, or None in dry-run mode.
         """
         source_start = time.time()
+        # Resolve Convex document _id for this source (needed by all mutations)
+        convex_source_id = self._resolve_convex_id(config) if not self.dry_run else None
         try:
             scraper = get_scraper(config)
             records = await scraper.scrape()
@@ -155,17 +184,30 @@ class PipelineRunner:
             if self.dry_run:
                 self.buffer.save(records, config.source_id)
                 self.stats["records_inserted"] += len(records)
-            elif self.convex and run_id:
+            elif self.convex and run_id and convex_source_id:
                 batch = BatchAccumulator(self.convex, run_id)
                 dedup = SourceDeduplicator()
                 for record in records:
                     if not dedup.is_duplicate(record, config.source_id):
-                        record["source_id"] = config.source_id
-                        batch.add(record)
-                result = batch.flush_remaining()
-                self.stats["records_inserted"] += result.get("inserted", 0)
-                self.stats["records_updated"] += result.get("updated", 0)
-                self.stats["records_unchanged"] += result.get("unchanged", 0)
+                        # Strip None values and non-schema fields for Convex
+                        cleaned = {
+                            k: v for k, v in record.items()
+                            if v is not None and k in CONVEX_RAW_RECORD_FIELDS
+                        }
+                        cleaned["source_id"] = convex_source_id
+                        # source_url is required — use config URL as fallback
+                        if "source_url" not in cleaned:
+                            cleaned["source_url"] = config.url
+                        # Coerce numeric fields to strings for Convex
+                        for str_field in ("award_amount", "award_currency"):
+                            if str_field in cleaned and not isinstance(cleaned[str_field], str):
+                                cleaned[str_field] = str(cleaned[str_field])
+                        batch.add(cleaned)
+                batch.flush_remaining()
+                cumulative = batch.stats
+                self.stats["records_inserted"] += cumulative.get("inserted", 0)
+                self.stats["records_updated"] += cumulative.get("updated", 0)
+                self.stats["records_unchanged"] += cumulative.get("unchanged", 0)
 
             duration = time.time() - source_start
             self.stats["sources_completed"] += 1
@@ -173,7 +215,7 @@ class PipelineRunner:
             # Update health and timestamp
             if self.convex and not self.dry_run:
                 health_after_success = HealthTracker(self.convex).record_success(
-                    config.source_id, len(records),
+                    convex_source_id, len(records),
                 )
                 # Auto-close GitHub Issue if source recovered
                 issue_num = (
@@ -190,21 +232,20 @@ class PipelineRunner:
                     if mgr.close_issue(issue_num, config.name):
                         self.convex.mutation(
                             "scraping:clearGitHubIssueNumber",
-                            {"source_id": config.source_id},
+                            {"source_id": convex_source_id},
                         )
 
                 self.convex.mutation(
                     "scraping:updateLastScraped",
                     {
-                        "source_id": config.source_id,
-                        "timestamp": int(time.time() * 1000),
+                        "source_id": convex_source_id,
                     },
                 )
                 self.convex.mutation(
                     "scraping:recordSourceResult",
                     {
                         "run_id": run_id,
-                        "source_id": config.source_id,
+                        "source_id": convex_source_id,
                         "status": "success",
                         "method_used": config.primary_method,
                         "records_found": scraper.records_found,
@@ -234,9 +275,9 @@ class PipelineRunner:
                 error_type=error_type,
             )
 
-            if self.convex and not self.dry_run:
+            if self.convex and not self.dry_run and convex_source_id:
                 health_result = HealthTracker(self.convex).record_failure(
-                    config.source_id, error_type, str(e),
+                    convex_source_id, error_type, str(e),
                 )
                 rot = RotDetector()
                 failures = health_result.get("consecutive_failures", 0) if health_result else 0
@@ -266,7 +307,7 @@ class PipelineRunner:
                             self.convex.mutation(
                                 "scraping:storeGitHubIssueNumber",
                                 {
-                                    "source_id": config.source_id,
+                                    "source_id": convex_source_id,
                                     "issue_number": issue_number,
                                 },
                             )
@@ -280,7 +321,7 @@ class PipelineRunner:
                     self.convex.mutation(
                         "scraping:deactivateSource",
                         {
-                            "source_id": config.source_id,
+                            "source_id": convex_source_id,
                             "reason": reason,
                         },
                     )

@@ -13,7 +13,7 @@
       },
       "scrape_method": {
         "type": "string",
-        "enum": ["api", "scrape", "scrapling", "rss"]
+        "enum": ["api", "scrape", "scrapling", "rss", "inertia"]
       },
       "trust_level": {
         "type": "string",

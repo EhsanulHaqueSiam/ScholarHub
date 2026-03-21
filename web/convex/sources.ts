@@ -1,10 +1,29 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import {
-  sourceCategoryValidator,
-  scrapeMethodValidator,
-  trustLevelValidator,
-} from "./schema";
+import { mutation, query } from "./_generated/server";
+import { scrapeMethodValidator, sourceCategoryValidator, trustLevelValidator } from "./schema";
+
+export const getByName = query({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sources")
+      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .first();
+  },
+});
+
+export const resetLastScraped = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const source = await ctx.db
+      .query("sources")
+      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .first();
+    if (source) {
+      await ctx.db.patch(source._id, { last_scraped: undefined });
+    }
+  },
+});
 
 export const upsertSource = mutation({
   args: {

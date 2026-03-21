@@ -48,7 +48,7 @@ class HealthTracker:
             {
                 "source_id": source_id,
                 "success": True,
-                "yield_count": yield_count,
+                "records_found": yield_count,
             },
         )
         logger.info("source_health_success", source_id=source_id, yield_count=yield_count)
@@ -77,7 +77,7 @@ class HealthTracker:
             {
                 "source_id": source_id,
                 "success": False,
-                "yield_count": 0,
+                "records_found": 0,
                 "error_type": error_type,
                 "error_message": error_message[:500],  # truncate long messages
             },

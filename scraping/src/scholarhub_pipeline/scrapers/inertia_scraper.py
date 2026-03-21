@@ -48,7 +48,7 @@ def map_study_australia_record(item: dict) -> dict:
 
     amount_annual = item.get("amount_annual")
 
-    return {
+    record = {
         "title": item.get("name", ""),
         "description": item.get("description", ""),
         "eligibility_criteria": item.get("eligibility", ""),
@@ -68,6 +68,8 @@ def map_study_australia_record(item: dict) -> dict:
             "is_for_international_students", True
         ),
     }
+    # Strip None values so Convex doesn't receive null for typed fields
+    return {k: v for k, v in record.items() if v is not None}
 
 
 class InertiaScraper(BaseScraper):
@@ -191,6 +193,16 @@ class InertiaScraper(BaseScraper):
                         mapped = self.apply_field_mappings(item)
                     else:
                         mapped = map_study_australia_record(item)
+                    # Always set source_url and external_id from Inertia item
+                    slug = item.get("slug", "")
+                    item_id = item.get("id", "")
+                    if slug and item_id and "source_url" not in mapped:
+                        component = items_key.rstrip("s")  # scholarships -> scholarship
+                        mapped["source_url"] = (
+                            f"https://search.studyaustralia.gov.au/{component}/{slug}/{item_id}"
+                        )
+                    if item_id and "external_id" not in mapped:
+                        mapped["external_id"] = str(item_id)
                     record = self.process_record(mapped)
                     records.append(record)
                     self.records_found += 1

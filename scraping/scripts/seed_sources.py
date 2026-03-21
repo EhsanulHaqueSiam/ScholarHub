@@ -8,7 +8,7 @@ from pathlib import Path
 
 import jsonschema
 
-from scholarhub_scraping.convex_client import get_convex_client
+from scholarhub_pipeline.ingestion.convex_client import PipelineConvexClient
 
 SKIP_FILES = {"schema.json", "validation_report.json"}
 
@@ -94,7 +94,7 @@ def seed_sources(source_dir: Path, *, dry_run: bool = False) -> None:
             print(f"  - {prepared['name']}: {prepared['url']}")
         return
 
-    client = get_convex_client()
+    client = PipelineConvexClient()
     seeded = 0
     for entry in sources:
         prepared = prepare_for_convex(entry)
