@@ -159,6 +159,12 @@ None yet.
 - Phase 06.1 inserted after Phase 06: Country eligibility filtering, university tier list, prestige highlighting (INSERTED)
 - Phase 10 added: Study Australia scrapers — remove broken scrapers, build comprehensive scrapers for scholarships/careers/providers/courses
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260321-i17 | Build Japan scholarship scrapers (studyinjapan.go.jp CSV + jpss.jp HTML) | 2026-03-21 | bf8b5dc | [260321-i17-build-japan-scholarship-scrapers-for-stu](./quick/260321-i17-build-japan-scholarship-scrapers-for-stu/) |
+
 ### Blockers/Concerns
 
 - Scrapling spider framework is new (v0.4, Feb 2026) -- limited production reports at 1000+ source scale. Validate during Phase 3.
