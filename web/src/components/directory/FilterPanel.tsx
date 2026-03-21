@@ -33,51 +33,57 @@ const PRESTIGE_TIERS = [
  * FilterPanel: Left sidebar on desktop (280px, sticky), bottom sheet on mobile.
  * Contains: degree level, field of study, funding type, prestige tier, show closed toggle.
  */
-export function FilterPanel() {
+/**
+ * Mobile filter trigger button — renders inline where placed.
+ * Must be placed OUTSIDE the flex sidebar layout to avoid pushing cards.
+ */
+export function MobileFilterTrigger() {
   const { filters, setFilter, activeFilterCount } = useScholarshipFilters();
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[80px] self-start max-h-[calc(100vh-96px)] overflow-y-auto pr-2">
-        <FilterContent filters={filters} setFilter={setFilter} />
-      </aside>
-
-      {/* Mobile bottom sheet trigger + dialog */}
-      <div className="lg:hidden">
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <Button variant="neutral" className="gap-2">
-              <SlidersHorizontal className="size-4" />
-              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-            </Button>
-          </Dialog.Trigger>
-          <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-overlay z-40" />
-            <Dialog.Content className="fixed bottom-0 inset-x-0 z-50 bg-secondary-background border-t-2 border-border rounded-t-base max-h-[85vh] overflow-y-auto p-4 animate-in slide-in-from-bottom">
-              <div className="flex items-center justify-between mb-4">
-                <Dialog.Title className="font-heading text-lg">Filters</Dialog.Title>
-                <Dialog.Close asChild>
-                  <button
-                    type="button"
-                    aria-label="Close filters"
-                    className="p-1.5 rounded-base hover:bg-foreground/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  >
-                    <X className="size-5" />
-                  </button>
-                </Dialog.Close>
-              </div>
-              <FilterContent filters={filters} setFilter={setFilter} />
+    <div className="lg:hidden">
+      <Dialog.Root>
+        <Dialog.Trigger asChild>
+          <Button variant="neutral" className="gap-2">
+            <SlidersHorizontal className="size-4" />
+            Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+          </Button>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-overlay z-40" />
+          <Dialog.Content className="fixed bottom-0 inset-x-0 z-50 bg-secondary-background border-t-2 border-border rounded-t-base max-h-[85vh] overflow-y-auto p-4 animate-in slide-in-from-bottom">
+            <div className="flex items-center justify-between mb-4">
+              <Dialog.Title className="font-heading text-lg">Filters</Dialog.Title>
               <Dialog.Close asChild>
-                <Button variant="default" className="w-full mt-4">
-                  Apply Filters
-                </Button>
+                <button
+                  type="button"
+                  aria-label="Close filters"
+                  className="p-1.5 rounded-base hover:bg-foreground/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
+                  <X className="size-5" />
+                </button>
               </Dialog.Close>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
-      </div>
-    </>
+            </div>
+            <FilterContent filters={filters} setFilter={setFilter} />
+            <Dialog.Close asChild>
+              <Button variant="default" className="w-full mt-4">
+                Apply Filters
+              </Button>
+            </Dialog.Close>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
+  );
+}
+
+export function FilterPanel() {
+  const { filters, setFilter } = useScholarshipFilters();
+
+  return (
+    <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[80px] self-start max-h-[calc(100vh-96px)] overflow-y-auto pr-2">
+      <FilterContent filters={filters} setFilter={setFilter} />
+    </aside>
   );
 }
 
