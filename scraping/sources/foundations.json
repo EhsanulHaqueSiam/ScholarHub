@@ -448,5 +448,20 @@
     "estimated_volume": "~1",
     "geographic_coverage": ["americas"],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program | International women studying in US/Canada"
+  },
+  {
+    "name": "Knight-Hennessy Scholars",
+    "url": "https://knight-hennessy.stanford.edu/program-overview/funding",
+    "category": "foundation",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": ["americas"],
+    "notes": "CF: no | Fields: title, description, amount | Volume: ~1 program (100 scholars/year) | Full funding for Stanford graduate study"
   }
 ]
