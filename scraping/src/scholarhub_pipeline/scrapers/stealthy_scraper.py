@@ -56,7 +56,9 @@ class StealthyScraper(BaseScraper):
             for item in items:
                 extracted: dict = {}
                 for field_name, selector in self.config.selectors.items():
-                    if field_name in ("listing", "next_page"):
+                    if field_name in ("listing", "next_page") or field_name.endswith("_default"):
+                        continue
+                    if not selector:
                         continue
                     result = item.css(selector)
                     if result:
@@ -69,6 +71,13 @@ class StealthyScraper(BaseScraper):
                     if self.config.field_mappings
                     else extracted
                 )
+
+                # Apply default values from selectors (e.g. host_country_default)
+                for key, val in self.config.selectors.items():
+                    if key.endswith("_default") and val:
+                        target = key.removesuffix("_default")
+                        if not mapped.get(target):
+                            mapped[target] = val
 
                 if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):
                     return records

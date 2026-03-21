@@ -1,9 +1,10 @@
 """Open Society Foundations Scholarships source configuration.
 
-The OSF grants page lists fellowships/grants as li items within a ul.
-Each entry is a linked li containing title, category label (Fellowship),
-description, and deadline status. Supports URL filter parameters
-(filter_region, filter_type, sort_by) for dynamic content.
+The OSF grants page lists fellowships/grants as clickable anchor tags
+within list items. Each grant links to /grants/[slug] and contains
+a title heading, description paragraph, and deadline status text.
+Currently shows ~2 active grants (Leadership in Government Fellowship,
+Open Society Fellowship).
 
 URL: https://www.opensocietyfoundations.org/grants
 """
@@ -17,9 +18,9 @@ from scholarhub_pipeline.configs._bases import BaseFoundationConfig
 class Config(BaseFoundationConfig):
     """Open Society Foundations Scholarships foundation config.
 
-    Grant listing as ul > li with linked entries. Each li has
-    title, type badge, description, and deadline. Filterable via
-    URL query params.
+    Grant listing page with li > a structure. Each anchor wraps
+    the grant card with title (h3), description, and deadline text.
+    Detail pages at /grants/[slug] contain full programme info.
     """
 
     name: str = "Open Society Foundations Scholarships"
@@ -30,19 +31,16 @@ class Config(BaseFoundationConfig):
     rate_limit_delay: float = 3.0
     selectors: dict[str, str] = field(
         default_factory=lambda: {
-            "listing": "#main ul li, main ul li",
-            "title": "h2::text, h3::text, a::text",
-            "description": "li p::text, li span::text",
-            "deadline": "li::text",
-            "detail_link": "li a::attr(href)",
-            "host_country_default": "",
+            "listing": "li a[href*='/grants/']",
+            "title": "h3",
+            "description": "p",
+            "detail_link": "::attr(href)",
         }
     )
     field_mappings: dict[str, str] = field(
         default_factory=lambda: {
             "title": "title",
             "description": "description",
-            "deadline": "application_deadline",
             "detail_link": "source_url",
         }
     )
@@ -50,9 +48,9 @@ class Config(BaseFoundationConfig):
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(
         default_factory=lambda: {
-            "description": "article p::text, main p::text",
-            "eligibility": "ul li::text, ol li::text",
-            "application_url": "a[href*='apply']::attr(href), a.btn::attr(href)",
+            "description": "article p",
+            "eligibility": "ul li",
+            "application_url": "a[href*='apply']::attr(href)",
         }
     )
 
