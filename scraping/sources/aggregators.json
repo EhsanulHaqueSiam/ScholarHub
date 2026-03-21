@@ -688,5 +688,20 @@
     "estimated_volume": "~800",
     "geographic_coverage": ["global"],
     "notes": "CF: no | Fields: title, country, deadline, degree | Volume: ~800 | Curated international scholarships"
+  },
+  {
+    "name": "Bold.org Scholarships",
+    "url": "https://bold.org/scholarships/",
+    "category": "aggregator",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 72,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~3231",
+    "geographic_coverage": ["americas"],
+    "notes": "CF: no | Fields: title, detail_link | Volume: ~3231 | Next.js SSR with URL-based pagination"
   }
 ]
