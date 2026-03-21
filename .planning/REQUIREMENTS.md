@@ -102,10 +102,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Study Australia Scrapers
 
 - [ ] **SA-01**: Broken Study Australia scraper config (gov_study_in_australia_government_portal) is removed
-- [ ] **SA-02**: InertiaScraper extracts Inertia.js version hash and fetches JSON via X-Inertia headers
-- [ ] **SA-03**: InertiaScraper paginates through all pages of Inertia.js API responses
-- [ ] **SA-04**: InertiaScraper handles 409 version mismatch by re-fetching version and retrying
-- [ ] **SA-05**: Scholarship field mapping produces valid raw_record schema records from Study Australia API
+- [x] **SA-02**: InertiaScraper extracts Inertia.js version hash and fetches JSON via X-Inertia headers
+- [x] **SA-03**: InertiaScraper paginates through all pages of Inertia.js API responses
+- [x] **SA-04**: InertiaScraper handles 409 version mismatch by re-fetching version and retrying
+- [x] **SA-05**: Scholarship field mapping produces valid raw_record schema records from Study Australia API
 - [ ] **SA-06**: New Study Australia configs (scholarships + providers) pass SourceConfig protocol validation
 - [ ] **SA-07**: Source catalog JSON and Python configs stay in sync (catalog sync test passes)
 
@@ -210,10 +210,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | SEOG-02 | Phase 9 | Pending |
 | SEOG-03 | Phase 9 | Pending |
 | SA-01 | Phase 10 | Pending |
-| SA-02 | Phase 10 | Pending |
-| SA-03 | Phase 10 | Pending |
-| SA-04 | Phase 10 | Pending |
-| SA-05 | Phase 10 | Pending |
+| SA-02 | Phase 10 | Complete |
+| SA-03 | Phase 10 | Complete |
+| SA-04 | Phase 10 | Complete |
+| SA-05 | Phase 10 | Complete |
 | SA-06 | Phase 10 | Pending |
 | SA-07 | Phase 10 | Pending |
 

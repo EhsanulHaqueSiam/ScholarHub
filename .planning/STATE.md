@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Completed 07-03-PLAN.md (Task 2 checkpoint:human-verify pending)"
-last_updated: "2026-03-20T18:38:21.338Z"
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-21T03:01:59.371Z"
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 5
-  total_plans: 24
-  completed_plans: 24
+  total_plans: 26
+  completed_plans: 25
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 07 — scholarship-detail-page
+**Current focus:** Phase 10 — study-australia-scrapers
 
 ## Current Position
 
-Phase: 07 (scholarship-detail-page) — EXECUTING
-Plan: 3 of 3
+Phase: 10 (study-australia-scrapers) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Plan: 3 of 3
 | Phase 07 P01 | 9min | 3 tasks | 7 files |
 | Phase 07 P02 | 4min | 3 tasks | 10 files |
 | Phase 07 P03 | 2min | 1 tasks | 2 files |
+| Phase 10 P01 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,8 @@ Recent decisions affecting current work:
 - [Phase 07]: EditorialTips restricts react-markdown to safe elements via allowedElements whitelist (p, strong, em, a, ul, ol, li)
 - [Phase 07]: StickyBar visibility inverted: visible=true means hero IS visible so bar hides via -translate-y-full
 - [Phase 07]: Updated generated api.ts to include directory module for typed api import replacing anyApi pattern
+- [Phase 10]: Dedicated InertiaScraper class for Inertia.js two-step protocol (version fetch + JSON pagination)
+- [Phase 10]: map_study_australia_record as module-level helper for direct testing and reuse
 
 ### Pending Todos
 
@@ -151,6 +154,7 @@ None yet.
 ### Roadmap Evolution
 
 - Phase 06.1 inserted after Phase 06: Country eligibility filtering, university tier list, prestige highlighting (INSERTED)
+- Phase 10 added: Study Australia scrapers — remove broken scrapers, build comprehensive scrapers for scholarships/careers/providers/courses
 
 ### Blockers/Concerns
 
@@ -160,6 +164,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T18:38:21.335Z
-Stopped at: Completed 07-03-PLAN.md (Task 2 checkpoint:human-verify pending)
+Last session: 2026-03-21T03:01:59.369Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
