@@ -168,7 +168,7 @@
     "name": "JPSS Scholarships",
     "url": "https://www.jpss.jp/en/scholarship/",
     "category": "government",
-    "scrape_method": "scrapling",
+    "scrape_method": "scrape",
     "trust_level": "needs_review",
     "scrape_frequency_hours": 168,
     "wave": 7,

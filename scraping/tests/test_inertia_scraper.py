@@ -163,7 +163,7 @@ def test_scholarship_field_mapping_no_orgs():
     }
     result = map_study_australia_record(item)
     assert result["provider_organization"] == ""
-    assert result["award_amount"] is None
+    assert "award_amount" not in result  # None values are stripped
     assert result["degree_level"] == []
     assert result["field_of_study"] == []
 

@@ -40,14 +40,18 @@ class SourceDeduplicator:
         key_ext = f"{source_id}:{ext_id}" if ext_id else None
         key_url = f"{source_id}:{src_url}" if src_url else None
 
-        if key_ext and key_ext in self._seen_external_ids:
-            return True
-        if key_url and key_url in self._seen_source_urls:
-            return True
-
+        # Prefer external_id for dedup when available; only fall back
+        # to source_url when no external_id exists (avoids false dupes
+        # for CSV/bulk sources where all records share the same URL).
         if key_ext:
+            if key_ext in self._seen_external_ids:
+                return True
             self._seen_external_ids.add(key_ext)
+            return False
+
         if key_url:
+            if key_url in self._seen_source_urls:
+                return True
             self._seen_source_urls.add(key_url)
 
         return False

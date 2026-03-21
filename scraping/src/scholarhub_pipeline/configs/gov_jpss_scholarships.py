@@ -18,8 +18,8 @@ class Config(BaseGovernmentConfig):
     name: str = "JPSS Scholarships"
     url: str = "https://www.jpss.jp/en/scholarship/"
     source_id: str = "jpss_scholarships"
-    primary_method: str = "scrapling"
-    secondary_method: str | None = "scrape"
+    primary_method: str = "scrape"
+    secondary_method: str | None = "scrapling"
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": "div.sch_list_area table tbody tr, div.scholarship-list .item, .search-result-item, table.sch_list tr",
         "title": "td:nth-child(1) a::text, .sch_name a::text, .name a::text",

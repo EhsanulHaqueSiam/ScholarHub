@@ -44,7 +44,7 @@ class TestSourceScheduler:
     def test_filter_due_sources_never_scraped(self):
         """Sources with no last_scraped timestamp are always due."""
         mock_convex = MagicMock()
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         scheduler = SourceScheduler(mock_convex)
         configs = [_make_config()]
@@ -285,7 +285,7 @@ class TestPipelineRunner:
             return None
 
         mock_convex.mutation.side_effect = mutation_side_effect
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
         await runner.run()
@@ -338,7 +338,7 @@ class TestPipelineRunner:
             return None
 
         mock_convex.mutation.side_effect = mutation_side_effect
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
         await runner.run()
@@ -381,7 +381,7 @@ class TestPipelineRunner:
             return None
 
         mock_convex.mutation.side_effect = mutation_side_effect
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
         await runner.run()
@@ -417,7 +417,7 @@ class TestPipelineRunner:
             return None
 
         mock_convex.mutation.side_effect = mutation_side_effect
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
         with patch(
@@ -467,7 +467,7 @@ class TestPipelineRunner:
             return None
 
         mock_convex.mutation.side_effect = mutation_side_effect
-        mock_convex.query.return_value = None
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
         await runner.run()

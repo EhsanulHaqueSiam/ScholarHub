@@ -32,7 +32,7 @@ class TestHealthTracker:
         tracker.record_success("source_1", yield_count=50)
         client.mutation.assert_called_once_with(
             "scraping:updateSourceHealth",
-            {"source_id": "source_1", "success": True, "yield_count": 50},
+            {"source_id": "source_1", "success": True, "records_found": 50},
         )
 
     def test_record_success_returns_result(self):
@@ -51,7 +51,7 @@ class TestHealthTracker:
             {
                 "source_id": "source_1",
                 "success": False,
-                "yield_count": 0,
+                "records_found": 0,
                 "error_type": "network_error",
                 "error_message": "Connection refused",
             },

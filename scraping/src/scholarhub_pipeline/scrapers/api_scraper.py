@@ -69,14 +69,22 @@ class ApiScraper(BaseScraper):
                     "host_country_default", ""
                 )
 
-                for item in items:
+                for idx, item in enumerate(items):
                     mapped = self.apply_field_mappings(item)
                     if host_country_default and not mapped.get("host_country"):
                         mapped["host_country"] = host_country_default
                     if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):
                         return records
+                    # Generate external_id from title+provider for dedup
+                    if not mapped.get("external_id"):
+                        title = mapped.get("title", "")
+                        provider = mapped.get("provider_organization", "")
+                        if title:
+                            import hashlib
+                            id_src = f"{title}|{provider}".encode()
+                            mapped["external_id"] = hashlib.md5(id_src).hexdigest()[:16]  # noqa: S324
                     record = self.process_record(mapped)
-                    record["source_url"] = record.get("source_url", url)
+                    record["source_url"] = record.get("source_url") or url
                     records.append(record)
                     self.records_found += 1
 
