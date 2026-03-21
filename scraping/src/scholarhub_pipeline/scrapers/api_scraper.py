@@ -1,13 +1,16 @@
-"""API scraper for sources with public JSON endpoints.
+"""API scraper for sources with public JSON/CSV endpoints.
 
 Fetches paginated JSON data from API endpoints using httpx,
 extracts items via a configurable JSON path, applies field
-mappings, and produces normalized records.
+mappings, and produces normalized records. Also supports CSV
+responses when selectors["format"] == "csv".
 """
 
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 from typing import Any
 
 import httpx
@@ -44,25 +47,42 @@ class ApiScraper(BaseScraper):
             url: str | None = self.config.url
             page = 0
 
+            is_csv = self.config.selectors.get("format") == "csv"
+
             while url:
                 response = await client.get(url)
                 response.raise_for_status()
                 self.bytes_downloaded += len(response.content)
-                data = response.json()
 
-                # Extract items using selectors["items_path"]
-                items = self._extract_items(data)
+                if is_csv:
+                    reader = csv.DictReader(io.StringIO(response.text))
+                    items = list(reader)
+                else:
+                    data = response.json()
+                    # Extract items using selectors["items_path"]
+                    items = self._extract_items(data)
+
                 if not items:
                     break
 
+                host_country_default = self.config.selectors.get(
+                    "host_country_default", ""
+                )
+
                 for item in items:
                     mapped = self.apply_field_mappings(item)
+                    if host_country_default and not mapped.get("host_country"):
+                        mapped["host_country"] = host_country_default
                     if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):
                         return records
                     record = self.process_record(mapped)
                     record["source_url"] = record.get("source_url", url)
                     records.append(record)
                     self.records_found += 1
+
+                # CSV endpoints return all data in a single request
+                if is_csv:
+                    break
 
                 # Pagination
                 url = self._get_next_url(data)

@@ -150,6 +150,21 @@
     "notes": "CF: no | Fields: title, deadline, provider, level | Volume: ~50 listings | French Government study portal"
   },
   {
+    "name": "Study in Japan Scholarships",
+    "url": "https://www.studyinjapan.go.jp/en/search-for-scholarships/download_tution-reduction.php?lang=en&go=go&offset=0&limit=9999",
+    "category": "government",
+    "scrape_method": "api",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 168,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": true,
+    "estimated_volume": "~682",
+    "geographic_coverage": ["asia"],
+    "notes": "CF: no | Fields: school_name, program_name, scholarship, tuition_reduction, settling_in_allowance | Volume: 682 scholarships | CSV download endpoint"
+  },
+  {
     "name": "Study in Japan (JASSO)",
     "url": "https://www.jasso.go.jp/en/ryugaku/scholarship_j/index.html",
     "category": "government",

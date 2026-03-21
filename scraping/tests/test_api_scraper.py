@@ -42,9 +42,29 @@ class FakeResponse:
         self._data = data
         self.status_code = status_code
         self.content = json.dumps(data).encode()
+        self.text = json.dumps(data)
 
     def json(self):
         return self._data
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import httpx
+
+            raise httpx.HTTPStatusError(
+                "Error",
+                request=httpx.Request("GET", "http://test"),
+                response=self,
+            )
+
+
+class CsvFakeResponse:
+    """Minimal mock of httpx.Response for CSV content."""
+
+    def __init__(self, text: str, status_code: int = 200):
+        self.text = text
+        self.status_code = status_code
+        self.content = text.encode()
 
     def raise_for_status(self):
         if self.status_code >= 400:
@@ -197,3 +217,71 @@ async def test_api_scraper_extract_items_flat_list(api_config):
     items = scraper._extract_items(response_data)
     assert len(items) == 2
     assert items[0]["name"] == "Flat Item 1"
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_handles_csv_format():
+    """API scraper should parse CSV responses when selectors.format == 'csv'."""
+    config = BaseSourceConfig(
+        name="CSV Test API",
+        url="https://api.example.com/csv",
+        source_id="test-csv",
+        primary_method="api",
+        selectors={"format": "csv"},
+        field_mappings={"Name": "title", "Amount": "award_amount"},
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    csv_text = "Name,Amount\nTest Scholarship,5000\nAnother Award,3000"
+
+    async def mock_get(url, **kwargs):
+        return CsvFakeResponse(csv_text)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(records) == 2
+    assert records[0]["title"] == "Test Scholarship"
+    assert records[0]["award_amount"] == "5000"
+    assert records[1]["title"] == "Another Award"
+    assert records[1]["award_amount"] == "3000"
+    assert scraper.records_found == 2
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_csv_sets_host_country_default():
+    """API scraper should set host_country from selectors.host_country_default for CSV."""
+    config = BaseSourceConfig(
+        name="CSV Country Test",
+        url="https://api.example.com/csv",
+        source_id="test-csv-country",
+        primary_method="api",
+        selectors={"format": "csv", "host_country_default": "Japan"},
+        field_mappings={"Name": "title"},
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    csv_text = "Name\nTokyo Scholarship"
+
+    async def mock_get(url, **kwargs):
+        return CsvFakeResponse(csv_text)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert records[0]["host_country"] == "JP"  # normalized from "Japan"
