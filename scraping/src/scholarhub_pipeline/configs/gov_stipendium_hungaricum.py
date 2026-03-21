@@ -1,11 +1,12 @@
 """Stipendium Hungaricum (Hungary) source configuration.
 
 Targets the Stipendium Hungaricum application portal at
-apply.stipendiumhungaricum.hu/courses which lists 1100+ study programmes
-available under the Hungarian government scholarship. The site runs on the
-DreamApply platform with URL parameter filtering and paginated results.
-Programmes include bachelor, master, doctoral, and preparatory courses
-at 30+ Hungarian universities.
+apply.stipendiumhungaricum.hu/courses which lists 1100+ study programmes.
+The site runs on the DreamApply platform using Semantic UI framework.
+Course cards use .ui.card structure with .content > .header for titles.
+Requires StealthyFetcher for JS rendering.
+
+URL: https://apply.stipendiumhungaricum.hu/courses?l%5B%5D=English
 """
 
 from dataclasses import dataclass, field
@@ -15,20 +16,25 @@ from scholarhub_pipeline.configs._bases import BaseGovernmentConfig
 
 @dataclass
 class Config(BaseGovernmentConfig):
-    """Stipendium Hungaricum Courses government config."""
+    """Stipendium Hungaricum Courses government config.
+
+    DreamApply platform with Semantic UI framework. Course listings
+    render as .ui.card elements with .content > .header (title),
+    .meta (university/level), and .description (course details).
+    Needs StealthyFetcher for JS rendering.
+    """
 
     name: str = "Stipendium Hungaricum Courses"
     url: str = "https://apply.stipendiumhungaricum.hu/courses?l%5B%5D=English&page=1"
     source_id: str = "stipendium_hungaricum_courses"
     primary_method: str = "scrapling"
-    secondary_method: str | None = "scrape"
+    secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
-        "listing": ".course-item, .programme-card, .search-result, .card, article, .list-group-item, tr.programme-row",
-        "title": "h3 a::text, h4 a::text, .course-title::text, .programme-name::text, .card-title::text",
-        "university": ".university::text, .institution::text, .provider::text, .school-name::text",
-        "degree_level": ".degree::text, .level::text, .programme-type::text, .badge::text",
-        "detail_link": "h3 a::attr(href), h4 a::attr(href), .course-title a::attr(href), a.programme-link::attr(href)",
-        "next_page": "a.next::attr(href), .pagination .next a::attr(href), li.next a::attr(href), a[rel='next']::attr(href)",
+        "listing": ".ui.card",
+        "title": ".content .header",
+        "university": ".content .meta",
+        "degree_level": ".content .description",
+        "detail_link": "a::attr(href)",
         "host_country_default": "Hungary",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {
@@ -36,21 +42,15 @@ class Config(BaseGovernmentConfig):
         "university": "provider_organization",
         "degree_level": "degree_level",
         "detail_link": "source_url",
-        "description": "description",
-        "duration": "funding_details",
-        "language": "eligibility_criteria",
     })
     pagination: dict | None = field(default_factory=lambda: {
         "type": "page_num",
-        "selector": "a.next::attr(href), .pagination .next a::attr(href), a[rel='next']::attr(href)",
+        "param": "page",
+        "start": 1,
         "max_pages": 60,
     })
-    detail_page: bool = True
-    detail_selectors: dict[str, str] | None = field(default_factory=lambda: {
-        "description": ".course-description::text, .programme-info p::text, .detail-content p::text",
-        "duration": ".duration::text, .length::text, .programme-duration::text",
-        "language": ".language::text, .teaching-language::text",
-    })
+    detail_page: bool = False
+    detail_selectors: dict[str, str] | None = None
     rate_limit_delay: float = 3.0
 
 

@@ -30,10 +30,10 @@ class Config(BaseOfficialConfig):
     rate_limit_delay: float = 3.0
     selectors: dict[str, str] = field(
         default_factory=lambda: {
-            "listing": "[class*='lp__slide']",
-            "title": "h2",
-            "description": "p",
-            "detail_link": "a[href*='/scholarships/']::attr(href)",
+            "listing": ".lp__card_content",
+            "title": ".lp__card_title a",
+            "description": ".lp__card_description",
+            "detail_link": ".lp__card_title a::attr(href)",
         }
     )
     field_mappings: dict[str, str] = field(
@@ -44,14 +44,8 @@ class Config(BaseOfficialConfig):
         }
     )
     pagination: dict | None = None
-    detail_page: bool = True
-    detail_selectors: dict[str, str] | None = field(
-        default_factory=lambda: {
-            "description": "[class*='lp__'] p",
-            "eligibility": "ul li",
-            "application_url": "a[href*='apply']::attr(href)",
-        }
-    )
+    detail_page: bool = False
+    detail_selectors: dict[str, str] | None = None
 
 
 CONFIG = Config()

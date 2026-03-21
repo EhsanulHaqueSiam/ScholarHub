@@ -34,15 +34,13 @@ class Config(BaseOfficialConfig):
         default_factory=lambda: {
             "listing": "#main",
             "title": "h1",
-            "description": "p",
-            "detail_link": "a::attr(href)",
+            "description": "h2",
         }
     )
     field_mappings: dict[str, str] = field(
         default_factory=lambda: {
             "title": "title",
             "description": "description",
-            "detail_link": "source_url",
         }
     )
     pagination: dict | None = None

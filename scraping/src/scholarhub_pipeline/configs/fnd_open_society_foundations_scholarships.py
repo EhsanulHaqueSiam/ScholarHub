@@ -31,9 +31,10 @@ class Config(BaseFoundationConfig):
     rate_limit_delay: float = 3.0
     selectors: dict[str, str] = field(
         default_factory=lambda: {
-            "listing": "li a[href*='/grants/']",
-            "title": "h3",
+            "listing": "a.a-grantsCard",
+            "title": "h2 span",
             "description": "p",
+            "deadline": "footer",
             "detail_link": "::attr(href)",
         }
     )
@@ -41,6 +42,7 @@ class Config(BaseFoundationConfig):
         default_factory=lambda: {
             "title": "title",
             "description": "description",
+            "deadline": "application_deadline",
             "detail_link": "source_url",
         }
     )
