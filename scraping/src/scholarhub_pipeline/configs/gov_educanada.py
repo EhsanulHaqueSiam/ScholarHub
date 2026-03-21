@@ -21,13 +21,15 @@ class Config(BaseGovernmentConfig):
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
         "format": "json",
-        "items_path": "",
+        "items_path": "data",
         "host_country_default": "Canada",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {
         "program": "title",
         "organization": "provider_organization",
         "citizenship": "eligibility_criteria",
+        "profile": "academic_level",
+        "country": "eligible_countries",
     })
     pagination: dict | None = None
     detail_page: bool = False
