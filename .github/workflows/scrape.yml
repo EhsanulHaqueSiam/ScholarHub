@@ -64,7 +64,7 @@ jobs:
           INPUT_WAVE: ${{ inputs.wave }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          ARGS="--json-logs"
+          ARGS=""
           if [ -n "$INPUT_SOURCE" ]; then
             ARGS="$ARGS --source $INPUT_SOURCE"
           fi
