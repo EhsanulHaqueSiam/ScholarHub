@@ -34,8 +34,9 @@ const PRESTIGE_TIERS = [
  * Contains: degree level, field of study, funding type, prestige tier, show closed toggle.
  */
 /**
- * Mobile filter trigger button — renders inline where placed.
- * Must be placed OUTSIDE the flex sidebar layout to avoid pushing cards.
+ * Mobile filter FAB — fixed floating button at bottom-left on mobile.
+ * Neo-brutalism styled: bold border, hard shadow, high contrast.
+ * Uses position:fixed so it never affects card layout.
  */
 export function MobileFilterTrigger() {
   const { filters, setFilter, activeFilterCount } = useScholarshipFilters();
@@ -44,10 +45,18 @@ export function MobileFilterTrigger() {
     <div className="lg:hidden">
       <Dialog.Root>
         <Dialog.Trigger asChild>
-          <Button variant="neutral" className="gap-2">
-            <SlidersHorizontal className="size-4" />
-            Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-          </Button>
+          <button
+            type="button"
+            className="fixed bottom-6 left-4 z-30 flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-4 py-3 border-2 border-border rounded-base shadow-shadow transition-all active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
+          >
+            <SlidersHorizontal className="size-5" />
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-black text-white text-xs font-bold rounded-full size-5 flex items-center justify-center -mr-1">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-overlay z-40" />
