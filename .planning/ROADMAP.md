@@ -213,4 +213,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 
 Plans:
 - [x] 10-01-PLAN.md -- InertiaScraper class with tests, SCRAPER_MAP + Convex schema registration
-- [ ] 10-02-PLAN.md -- Delete broken config, create scholarship/provider configs, update government.json catalog
+- [x] 10-02-PLAN.md -- Delete broken config, create scholarship/provider configs, update government.json catalog
