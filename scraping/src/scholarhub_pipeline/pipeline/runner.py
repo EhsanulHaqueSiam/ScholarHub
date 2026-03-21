@@ -188,6 +188,9 @@ class PipelineRunner:
                 batch = BatchAccumulator(self.convex, run_id)
                 dedup = SourceDeduplicator()
                 for record in records:
+                    # Skip records without a title (CSS selector mismatch)
+                    if not record.get("title"):
+                        continue
                     if not dedup.is_duplicate(record, config.source_id):
                         # Strip None values and non-schema fields for Convex
                         cleaned = {
