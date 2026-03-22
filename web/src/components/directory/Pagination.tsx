@@ -62,7 +62,9 @@ export function DesktopPagination({ totalLoaded, status, loadMore }: PaginationP
           <button
             key={item.page}
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               const resultsEl = document.getElementById("results");
               if (resultsEl) {
                 const cardHeight = 340;
@@ -92,7 +94,9 @@ export function DesktopPagination({ totalLoaded, status, loadMore }: PaginationP
       <button
         type="button"
         disabled={!canLoadMore || isLoadingMore}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           if (canLoadMore) loadMore(PAGE_SIZE);
         }}
         aria-label={canLoadMore ? "Load next page" : "No more pages"}
