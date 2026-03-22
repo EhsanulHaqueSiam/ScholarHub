@@ -87,11 +87,11 @@ Plans:
   2. Merge logic selects the richest/most complete data from each source -- source-level records are preserved separately from the canonical merged record
   3. Cyclical scholarships (e.g., DAAD 2025 and DAAD 2026) are linked, and expired scholarships display "expected to reopen [month]" based on historical patterns
   4. Aggregation pipeline runs after scraping and produces a clear count of new, updated, and duplicate records per run
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- Schema evolution (match_key, match_status), aggregation helper functions (normalize, match, merge, cycle, archive), unit tests
+- [ ] 04-02-PLAN.md -- Aggregation pipeline mutations (trigger-wrapped batch processing, dedup, merge, cycle detection), completeRun wiring, archive cron, integration tests
 
 ### Phase 5: Admin Dashboard
 **Goal**: A solo admin can efficiently review, edit, approve/reject, and publish scraped scholarships through a streamlined dashboard -- with trusted sources auto-publishing
