@@ -85,6 +85,13 @@ export const sourceResultStatusValidator = v.union(
 );
 export type SourceResultStatus = Infer<typeof sourceResultStatusValidator>;
 
+export const collectionStatusValidator = v.union(
+  v.literal("draft"),
+  v.literal("active"),
+  v.literal("archived"),
+);
+export type CollectionStatus = Infer<typeof collectionStatusValidator>;
+
 // ---- Schema Definition ----
 
 export default defineSchema({
@@ -209,6 +216,16 @@ export default defineSchema({
     prestige_score: v.optional(v.number()),
     search_text: v.optional(v.string()),
     match_key: v.optional(v.string()),
+    suggested_tags: v.optional(
+      v.array(
+        v.object({
+          tag: v.string(),
+          reason: v.string(),
+          suggested_at: v.number(),
+        }),
+      ),
+    ),
+    related_ids: v.optional(v.array(v.id("scholarships"))),
   })
     .index("by_status", ["status"])
     .index("by_country_status", ["host_country", "status"])
@@ -305,4 +322,43 @@ export default defineSchema({
   })
     .index("by_scholarship", ["scholarship_id", "changed_at"])
     .index("by_changed_at", ["changed_at"]),
+
+  // Curated scholarship collections -- admin-managed, filter-based membership
+  collections: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    emoji: v.string(),
+    description: v.optional(v.string()),
+    status: collectionStatusValidator,
+    is_featured: v.boolean(),
+    sort_order: v.number(),
+    default_sort: v.optional(v.string()),
+    host_countries: v.optional(v.array(v.string())),
+    degree_levels: v.optional(v.array(degreeLevelValidator)),
+    funding_types: v.optional(v.array(fundingTypeValidator)),
+    fields_of_study: v.optional(v.array(v.string())),
+    prestige_tiers: v.optional(v.array(prestigeTierValidator)),
+    tags: v.optional(v.array(v.string())),
+    deadline_before: v.optional(v.number()),
+    deadline_after: v.optional(v.number()),
+    added_since: v.optional(v.number()),
+    scholarship_count: v.number(),
+    view_count: v.number(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_featured", ["is_featured", "status"])
+    .index("by_sort_order", ["status", "sort_order"]),
+
+  // Admin-configurable weights for related scholarships scoring
+  related_weights: defineTable({
+    provider: v.number(),
+    country: v.number(),
+    degree: v.number(),
+    funding: v.number(),
+    tags: v.number(),
+    updated_at: v.number(),
+  }),
 });

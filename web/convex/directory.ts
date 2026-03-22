@@ -304,6 +304,7 @@ export const listScholarshipsBatch = query({
     fieldsOfStudy: v.optional(v.array(v.string())),
     fundingTypes: v.optional(v.array(fundingTypeValidator)),
     prestigeTiers: v.optional(v.array(prestigeTierValidator)),
+    tags: v.optional(v.array(v.string())),
     sort: v.optional(v.string()),
     showClosed: v.optional(v.boolean()),
     closingSoon: v.optional(v.boolean()),
@@ -385,6 +386,14 @@ export const listScholarshipsBatch = query({
       results = results.filter((doc) => {
         if (!doc.fields_of_study || doc.fields_of_study.length === 0) return false;
         return args.fieldsOfStudy!.some((f) => doc.fields_of_study!.includes(f));
+      });
+    }
+
+    // Tags post-filter (OR logic: scholarship must have at least one matching tag)
+    if (args.tags && args.tags.length > 0) {
+      results = results.filter((doc) => {
+        if (!doc.tags || doc.tags.length === 0) return false;
+        return args.tags!.some((t) => doc.tags!.includes(t));
       });
     }
 

@@ -9,6 +9,7 @@ export const scholarshipSearchSchema = z.object({
   field: z.string().optional(), // comma-separated: "engineering,medicine"
   funding: z.string().optional(), // comma-separated: "fully_funded,partial"
   tier: z.string().optional(), // comma-separated: "gold,silver"
+  tags: z.string().optional(), // comma-separated: "stem,no_gre"
   sort: z.enum(["deadline", "prestige", "newest", "amount"]).optional(),
   view: z.enum(["grid", "list"]).optional(),
   show_closed: z.coerce.boolean().optional(),
@@ -28,9 +29,7 @@ export function parseCommaSeparated(value: string | undefined): string[] {
 }
 
 /** Serialize array into comma-separated string */
-export function serializeCommaSeparated(
-  values: string[],
-): string | undefined {
+export function serializeCommaSeparated(values: string[]): string | undefined {
   if (values.length === 0) return undefined;
   return values.join(",");
 }
