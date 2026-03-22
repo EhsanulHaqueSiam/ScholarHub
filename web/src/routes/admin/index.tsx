@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { ReviewQueue } from "@/components/admin/ReviewQueue";
 import { StatsBar } from "@/components/admin/StatsBar";
 import { api } from "../../../convex/_generated/api";
 
@@ -15,10 +16,8 @@ function AdminDashboard() {
       {/* Stats bar (D-01) */}
       <StatsBar stats={stats} />
 
-      {/* ReviewQueue placeholder - Plan 03 will fill this */}
-      <div className="text-foreground text-sm font-base">
-        Review queue loading...
-      </div>
+      {/* Review queue (D-02 through D-06) */}
+      <ReviewQueue />
     </div>
   );
 }

@@ -1,0 +1,135 @@
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import { useMutation } from "convex/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { api } from "../../../convex/_generated/api";
+
+interface BulkActionBarProps {
+  selectedCount: number;
+  selectedIds: Set<Id<"scholarships">>;
+  onClear: () => void;
+}
+
+export function BulkActionBar({ selectedCount, selectedIds, onClear }: BulkActionBarProps) {
+  const bulkApprove = useMutation(api.admin.bulkApprove);
+  const bulkReject = useMutation(api.admin.bulkReject);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
+
+  async function handleBulkApprove() {
+    setIsApproving(true);
+    setResultMessage(null);
+    try {
+      const result = await bulkApprove({
+        scholarshipIds: Array.from(selectedIds),
+      });
+      setResultMessage(
+        `Approved ${result.approved}${result.blocked > 0 ? `, ${result.blocked} blocked (duplicates)` : ""}`,
+      );
+      setTimeout(() => {
+        setResultMessage(null);
+        onClear();
+      }, 2000);
+    } catch {
+      setResultMessage("Failed to approve selections");
+    } finally {
+      setIsApproving(false);
+    }
+  }
+
+  async function handleBulkReject() {
+    setIsRejecting(true);
+    setResultMessage(null);
+    try {
+      const result = await bulkReject({
+        scholarshipIds: Array.from(selectedIds),
+      });
+      setResultMessage(`Rejected ${result.rejected} scholarships`);
+      setTimeout(() => {
+        setResultMessage(null);
+        onClear();
+      }, 2000);
+    } catch {
+      setResultMessage("Failed to reject selections");
+    } finally {
+      setIsRejecting(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed bottom-0 inset-x-0 z-40 transition-transform duration-200 translate-y-0"
+      role="toolbar"
+      aria-label={`Bulk actions for ${selectedCount} selected scholarships`}
+    >
+      <div className="max-w-[1280px] mx-auto bg-foreground text-background border-t-2 border-border shadow-[0_-4px_0_0_var(--border)] h-14 flex items-center justify-between py-2 px-6">
+        {/* Left: count */}
+        <span className="text-sm">
+          {resultMessage ?? `${selectedCount} scholarships selected`}
+        </span>
+
+        {/* Right: actions */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleBulkApprove}
+            disabled={isApproving || isRejecting}
+            className="bg-main text-main-foreground border-background/30"
+          >
+            {isApproving ? "Approving..." : `Approve ${selectedCount} Selected`}
+          </Button>
+
+          <AlertDialog.Root>
+            <AlertDialog.Trigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isApproving || isRejecting}
+              >
+                Reject {selectedCount} Selected
+              </Button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Portal>
+              <AlertDialog.Overlay className="fixed inset-0 bg-overlay z-50" />
+              <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-secondary-background border-2 border-border rounded-base shadow-shadow p-6 w-full max-w-md">
+                <AlertDialog.Title className="font-heading text-lg mb-2">
+                  Reject {selectedCount} scholarships?
+                </AlertDialog.Title>
+                <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
+                  They will not be visible to students.
+                </AlertDialog.Description>
+                <div className="flex justify-end gap-2">
+                  <AlertDialog.Cancel asChild>
+                    <Button variant="neutral" size="sm">
+                      Keep All
+                    </Button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkReject}
+                    >
+                      Reject All
+                    </Button>
+                  </AlertDialog.Action>
+                </div>
+              </AlertDialog.Content>
+            </AlertDialog.Portal>
+          </AlertDialog.Root>
+
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-background/70 hover:text-background underline text-sm transition-colors"
+          >
+            Clear selection
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
