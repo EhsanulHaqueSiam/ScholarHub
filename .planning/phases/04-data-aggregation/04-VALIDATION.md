@@ -2,8 +2,8 @@
 phase: 4
 slug: data-aggregation
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-22
 ---
 
@@ -38,12 +38,10 @@ created: 2026-03-22
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 0 | AGGR-01..06 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -x` | ❌ W0 | ⬜ pending |
-| 04-01-02 | 01 | 1 | AGGR-02 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -t "composite match" -x` | ❌ W0 | ⬜ pending |
-| 04-01-03 | 01 | 1 | AGGR-01,03 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -t "merges multi-source" -x` | ❌ W0 | ⬜ pending |
-| 04-01-04 | 01 | 1 | AGGR-04 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -t "preserves raw_records" -x` | ❌ W0 | ⬜ pending |
-| 04-02-01 | 02 | 2 | AGGR-05 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -t "cycle detection" -x` | ❌ W0 | ⬜ pending |
-| 04-02-02 | 02 | 2 | AGGR-06 | unit | `cd web && npx vitest run src/tests/aggregation.test.ts -t "auto-archive" -x` | ❌ W0 | ⬜ pending |
+| 04-01-01 | 01 | 1 (RED) | AGGR-02,03,05,06 | unit | `cd web && npx vitest run src/tests/aggregationHelpers.test.ts -x` | Task creates it | ⬜ pending |
+| 04-01-02 | 01 | 1 (GREEN) | AGGR-02,03,05,06 | unit | `cd web && npx vitest run src/tests/aggregationHelpers.test.ts --reporter=verbose` | Yes (from 04-01-01) | ⬜ pending |
+| 04-02-01 | 02 | 2 (RED) | AGGR-01..06 | integration | `cd web && npx vitest run src/tests/aggregation.test.ts -x` | Task creates it | ⬜ pending |
+| 04-02-02 | 02 | 2 (GREEN) | AGGR-01..06 | integration | `cd web && npx vitest run src/tests/aggregation.test.ts --reporter=verbose` | Yes (from 04-02-01) | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,8 +49,11 @@ created: 2026-03-22
 
 ## Wave 0 Requirements
 
-- [ ] `web/src/tests/aggregation.test.ts` — test stubs for AGGR-01 through AGGR-06 with convex-test
-- [ ] Pure function tests for normalization, match key computation, merge resolution, year extraction (simple vitest unit tests without convex-test)
+Wave 0 is handled by the TDD task ordering within each plan:
+- Plan 01: Task 1 (RED) creates `web/src/tests/aggregationHelpers.test.ts` before Task 2 (GREEN) implements the helpers
+- Plan 02: Task 1 (RED) creates `web/src/tests/aggregation.test.ts` before Task 2 (GREEN) implements the mutations
+
+No separate Wave 0 is needed -- test files are created as the first task in each plan.
 
 *Existing vitest + convex-test infrastructure covers framework needs.*
 
@@ -68,11 +69,11 @@ created: 2026-03-22
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (test files created as Task 1 in each plan)
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
