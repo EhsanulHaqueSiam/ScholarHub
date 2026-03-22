@@ -33,29 +33,25 @@ export function SourceTrustManager() {
   const sources = useQuery(api.admin.getAllSources);
   const updateSourceTrust = useMutation(api.admin.updateSourceTrust);
 
-  const [pendingChanges, setPendingChanges] = useState<
-    Record<string, TrustLevel>
-  >({});
+  const [pendingChanges, setPendingChanges] = useState<Record<string, TrustLevel>>({});
   const [confirmingSource, setConfirmingSource] = useState<{
     id: Id<"sources">;
     name: string;
     newLevel: TrustLevel;
   } | null>(null);
-  const [affectedCount, setAffectedCount] = useState<number | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
+  const pendingCount = useQuery(
+    api.admin.countAffectedScholarships,
+    confirmingSource ? { sourceId: confirmingSource.id } : "skip",
+  );
+
   if (!sources) {
-    return (
-      <div className="text-foreground/60 text-sm py-8 text-center">
-        Loading sources...
-      </div>
-    );
+    return <div className="text-foreground/60 text-sm py-8 text-center">Loading sources...</div>;
   }
 
-  const filteredSources = showActiveOnly
-    ? sources.filter((s) => s.is_active)
-    : sources;
+  const filteredSources = showActiveOnly ? sources.filter((s) => s.is_active) : sources;
 
   function handleDropdownChange(sourceId: string, currentLevel: TrustLevel, newLevel: TrustLevel) {
     if (newLevel === currentLevel) {
@@ -67,47 +63,20 @@ export function SourceTrustManager() {
     }
   }
 
-  async function handleApplyClick(source: {
-    _id: Id<"sources">;
-    name: string;
-    trust_level: string;
-  }) {
+  function handleApplyClick(source: { _id: Id<"sources">; name: string; trust_level: string }) {
     const newLevel = pendingChanges[source._id];
     if (!newLevel) return;
-
-    // Count affected scholarships for the confirmation dialog
-    const pending = sources
-      ? 0
-      : 0;
-    // We'll use the query result directly -- but since we can't call useQuery conditionally,
-    // we estimate affected count from the mutation return instead.
-    // For now, show confirmation with the source name and new level.
     setConfirmingSource({ id: source._id, name: source.name, newLevel });
-    setAffectedCount(null);
-
-    // Fetch the affected count
-    try {
-      // We use a direct fetch since we can't conditionally call useQuery
-      // The updateSourceTrust mutation returns affectedCount
-      setAffectedCount(pending);
-    } catch {
-      setAffectedCount(0);
-    }
   }
 
   async function handleConfirmApply() {
     if (!confirmingSource) return;
     setIsApplying(true);
     try {
-      const result = await updateSourceTrust({
+      await updateSourceTrust({
         sourceId: confirmingSource.id,
         trustLevel: confirmingSource.newLevel,
       });
-      // Update the affected count with the actual result
-      if (result) {
-        setAffectedCount(result.affectedCount);
-      }
-      // Clear the pending change for this source
       const next = { ...pendingChanges };
       delete next[confirmingSource.id];
       setPendingChanges(next);
@@ -160,9 +129,7 @@ export function SourceTrustManager() {
         {/* Rows */}
         {filteredSources.length === 0 ? (
           <div className="text-center py-12">
-            <p className="font-heading text-lg text-foreground/80 mb-2">
-              No sources found
-            </p>
+            <p className="font-heading text-lg text-foreground/80 mb-2">No sources found</p>
             <p className="text-sm text-foreground/60">
               Sources will appear here after the scraping pipeline is configured.
             </p>
@@ -183,9 +150,7 @@ export function SourceTrustManager() {
               >
                 {/* Source name */}
                 <div className="min-w-0">
-                  <span className="text-sm font-base truncate block">
-                    {source.name}
-                  </span>
+                  <span className="text-sm font-base truncate block">{source.name}</span>
                   {!source.is_active && (
                     <span className="text-xs text-foreground/40">Inactive</span>
                   )}
@@ -203,11 +168,7 @@ export function SourceTrustManager() {
                   <select
                     value={pendingLevel ?? currentTrust}
                     onChange={(e) =>
-                      handleDropdownChange(
-                        source._id,
-                        currentTrust,
-                        e.target.value as TrustLevel,
-                      )
+                      handleDropdownChange(source._id, currentTrust, e.target.value as TrustLevel)
                     }
                     className="text-xs border-2 border-border rounded-base bg-background px-2 py-1 font-base"
                   >
@@ -255,12 +216,13 @@ export function SourceTrustManager() {
             <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
               {confirmingSource && (
                 <>
-                  Changing trust level to{" "}
-                  <strong>{TRUST_LABELS[confirmingSource.newLevel]}</strong> for{" "}
-                  <strong>{confirmingSource.name}</strong>
-                  {affectedCount !== null && affectedCount > 0
-                    ? ` will affect ${affectedCount} pending scholarships`
-                    : " will affect pending scholarships from this source"}
+                  Changing trust level to <strong>{TRUST_LABELS[confirmingSource.newLevel]}</strong>{" "}
+                  for <strong>{confirmingSource.name}</strong>
+                  {pendingCount !== undefined && pendingCount > 0
+                    ? `. This will affect ${pendingCount} pending scholarship${pendingCount !== 1 ? "s" : ""}`
+                    : pendingCount === 0
+                      ? ". No pending scholarships will be affected"
+                      : ""}
                   . Continue?
                 </>
               )}
