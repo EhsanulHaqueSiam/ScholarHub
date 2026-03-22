@@ -17,7 +17,7 @@ import { SourcesSection } from "@/components/detail/SourcesSection";
 import { StickyBar } from "@/components/detail/StickyBar";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
-import { getCountryName, parseHostCountries } from "@/lib/countries";
+import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
 import { getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
@@ -283,24 +283,45 @@ function ScholarshipDetailPage() {
             awardCurrency={scholarship.award_currency ?? undefined}
           />
 
-          {/* Country Info -- cost of studying, admission/visa, intakes, post-study work */}
+          {/* Country Info -- per host country: cost, admission/visa, intakes, post-study work */}
           {(() => {
             const codes = parseHostCountries(scholarship.host_country);
-            const primaryCode = codes[0];
-            const countryData = primaryCode ? getCountryData(primaryCode) : null;
-            const countryName = primaryCode ? getCountryName(primaryCode) : "";
+            const countriesWithData = codes
+              .map((code) => ({
+                code,
+                data: getCountryData(code),
+                name: getCountryName(code),
+              }))
+              .filter((c) => c.data !== null);
 
-            if (!countryData) return null;
+            if (countriesWithData.length === 0) return null;
 
-            return (
-              <div className="space-y-8">
-                <h2 className="font-heading text-2xl">Studying in {countryName}</h2>
-                <CostOfStudyingSection data={countryData} countryName={countryName} />
-                <AdmissionVisaSection data={countryData} countryName={countryName} />
-                <IntakePeriodsSection data={countryData} />
-                <PostStudyWorkSection data={countryData} countryName={countryName} />
+            const coverage = {
+              fundingType: scholarship.funding_type,
+              fundingTuition: scholarship.funding_tuition ?? undefined,
+              fundingLiving: scholarship.funding_living ?? undefined,
+              fundingTravel: scholarship.funding_travel ?? undefined,
+              fundingInsurance: scholarship.funding_insurance ?? undefined,
+              awardAmountMin: scholarship.award_amount_min ?? undefined,
+              awardAmountMax: scholarship.award_amount_max ?? undefined,
+              awardCurrency: scholarship.award_currency ?? undefined,
+            };
+
+            return countriesWithData.map((country) => (
+              <div key={country.code} className="space-y-6">
+                <h2 className="font-heading text-2xl flex items-center gap-2">
+                  {getCountryFlag(country.code)} Studying in {country.name}
+                </h2>
+                <CostOfStudyingSection
+                  data={country.data!}
+                  countryName={country.name}
+                  coverage={coverage}
+                />
+                <AdmissionVisaSection data={country.data!} countryName={country.name} />
+                <IntakePeriodsSection data={country.data!} />
+                <PostStudyWorkSection data={country.data!} countryName={country.name} />
               </div>
-            );
+            ));
           })()}
 
           {/* How to Apply */}
