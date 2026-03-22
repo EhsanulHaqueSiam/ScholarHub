@@ -94,13 +94,18 @@ export const getReviewQueue = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const status = args.status ?? "pending_review";
-    const limit = args.limit ?? 100;
+    const limit = args.limit ?? 200;
 
-    const scholarships = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", status))
-      .take(limit);
+    let scholarships;
+    if (args.status) {
+      scholarships = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", args.status))
+        .take(limit);
+    } else {
+      // No status filter = return all scholarships
+      scholarships = await ctx.db.query("scholarships").take(limit);
+    }
 
     // Enrich each scholarship with source info and duplicate flags
     const enriched = await Promise.all(
@@ -156,6 +161,16 @@ export const getRevisionHistory = query({
 
     // Sort by changed_at descending (most recent first)
     return revisions.sort((a, b) => b.changed_at - a.changed_at);
+  },
+});
+
+/**
+ * Get a single scholarship for editing in the admin panel.
+ */
+export const getScholarshipForEdit = query({
+  args: { scholarshipId: v.id("scholarships") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.scholarshipId);
   },
 });
 
