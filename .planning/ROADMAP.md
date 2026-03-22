@@ -181,14 +181,15 @@ Plans:
 **Depends on**: Phase 7
 **Requirements**: SEOG-01, SEOG-02, SEOG-03
 **Success Criteria** (what must be TRUE):
-  1. Each scholarship page has a clean URL slug, proper meta tags (title, description, Open Graph), and Schema.org structured data (Scholarship markup)
-  2. Country landing pages are auto-generated (e.g., "/scholarships/germany") with unique meta descriptions and filtered scholarship listings
-  3. Degree-level landing pages are auto-generated (e.g., "/scholarships/phd") with unique meta descriptions and filtered scholarship listings
-**Plans**: TBD
+  1. Each scholarship page has a clean URL slug, proper meta tags (title, description, Open Graph), and Schema.org structured data (Grant markup)
+  2. Country landing pages are auto-generated (e.g., "/scholarships/country/germany") with unique meta descriptions and filtered scholarship listings
+  3. Degree-level landing pages are auto-generated (e.g., "/scholarships/degree/phd") with unique meta descriptions and filtered scholarship listings
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md -- SEO foundation library (JSON-LD builders, meta helpers, landing content generators, sitemap utility), Convex SEO queries, root layout enhancements (OG defaults, hreflang, GA4, GSC)
+- [ ] 09-02-PLAN.md -- Route SEO enhancements (Grant JSON-LD + BreadcrumbList on detail, ItemList on collections/compare, country page stats/FAQ/cross-links, degree page full rebuild)
+- [ ] 09-03-PLAN.md -- Technical SEO server routes (sitemap.xml, robots.txt, dynamic OG image generation with satori)
 
 ## Progress
 
@@ -206,7 +207,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
 | 8. Discovery Features | 8/8 | In Progress | - |
-| 9. SEO & Growth | 0/2 | Not started | - |
+| 9. SEO & Growth | 0/3 | Not started | - |
 
 ### Phase 10: Study Australia Scrapers
 
