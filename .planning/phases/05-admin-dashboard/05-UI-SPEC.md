@@ -43,7 +43,7 @@ Declared values (must be multiples of 4):
 | 3xl | 64px | Not used in admin layout (admin is dense) |
 
 Exceptions:
-- Floating bulk action bar: 12px vertical padding (compact bar needs tighter spacing)
+- Floating bulk action bar: 8px vertical padding (py-2, compact bar needs tighter spacing)
 - Slide-out edit panel: 24px (p-6) internal padding, matching existing Card content padding
 - Checkbox touch targets: 40px minimum (10px padding around 20px checkbox area)
 
@@ -148,7 +148,7 @@ Add a `destructive` variant to the existing Button CVA:
 destructive: "text-white bg-destructive border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none"
 ```
 
-Usage: "Reject" button, "Reject N selected" in bulk action bar.
+Usage: "Reject Scholarship" button, "Reject N selected" in bulk action bar.
 
 ---
 
@@ -266,7 +266,7 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 - Slide-up animation: translate-y from 100% to 0%, 200ms ease-out
 - Background: --foreground (inverted for contrast -- dark bar in light mode, light bar in dark mode)
 - Text color: --background (inverted)
-- Height: 56px
+- Height: 56px (content ~40px + 8px py-2 top + 8px py-2 bottom)
 - Layout: `"N scholarships selected" [Approve N selected (accent)] [Reject N selected (destructive)] [Clear selection (ghost)]`
 - Border-top: 2px solid --border
 - Shadow: `0 -4px 0 0 var(--border)` (upward neo-brutalism shadow)
@@ -356,7 +356,7 @@ Implementation notes:
 ### Approve / Reject
 
 1. Single approve: click "Approve" on expanded row. Immediate status change, row moves to Published tab.
-2. Single reject: click "Reject" on expanded row. Confirmation dialog: "Reject [title]? This scholarship will not be visible to students." Two buttons: "Reject" (destructive) / "Keep Scholarship" (neutral).
+2. Single reject: click "Reject" on expanded row. Confirmation dialog: "Reject [title]? This scholarship will not be visible to students." Two buttons: "Reject Scholarship" (destructive) / "Keep Scholarship" (neutral).
 3. Bulk approve: click "Approve N selected" on BulkActionBar. No confirmation (approve is non-destructive).
 4. Bulk reject: click "Reject N selected" on BulkActionBar. Confirmation dialog: "Reject N scholarships? They will not be visible to students." Two buttons: "Reject All" (destructive) / "Keep All" (neutral).
 5. Dedup block (ADMN-08): if approving a scholarship whose match_key duplicates an already-published record, show inline error: "Cannot approve: a published scholarship with the same title and organization already exists." with a link to the duplicate.
@@ -386,7 +386,7 @@ Implementation notes:
 | Error state | "Failed to load review queue. Check your Convex deployment status and try again." |
 | Reject confirmation (single) | "Reject [title]? This scholarship will not be visible to students." |
 | Reject confirmation (bulk) | "Reject N scholarships? They will not be visible to students." |
-| Reject confirm button (single) | "Reject" |
+| Reject confirm button (single) | "Reject Scholarship" |
 | Reject cancel button (single) | "Keep Scholarship" |
 | Reject confirm button (bulk) | "Reject All" |
 | Reject cancel button (bulk) | "Keep All" |
