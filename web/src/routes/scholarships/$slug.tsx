@@ -2,23 +2,28 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { useRef } from "react";
 import { z } from "zod";
-import { api } from "../../../convex/_generated/api";
-import { Navbar } from "@/components/layout/Navbar";
-import { BackToTop } from "@/components/layout/BackToTop";
-import { HeroSection } from "@/components/detail/HeroSection";
-import { StickyBar } from "@/components/detail/StickyBar";
+import { AdmissionVisaSection } from "@/components/country/AdmissionVisaSection";
+import { CostOfStudyingSection } from "@/components/country/CostOfStudyingSection";
+import { IntakePeriodsSection } from "@/components/country/IntakePeriodsSection";
+import { PostStudyWorkSection } from "@/components/country/PostStudyWorkSection";
 import { DetailBreadcrumb } from "@/components/detail/Breadcrumb";
-import { OverviewSection } from "@/components/detail/OverviewSection";
+import { DetailSkeleton } from "@/components/detail/DetailSkeleton";
 import { EligibilitySection } from "@/components/detail/EligibilitySection";
 import { FundingSection } from "@/components/detail/FundingSection";
+import { HeroSection } from "@/components/detail/HeroSection";
 import { HowToApplySection } from "@/components/detail/HowToApplySection";
+import { OverviewSection } from "@/components/detail/OverviewSection";
 import { SourcesSection } from "@/components/detail/SourcesSection";
-import { DetailSkeleton } from "@/components/detail/DetailSkeleton";
+import { StickyBar } from "@/components/detail/StickyBar";
+import { BackToTop } from "@/components/layout/BackToTop";
+import { Navbar } from "@/components/layout/Navbar";
+import { getCountryName, parseHostCountries } from "@/lib/countries";
+import { getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
-import { formatFundingType } from "@/lib/shared";
-import { getCountryName } from "@/lib/countries";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
+import { formatFundingType } from "@/lib/shared";
+import { api } from "../../../convex/_generated/api";
 
 /**
  * Search params schema for breadcrumb filter context.
@@ -65,8 +70,7 @@ function buildMetaTitle(scholarship: {
   const fundingLabel = formatFundingType(scholarship.funding_type);
   const degree =
     scholarship.degree_levels.length > 0
-      ? scholarship.degree_levels[0].charAt(0).toUpperCase() +
-        scholarship.degree_levels[0].slice(1)
+      ? scholarship.degree_levels[0].charAt(0).toUpperCase() + scholarship.degree_levels[0].slice(1)
       : null;
   const country = getCountryName(scholarship.host_country);
 
@@ -120,21 +124,14 @@ function buildScholarshipJsonLd(scholarship: {
   }
 
   if (scholarship.application_deadline) {
-    jsonLd.applicationDeadline = new Date(
-      scholarship.application_deadline,
-    ).toISOString();
+    jsonLd.applicationDeadline = new Date(scholarship.application_deadline).toISOString();
   }
 
-  if (
-    scholarship.eligibility_nationalities &&
-    scholarship.eligibility_nationalities.length > 0
-  ) {
-    jsonLd.eligibleRegion = scholarship.eligibility_nationalities.map(
-      (code) => ({
-        "@type": "Place",
-        name: getCountryName(code),
-      }),
-    );
+  if (scholarship.eligibility_nationalities && scholarship.eligibility_nationalities.length > 0) {
+    jsonLd.eligibleRegion = scholarship.eligibility_nationalities.map((code) => ({
+      "@type": "Place",
+      name: getCountryName(code),
+    }));
   }
 
   if (scholarship.host_country) {
@@ -194,12 +191,9 @@ function ScholarshipDetailPage() {
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-3xl mx-auto text-center py-16">
-            <h1 className="font-heading text-[32px] mb-4">
-              Scholarship Not Found
-            </h1>
+            <h1 className="font-heading text-[32px] mb-4">Scholarship Not Found</h1>
             <p className="text-foreground/70 mb-8">
-              The scholarship you're looking for doesn't exist or has been
-              removed.
+              The scholarship you're looking for doesn't exist or has been removed.
             </p>
             <Link
               to="/scholarships"
@@ -215,9 +209,7 @@ function ScholarshipDetailPage() {
 
   // Derive computed state
   const prestigeTier = (scholarship.prestige_tier ?? "unranked") as PrestigeTier;
-  const urgency = getDeadlineUrgency(
-    scholarship.application_deadline ?? undefined,
-  );
+  const urgency = getDeadlineUrgency(scholarship.application_deadline ?? undefined);
   const isExpired = urgency === "closed";
   const scholarshipSlug = scholarship.slug ?? scholarship._id;
 
@@ -254,10 +246,7 @@ function ScholarshipDetailPage() {
       <div className="pt-20 pb-16 px-4 md:px-6">
         <div className="max-w-3xl mx-auto space-y-8">
           {/* Breadcrumb navigation */}
-          <DetailBreadcrumb
-            scholarshipTitle={scholarship.title}
-            searchParams={search}
-          />
+          <DetailBreadcrumb scholarshipTitle={scholarship.title} searchParams={search} />
 
           {/* Hero section with IntersectionObserver ref */}
           <HeroSection
@@ -266,9 +255,7 @@ function ScholarshipDetailPage() {
             providerOrganization={scholarship.provider_organization}
             prestigeTier={prestigeTier}
             hostCountry={scholarship.host_country}
-            applicationDeadline={
-              scholarship.application_deadline ?? undefined
-            }
+            applicationDeadline={scholarship.application_deadline ?? undefined}
             degreeLevels={scholarship.degree_levels}
             fundingType={scholarship.funding_type}
             applicationUrl={scholarship.application_url ?? undefined}
@@ -296,16 +283,32 @@ function ScholarshipDetailPage() {
             awardCurrency={scholarship.award_currency ?? undefined}
           />
 
+          {/* Country Info -- cost of studying, admission/visa, intakes, post-study work */}
+          {(() => {
+            const codes = parseHostCountries(scholarship.host_country);
+            const primaryCode = codes[0];
+            const countryData = primaryCode ? getCountryData(primaryCode) : null;
+            const countryName = primaryCode ? getCountryName(primaryCode) : "";
+
+            if (!countryData) return null;
+
+            return (
+              <div className="space-y-8">
+                <h2 className="font-heading text-2xl">Studying in {countryName}</h2>
+                <CostOfStudyingSection data={countryData} countryName={countryName} />
+                <AdmissionVisaSection data={countryData} countryName={countryName} />
+                <IntakePeriodsSection data={countryData} />
+                <PostStudyWorkSection data={countryData} countryName={countryName} />
+              </div>
+            );
+          })()}
+
           {/* How to Apply */}
           <HowToApplySection
-            applicationDeadline={
-              scholarship.application_deadline ?? undefined
-            }
+            applicationDeadline={scholarship.application_deadline ?? undefined}
             applicationUrl={scholarship.application_url ?? undefined}
             editorialNotes={scholarship.editorial_notes}
-            expectedReopenMonth={
-              scholarship.expected_reopen_month ?? undefined
-            }
+            expectedReopenMonth={scholarship.expected_reopen_month ?? undefined}
           />
 
           {/* Sources */}
