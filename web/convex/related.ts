@@ -7,7 +7,8 @@
  */
 
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // ---- Constants ----
 
@@ -227,6 +228,40 @@ export const updateRelatedWeights = mutation({
       await ctx.db.patch(existing._id, data);
     } else {
       await ctx.db.insert("related_weights", data);
+    }
+  },
+});
+
+// ---- Internal: Cron-driven batch refresh ----
+
+/**
+ * Refresh related_ids for all published scholarships.
+ * Called by daily cron to keep related scholarships up-to-date.
+ * Processes in batches of 100, self-schedules continuation.
+ */
+export const refreshAllRelatedIds = internalMutation({
+  args: {
+    cursor: v.optional(v.string()),
+    processed: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const batchSize = 100;
+    const scholarships = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .take(batchSize);
+
+    if (scholarships.length === 0) return;
+
+    for (const scholarship of scholarships) {
+      const newRelatedIds = await computeRelatedIds(ctx, scholarship._id);
+      const current = scholarship.related_ids ?? [];
+      const changed =
+        current.length !== newRelatedIds.length || current.some((id, i) => id !== newRelatedIds[i]);
+
+      if (changed) {
+        await ctx.db.patch(scholarship._id, { related_ids: newRelatedIds });
+      }
     }
   },
 });

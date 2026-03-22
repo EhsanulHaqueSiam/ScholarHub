@@ -14,7 +14,7 @@
  */
 
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import {
   collectionStatusValidator,
   degreeLevelValidator,
@@ -94,13 +94,19 @@ function matchesCollectionFilters(
 
   // Deadline before (scholarship deadline must be before this date)
   if (filters.deadline_before) {
-    if (!scholarship.application_deadline || scholarship.application_deadline > filters.deadline_before)
+    if (
+      !scholarship.application_deadline ||
+      scholarship.application_deadline > filters.deadline_before
+    )
       return false;
   }
 
   // Deadline after (scholarship deadline must be after this date)
   if (filters.deadline_after) {
-    if (!scholarship.application_deadline || scholarship.application_deadline < filters.deadline_after)
+    if (
+      !scholarship.application_deadline ||
+      scholarship.application_deadline < filters.deadline_after
+    )
       return false;
   }
 
@@ -465,5 +471,41 @@ export const getCollectionPreview = query({
         prestige_tier: s.prestige_tier,
       })),
     };
+  },
+});
+
+// ---- Internal: Cron-driven batch recompute ----
+
+/**
+ * Recompute scholarship_count for all active collections.
+ * Called by daily cron for eventual consistency (D-90).
+ * Paginates through collections in batches of 50.
+ */
+export const recomputeAllCounts = internalMutation({
+  args: {
+    cursor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const collections = await ctx.db
+      .query("collections")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .take(50);
+
+    const published = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .take(5000);
+
+    const now = Date.now();
+    for (const collection of collections) {
+      const count = published.filter((s) => {
+        if (s.application_deadline && s.application_deadline < now) return false;
+        return matchesCollectionFilters(s as any, collection);
+      }).length;
+
+      if (count !== collection.scholarship_count) {
+        await ctx.db.patch(collection._id, { scholarship_count: count });
+      }
+    }
   },
 });
