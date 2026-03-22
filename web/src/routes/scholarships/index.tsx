@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FeaturedRow } from "@/components/directory/FeaturedRow";
@@ -110,6 +110,16 @@ function ScholarshipsDirectory() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
 
+  // Track viewport size to switch between desktop (page-based) and mobile (accumulative) pagination
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
   // Batch query — loads up to 200 scholarships, paginated client-side
   const batchArgs = useMemo(
     () => ({
@@ -122,14 +132,20 @@ function ScholarshipsDirectory() {
   const allResults = useQuery(api.directory.listScholarshipsBatch, batchArgs);
   const isLoading = allResults === undefined;
 
-  // Client-side pagination
+  // Client-side pagination — desktop replaces content per-page, mobile accumulates
   const results = useMemo(() => {
     if (!allResults) return undefined;
+    if (isDesktop) {
+      // Desktop: show only current page's items (e.g., page 2 = items 21-40)
+      return allResults.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    }
+    // Mobile: accumulative "load more" (e.g., page 2 = items 1-40)
     return allResults.slice(0, currentPage * PAGE_SIZE);
-  }, [allResults, currentPage]);
+  }, [allResults, currentPage, isDesktop]);
 
   const totalAvailable = allResults?.length ?? 0;
-  const hasMore = results ? results.length < totalAvailable : false;
+  // Desktop uses numbered pagination, not "Show More"; mobile keeps accumulative behavior
+  const hasMore = !isDesktop && results ? results.length < totalAvailable : false;
 
   // Reset to page 1 when filters change
   useMemo(() => {
@@ -302,9 +318,9 @@ function ScholarshipsDirectory() {
                   totalPages={Math.ceil(totalAvailable / PAGE_SIZE)}
                   onPageChange={setCurrentPage}
                 />
-                {!hasMore && hasResults && (
+                {hasResults && (
                   <p className="text-center text-sm text-foreground/60 mt-4">
-                    Showing all {results.length} matching scholarships
+                    Showing {results.length} of {totalAvailable} matching scholarships
                   </p>
                 )}
               </div>
