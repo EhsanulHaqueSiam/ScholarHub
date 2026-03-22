@@ -272,10 +272,6 @@ export const getFeaturedScholarships = query({
 
 /**
  * Get total count of published (or specified status) scholarships.
- *
- * Optimization: Uses .take() with a reasonable upper bound instead of
- * .collect() to cap document reads. The count is used as a trust signal
- * ("Browse 2,400+ scholarships") so exact precision beyond the cap isn't needed.
  */
 export const getScholarshipCount = query({
   args: {
@@ -283,12 +279,116 @@ export const getScholarshipCount = query({
   },
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
-    // Cap at 10,000 to avoid unbounded reads - UI shows "X+" anyway
     const results = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", status))
       .take(10000);
     return results.length;
+  },
+});
+
+/**
+ * List scholarships as a flat batch (no cursor pagination).
+ * Loads up to `limit` scholarships with all filters applied.
+ * Client handles page slicing. Avoids usePaginatedQuery issues.
+ */
+export const listScholarshipsBatch = query({
+  args: {
+    limit: v.optional(v.number()),
+    search: v.optional(v.string()),
+    status: v.optional(scholarshipStatusValidator),
+    hostCountries: v.optional(v.array(v.string())),
+    nationalities: v.optional(v.array(v.string())),
+    showIneligible: v.optional(v.boolean()),
+    degreeLevels: v.optional(v.array(degreeLevelValidator)),
+    fieldsOfStudy: v.optional(v.array(v.string())),
+    fundingTypes: v.optional(v.array(fundingTypeValidator)),
+    prestigeTiers: v.optional(v.array(prestigeTierValidator)),
+    sort: v.optional(v.string()),
+    showClosed: v.optional(v.boolean()),
+    closingSoon: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const status = args.status ?? "published";
+    const sort = args.sort ?? "deadline";
+    const showClosed = args.showClosed ?? false;
+    const maxResults = args.limit ?? 200;
+
+    // Build base query with sort
+    let baseQuery;
+    if (sort === "prestige") {
+      baseQuery = ctx.db
+        .query("scholarships")
+        .withIndex("by_status_prestige_deadline", (q) => q.eq("status", status));
+    } else if (sort === "newest") {
+      baseQuery = ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", status))
+        .order("desc");
+    } else {
+      baseQuery = ctx.db
+        .query("scholarships")
+        .withIndex("by_status_deadline", (q) => q.eq("status", status));
+    }
+
+    // Apply database-level filters
+    const filtered = baseQuery.filter((q) => {
+      const conditions = [];
+
+      if (args.hostCountries && args.hostCountries.length > 0) {
+        conditions.push(q.or(...args.hostCountries.map((c) => q.eq(q.field("host_country"), c))));
+      }
+
+      if (args.fundingTypes && args.fundingTypes.length > 0) {
+        conditions.push(q.or(...args.fundingTypes.map((ft) => q.eq(q.field("funding_type"), ft))));
+      }
+
+      if (args.prestigeTiers && args.prestigeTiers.length > 0) {
+        conditions.push(q.or(...args.prestigeTiers.map((t) => q.eq(q.field("prestige_tier"), t))));
+      }
+
+      if (!showClosed) {
+        conditions.push(q.neq(q.field("status"), "archived"));
+        conditions.push(
+          q.or(
+            q.eq(q.field("application_deadline"), undefined),
+            q.gte(q.field("application_deadline"), Date.now()),
+          ),
+        );
+      }
+
+      if (conditions.length === 0) return true;
+      if (conditions.length === 1) return conditions[0];
+      return q.and(...conditions);
+    });
+
+    // Take a reasonable batch
+    let results = await filtered.take(maxResults);
+
+    // Post-filter for array fields
+    if (args.nationalities && args.nationalities.length > 0 && !args.showIneligible) {
+      results = results.filter((doc) => {
+        if (!doc.eligibility_nationalities || doc.eligibility_nationalities.length === 0)
+          return true;
+        return args.nationalities!.some((n) => doc.eligibility_nationalities!.includes(n));
+      });
+    }
+
+    if (args.degreeLevels && args.degreeLevels.length > 0) {
+      results = results.filter((doc) => {
+        if (!doc.degree_levels || doc.degree_levels.length === 0) return false;
+        return args.degreeLevels!.some((dl) => doc.degree_levels.includes(dl));
+      });
+    }
+
+    if (args.fieldsOfStudy && args.fieldsOfStudy.length > 0) {
+      results = results.filter((doc) => {
+        if (!doc.fields_of_study || doc.fields_of_study.length === 0) return false;
+        return args.fieldsOfStudy!.some((f) => doc.fields_of_study!.includes(f));
+      });
+    }
+
+    return results;
   },
 });
 

@@ -1,55 +1,52 @@
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 20;
-
-interface PaginationProps {
-  /** Total number of results loaded so far */
-  totalLoaded: number;
-  /** Convex pagination status */
-  status: "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted";
-  /** Callback to load more results */
-  loadMore: (numItems: number) => void;
+interface DesktopPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
-type PageItem = { type: "page"; page: number } | { type: "ellipsis"; key: string };
-
 /**
- * Desktop numbered pagination.
- *
- * Since Convex uses cursor-based pagination, we can only navigate forward.
- * This shows page indicators for loaded pages plus a "next" button to load more.
- * Clicking a loaded page number scrolls to that section of results.
+ * Desktop numbered pagination with neo-brutalism style.
+ * Client-side only — no Convex calls, just slices the loaded results array.
  */
-export function DesktopPagination({ totalLoaded, status, loadMore }: PaginationProps) {
-  const totalPages = Math.ceil(totalLoaded / PAGE_SIZE);
-  const isLoadingMore = status === "LoadingMore";
-  const canLoadMore = status === "CanLoadMore";
-  const isExhausted = status === "Exhausted";
+export function DesktopPagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: DesktopPaginationProps) {
+  if (totalPages <= 1) return null;
 
-  if (totalPages === 0) return null;
-
-  const items = generatePageItems(totalPages, canLoadMore);
+  const pages = generatePageNumbers(currentPage, totalPages);
 
   return (
     <nav aria-label="Pagination" className="flex items-center justify-center gap-2 mt-10">
-      {/* Previous page indicator (disabled since we always show from start) */}
+      {/* Previous */}
       <button
         type="button"
-        disabled
-        className="inline-flex items-center justify-center size-10 rounded-base border-2 border-border bg-secondary-background text-foreground/30 cursor-not-allowed"
+        disabled={currentPage <= 1}
+        onClick={() => {
+          onPageChange(currentPage - 1);
+          document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
+        }}
         aria-label="Previous page"
+        className={cn(
+          "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
+          currentPage <= 1
+            ? "bg-secondary-background text-foreground/30 cursor-not-allowed"
+            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+        )}
       >
         <ChevronLeft className="size-4" />
       </button>
 
       {/* Page numbers */}
-      {items.map((item) => {
-        if (item.type === "ellipsis") {
+      {pages.map((item, idx) => {
+        if (item === "...") {
           return (
             <span
-              key={item.key}
+              key={`ellipsis-${idx}`}
               className="inline-flex items-center justify-center size-10 text-foreground/60 font-heading text-sm select-none"
             >
               ...
@@ -57,172 +54,94 @@ export function DesktopPagination({ totalLoaded, status, loadMore }: PaginationP
           );
         }
 
-        const isCurrentPage = item.page === totalPages;
+        const page = item as number;
+        const isCurrent = page === currentPage;
+
         return (
           <button
-            key={item.page}
+            key={page}
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const resultsEl = document.getElementById("results");
-              if (resultsEl) {
-                const cardHeight = 340;
-                const cardsPerRow =
-                  window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1;
-                const rowsPerPage = Math.ceil(PAGE_SIZE / cardsPerRow);
-                const offset = (item.page - 1) * rowsPerPage * cardHeight;
-                const targetY = resultsEl.offsetTop + offset;
-                window.scrollTo({ top: targetY, behavior: "smooth" });
-              }
+            onClick={() => {
+              onPageChange(page);
+              document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
             }}
-            aria-label={`Page ${item.page}`}
-            aria-current={isCurrentPage ? "page" : undefined}
+            aria-label={`Page ${page}`}
+            aria-current={isCurrent ? "page" : undefined}
             className={cn(
               "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
-              isCurrentPage
+              isCurrent
                 ? "bg-main text-main-foreground shadow-shadow"
                 : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
             )}
           >
-            {item.page}
+            {page}
           </button>
         );
       })}
 
-      {/* Next page / Load more button */}
+      {/* Next */}
       <button
         type="button"
-        disabled={!canLoadMore || isLoadingMore}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (canLoadMore) loadMore(PAGE_SIZE);
+        disabled={currentPage >= totalPages}
+        onClick={() => {
+          onPageChange(currentPage + 1);
+          document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
         }}
-        aria-label={canLoadMore ? "Load next page" : "No more pages"}
+        aria-label="Next page"
         className={cn(
           "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
-          canLoadMore && !isLoadingMore
-            ? "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none"
-            : "bg-secondary-background text-foreground/30 cursor-not-allowed",
+          currentPage >= totalPages
+            ? "bg-secondary-background text-foreground/30 cursor-not-allowed"
+            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
         )}
       >
-        {isLoadingMore ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <ChevronRight className="size-4" />
-        )}
+        <ChevronRight className="size-4" />
       </button>
 
       {/* Page info */}
-      {isExhausted && totalPages > 0 && (
-        <span className="ml-3 text-sm font-base text-foreground/60">
-          {totalPages} {totalPages === 1 ? "page" : "pages"} total
-        </span>
-      )}
+      <span className="ml-3 text-sm font-base text-foreground/60">
+        Page {currentPage} of {totalPages}
+      </span>
     </nav>
   );
 }
 
 /**
- * Mobile infinite scroll sentinel.
- *
- * Renders an invisible sentinel div that triggers `loadMore` when it enters
- * the viewport. Shows a loading spinner while more results are loading.
+ * Generate page numbers with ellipsis: [1, 2, "...", 9, 10]
  */
-export function MobileInfiniteScroll({ totalLoaded, status, loadMore }: PaginationProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const isLoadingMore = status === "LoadingMore";
-  const canLoadMore = status === "CanLoadMore";
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || status !== "CanLoadMore") return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(PAGE_SIZE);
-        }
-      },
-      { rootMargin: "300px" },
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [status, loadMore]);
-
-  return (
-    <div className="flex flex-col items-center mt-8 gap-4">
-      {/* Sentinel element — invisible trigger point */}
-      {canLoadMore && <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />}
-
-      {/* Loading indicator */}
-      {isLoadingMore && (
-        <div className="flex items-center gap-3 py-4">
-          <Loader2 className="size-5 animate-spin text-main" />
-          <span className="text-sm font-base text-foreground/60">Loading more scholarships...</span>
-        </div>
-      )}
-
-      {/* End of results */}
-      {status === "Exhausted" && totalLoaded > 0 && (
-        <p className="text-center text-sm text-foreground/60">
-          You've seen all {totalLoaded} matching scholarships
-        </p>
-      )}
-    </div>
-  );
-}
-
-/**
- * Generate an array of page items with uniquely-keyed ellipsis markers.
- * e.g., [page(1), page(2), ellipsis("mid"), page(9), page(10), ellipsis("more")]
- */
-function generatePageItems(totalPages: number, hasMore: boolean): PageItem[] {
-  const maxVisible = 5;
-
-  // Few enough pages to show all of them
-  if (totalPages <= maxVisible) {
-    const items: PageItem[] = Array.from({ length: totalPages }, (_, i) => ({
-      type: "page" as const,
-      page: i + 1,
-    }));
-    if (hasMore) {
-      items.push({ type: "ellipsis", key: "ellipsis-more" });
-    }
-    return items;
+function generatePageNumbers(
+  current: number,
+  total: number,
+): Array<number | "..."> {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  if (totalPages <= maxVisible + 1) {
-    const items: PageItem[] = Array.from({ length: totalPages }, (_, i) => ({
-      type: "page" as const,
-      page: i + 1,
-    }));
-    if (hasMore) {
-      items.push({ type: "ellipsis", key: "ellipsis-more" });
-    }
-    return items;
+  const pages: Array<number | "..."> = [];
+
+  // Always show first page
+  pages.push(1);
+
+  if (current > 3) {
+    pages.push("...");
   }
 
-  // Many pages: show first 2, ellipsis, last 2, optional trailing ellipsis
-  const items: PageItem[] = [
-    { type: "page", page: 1 },
-    { type: "page", page: 2 },
-  ];
+  // Pages around current
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
 
-  if (totalPages > 4) {
-    items.push({ type: "ellipsis", key: "ellipsis-mid" });
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
   }
 
-  if (totalPages > 3) {
-    items.push({ type: "page", page: totalPages - 1 });
-  }
-  items.push({ type: "page", page: totalPages });
-
-  if (hasMore) {
-    items.push({ type: "ellipsis", key: "ellipsis-more" });
+  if (current < total - 2) {
+    pages.push("...");
   }
 
-  return items;
+  // Always show last page
+  if (total > 1) {
+    pages.push(total);
+  }
+
+  return pages;
 }

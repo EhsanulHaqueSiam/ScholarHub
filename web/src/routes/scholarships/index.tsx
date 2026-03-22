@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { usePaginatedQuery, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useCallback, useMemo, useState } from "react";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
@@ -7,7 +7,7 @@ import { FeaturedRow } from "@/components/directory/FeaturedRow";
 import { FilterChips } from "@/components/directory/FilterChips";
 import { FilterPanel, MobileFilterTrigger } from "@/components/directory/FilterPanel";
 import { NationalityBanner } from "@/components/directory/NationalityBanner";
-import { DesktopPagination, MobileInfiniteScroll } from "@/components/directory/Pagination";
+import { DesktopPagination } from "@/components/directory/Pagination";
 import { QuickFilters } from "@/components/directory/QuickFilters";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
@@ -107,13 +107,35 @@ function formatResultsCount(
 function ScholarshipsDirectory() {
   const { filters, queryArgs, setFilter } = useScholarshipFilters();
   const [isFilterChanging, setIsFilterChanging] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 20;
 
-  // Paginated scholarship results
-  const { results, status, loadMore, isLoading } = usePaginatedQuery(
-    api.directory.listScholarships,
-    queryArgs,
-    { initialNumItems: 20 },
+  // Batch query — loads up to 200 scholarships, paginated client-side
+  const batchArgs = useMemo(
+    () => ({
+      ...queryArgs,
+      limit: 200,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(queryArgs)],
   );
+  const allResults = useQuery(api.directory.listScholarshipsBatch, batchArgs);
+  const isLoading = allResults === undefined;
+
+  // Client-side pagination
+  const results = useMemo(() => {
+    if (!allResults) return undefined;
+    return allResults.slice(0, currentPage * PAGE_SIZE);
+  }, [allResults, currentPage]);
+
+  const totalAvailable = allResults?.length ?? 0;
+  const hasMore = results ? results.length < totalAvailable : false;
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(queryArgs)]);
 
   // Total scholarship count for trust signal
   const totalCount = useQuery(api.directory.getScholarshipCount, {});
@@ -212,8 +234,8 @@ function ScholarshipsDirectory() {
           >
             {totalCount !== undefined && !filters.q
               ? formatResultsCount(totalCount, filters)
-              : status === "CanLoadMore"
-                ? formatResultsCount(results?.length, filters) + "+"
+              : hasMore
+                ? formatResultsCount(totalAvailable, filters) + "+"
                 : formatResultsCount(results?.length, filters)}
           </p>
         </div>
@@ -265,41 +287,29 @@ function ScholarshipsDirectory() {
                 </div>
               )}
 
-              {/* Loading more skeleton (desktop only — mobile uses inline spinner) */}
-              {status === "LoadingMore" && (
-                <div
-                  className={cn(
-                    "mt-6 hidden lg:grid",
-                    isGridView
-                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                      : "grid-cols-1 gap-4",
-                  )}
-                >
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <SkeletonCard key={i} />
-                  ))}
+              {/* Mobile: Show more button */}
+              {hasMore && (
+                <div className="lg:hidden flex justify-center mt-8">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="inline-flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-6 py-3 border-2 border-border rounded-base shadow-shadow active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
+                  >
+                    Show More Scholarships
+                  </button>
                 </div>
               )}
-
-              {/* Mobile: Infinite scroll with auto-loading sentinel */}
-              <div className="lg:hidden">
-                <MobileInfiniteScroll
-                  totalLoaded={results?.length ?? 0}
-                  status={status}
-                  loadMore={loadMore}
-                />
-              </div>
 
               {/* Desktop: Numbered pagination */}
               <div className="hidden lg:block">
                 <DesktopPagination
-                  totalLoaded={results?.length ?? 0}
-                  status={status}
-                  loadMore={loadMore}
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalAvailable / PAGE_SIZE)}
+                  onPageChange={setCurrentPage}
                 />
-                {status === "Exhausted" && hasResults && (
+                {!hasMore && hasResults && (
                   <p className="text-center text-sm text-foreground/60 mt-4">
-                    You've seen all {results.length} matching scholarships
+                    Showing all {results.length} matching scholarships
                   </p>
                 )}
               </div>
