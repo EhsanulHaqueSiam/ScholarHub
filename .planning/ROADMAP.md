@@ -91,7 +91,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md -- Schema evolution (match_key, match_status), aggregation helper functions (normalize, match, merge, cycle, archive), unit tests
-- [ ] 04-02-PLAN.md -- Aggregation pipeline mutations (trigger-wrapped batch processing, dedup, merge, cycle detection), completeRun wiring, archive cron, integration tests
+- [x] 04-02-PLAN.md -- Aggregation pipeline mutations (trigger-wrapped batch processing, dedup, merge, cycle detection), completeRun wiring, archive cron, integration tests
 
 ### Phase 5: Admin Dashboard
 **Goal**: A solo admin can efficiently review, edit, approve/reject, and publish scraped scholarships through a streamlined dashboard -- with trusted sources auto-publishing

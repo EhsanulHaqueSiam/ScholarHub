@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-22T06:44:16.023Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-22T06:53:21.977Z"
 last_activity: 2026-03-22
 progress:
   total_phases: 11
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # Project State
@@ -72,6 +72,7 @@ Plan: 2 of 2
 | Phase 10 P01 | 3min | 2 tasks | 6 files |
 | Phase 10 P02 | 2min | 2 tasks | 4 files |
 | Phase 04 P01 | 2min | 2 tasks | 3 files |
+| Phase 04 P02 | 6min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -154,6 +155,9 @@ Recent decisions affecting current work:
 - [Phase 04]: 3-field match key (title|org|country) with separate degree overlap check per D-01/Pitfall 4
 - [Phase 04]: Pure helper functions separated from Convex mutations for testability without convex-test
 - [Phase 04]: parseDeadlineToTimestamp bridges string-to-number gap for raw_records deadline field
+- [Phase 04]: Year-aware cycle detection: same match_key + different year creates separate scholarship entries with previous_cycle_id link instead of merging
+- [Phase 04]: take() instead of paginate() for unpromoted raw_records: canonical_id set during processing invalidates cursor-based pagination
+- [Phase 04]: Trigger-wrapped internalMutation via customMutation(rawInternalMutation, customCtx(wrapDB)) for auto-computing prestige/search_text on aggregation writes
 
 ### Pending Todos
 
@@ -180,7 +184,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T06:44:16.021Z
+Last session: 2026-03-22T06:53:21.974Z
 Last activity: 2026-03-22
-Stopped at: Completed 04-01-PLAN.md
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

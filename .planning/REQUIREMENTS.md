@@ -27,10 +27,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Aggregation
 
-- [ ] **AGGR-01**: Multi-source aggregation combines data from different sources for the same scholarship into one unified entry
+- [x] **AGGR-01**: Multi-source aggregation combines data from different sources for the same scholarship into one unified entry
 - [x] **AGGR-02**: Deduplication detects same scholarship across multiple sources using composite matching (title + organization + country + degree level)
 - [x] **AGGR-03**: Merge logic selects richest/most complete data from each source
-- [ ] **AGGR-04**: Source-level records preserved separately from canonical merged records
+- [x] **AGGR-04**: Source-level records preserved separately from canonical merged records
 - [x] **AGGR-05**: Cyclical scholarship tracking links same program across years (DAAD 2025 → DAAD 2026)
 - [x] **AGGR-06**: Expired scholarships show "expected to reopen [month]" based on historical data
 
@@ -163,10 +163,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | SCRP-06 | Phase 3 | Complete |
 | SCRP-07 | Phase 3 | Complete |
 | INFR-04 | Phase 3 | Complete |
-| AGGR-01 | Phase 4 | Pending |
+| AGGR-01 | Phase 4 | Complete |
 | AGGR-02 | Phase 4 | Complete |
 | AGGR-03 | Phase 4 | Complete |
-| AGGR-04 | Phase 4 | Pending |
+| AGGR-04 | Phase 4 | Complete |
 | AGGR-05 | Phase 4 | Complete |
 | AGGR-06 | Phase 4 | Complete |
 | ADMN-01 | Phase 5 | Pending |
