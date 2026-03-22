@@ -3,12 +3,19 @@ import { useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { z } from "zod";
-import { ComparisonTable } from "@/components/comparison/ComparisonTable";
 import { useCompare } from "@/components/comparison/CompareContext";
+import { ComparisonTable } from "@/components/comparison/ComparisonTable";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { buildItemListJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMeta } from "@/lib/seo/meta";
 import { api } from "../../../convex/_generated/api";
+
+const SITE_URL =
+  typeof window !== "undefined"
+    ? window.location.origin
+    : (import.meta.env?.VITE_SITE_URL ?? "https://scholarhub.io");
 
 const compareSearchSchema = z.object({
   s: z.string().optional(), // comma-separated slugs
@@ -16,18 +23,14 @@ const compareSearchSchema = z.object({
 
 export const Route = createFileRoute("/scholarships/compare")({
   validateSearch: compareSearchSchema,
-  head: ({ search }) => {
-    const slugs = search.s?.split(",").filter(Boolean) ?? [];
-    return {
-      meta: [
-        {
-          title:
-            slugs.length > 0
-              ? "Scholarship Comparison | ScholarHub"
-              : "Compare Scholarships | ScholarHub",
-        },
-      ],
-    };
+  head: () => {
+    const { meta, links } = buildPageMeta({
+      title: "Compare Scholarships | ScholarHub",
+      description:
+        "Compare scholarships side by side. See how funding, eligibility, deadlines, and degree levels stack up across multiple scholarships.",
+      canonicalPath: "/scholarships/compare",
+    });
+    return { meta, links };
   },
   component: ComparePage,
 });
@@ -83,8 +86,25 @@ function CompareIllustration() {
         </marker>
       </defs>
       {/* Floating shapes */}
-      <circle cx="100" cy="18" r="6" stroke="currentColor" strokeWidth="2" fill="var(--main)" fillOpacity="0.2" />
-      <rect x="12" y="12" width="12" height="12" stroke="currentColor" strokeWidth="2" fill="var(--main)" fillOpacity="0.2" />
+      <circle
+        cx="100"
+        cy="18"
+        r="6"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="var(--main)"
+        fillOpacity="0.2"
+      />
+      <rect
+        x="12"
+        y="12"
+        width="12"
+        height="12"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="var(--main)"
+        fillOpacity="0.2"
+      />
     </svg>
   );
 }
@@ -142,12 +162,10 @@ function ComparePage() {
           <div className="max-w-7xl mx-auto">
             <div role="status" className="flex flex-col items-center text-center py-16 px-4">
               <CompareIllustration />
-              <h1 className="font-heading text-xl mt-8">
-                Compare scholarships side-by-side
-              </h1>
+              <h1 className="font-heading text-xl mt-8">Compare scholarships side-by-side</h1>
               <p className="text-sm mt-3 max-w-md">
-                Select 2-3 scholarships from the directory to see how they stack up.
-                Look for the compare checkbox on any scholarship card.
+                Select 2-3 scholarships from the directory to see how they stack up. Look for the
+                compare checkbox on any scholarship card.
               </p>
               <Button asChild variant="default" className="mt-6">
                 <Link to="/scholarships">Browse Scholarships</Link>
@@ -184,7 +202,10 @@ function ComparePage() {
                   <div className="h-4 w-16 bg-border/20 rounded motion-safe:animate-pulse" />
                 </div>
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="p-4 lg:p-6 border-b-2 border-border border-r border-border last:border-r-0">
+                  <div
+                    key={i}
+                    className="p-4 lg:p-6 border-b-2 border-border border-r border-border last:border-r-0"
+                  >
                     <div className="space-y-2">
                       <div className="h-4 w-full bg-border/20 rounded motion-safe:animate-pulse" />
                       <div className="h-3 w-2/3 bg-border/20 rounded motion-safe:animate-pulse" />
@@ -199,7 +220,10 @@ function ComparePage() {
                       <div className="h-4 w-24 bg-border/20 rounded motion-safe:animate-pulse" />
                     </div>
                     {Array.from({ length: 3 }).map((_, col) => (
-                      <div key={col} className="p-4 lg:p-6 border-b border-border border-r last:border-r-0">
+                      <div
+                        key={col}
+                        className="p-4 lg:p-6 border-b border-border border-r last:border-r-0"
+                      >
                         <div className="h-4 w-full bg-border/20 rounded motion-safe:animate-pulse" />
                       </div>
                     ))}
@@ -264,6 +288,22 @@ function ComparePage() {
           )}
         </div>
       </div>
+
+      {/* ItemList JSON-LD for compared scholarships */}
+      {scholarships && scholarships.length > 0 && (
+        <script type="application/ld+json">
+          {JSON.stringify(
+            buildItemListJsonLd(
+              scholarships.map((s, i) => ({
+                name: s.title,
+                url: `${SITE_URL}/scholarships/${s.slug ?? s._id}`,
+                position: i + 1,
+              })),
+            ),
+          )}
+        </script>
+      )}
+
       <BackToTop />
     </div>
   );

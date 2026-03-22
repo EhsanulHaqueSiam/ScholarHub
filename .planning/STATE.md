@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-22T20:30:01.756Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-22T21:16:03.053Z"
 last_activity: 2026-03-22
 progress:
   total_phases: 11
   completed_phases: 9
-  total_plans: 42
-  completed_plans: 42
+  total_plans: 45
+  completed_plans: 43
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 08 — discovery-features
+**Current focus:** Phase 09 — seo-growth
 
 ## Current Position
 
-Phase: 10
-Plan: Not started
+Phase: 09 (seo-growth) — EXECUTING
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -87,6 +87,9 @@ Plan: Not started
 | Phase 08 P07 | 3min | 2 tasks | 9 files |
 | Phase 08 P06 | 4min | 2 tasks | 8 files |
 | Phase 08 P08 | 7min | 2 tasks | 11 files |
+| Phase 09 P01 | 5min | 2 tasks | 8 files |
+| Phase 09 P03 | 6min | 2 tasks | 6 files |
+| Phase 09 P02 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -197,6 +200,14 @@ Recent decisions affecting current work:
 - [Phase 08]: Semantic HTML table with th scope=col/row for WCAG AA comparison accessibility
 - [Phase 08]: Cron times staggered at 5:00 and 6:00 UTC to avoid overlap with existing 3:00/4:00 UTC crons
 - [Phase 08]: Batch cron pattern: 10 collections per recomputeAllCounts batch, 50 scholarships per refreshAllRelatedIds batch, with scheduler continuation
+- [Phase 09]: Used @type Grant (not Scholarship) per Schema.org spec for scholarship JSON-LD
+- [Phase 09]: GA4/GSC integration gated by env vars (VITE_GA4_ID, VITE_GSC_VERIFICATION)
+- [Phase 09]: Organization JSON-LD computed once at module level, not per-render
+- [Phase 09]: ConvexHttpClient in server routes for one-shot Convex data fetching
+- [Phase 09]: Google Fonts TTF via IE9 user-agent spoofing for satori font loading
+- [Phase 09]: Netlify redirects for /robots.txt and /sitemap.xml before SPA fallback
+- [Phase 09]: Script tag children pattern for JSON-LD instead of innerHTML -- cleaner React, avoids lint warnings
+- [Phase 09]: Degree URLs kept at /scholarships/degree/$degree (not /scholarships/phd) to avoid $slug route conflict
 
 ### Pending Todos
 
@@ -224,7 +235,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T20:30:01.753Z
+Last session: 2026-03-22T21:16:03.051Z
 Last activity: 2026-03-22
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-seo-growth/09-CONTEXT.md
+Stopped at: Completed 09-02-PLAN.md
+Resume file: None

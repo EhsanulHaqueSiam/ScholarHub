@@ -75,15 +75,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Discovery Features
 
-- [ ] **DISC-01**: Curated collections — admin-created, tag-based, auto-populating lists (e.g., "Top Fully Funded 2026", "No GRE Required")
-- [ ] **DISC-02**: Scholarship comparison — side-by-side comparison of 2-3 scholarships
-- [ ] **DISC-03**: Related scholarships shown on detail page
+- [x] **DISC-01**: Curated collections — admin-created, tag-based, auto-populating lists (e.g., "Top Fully Funded 2026", "No GRE Required")
+- [x] **DISC-02**: Scholarship comparison — side-by-side comparison of 2-3 scholarships
+- [x] **DISC-03**: Related scholarships shown on detail page
 
 ### SEO & Growth
 
-- [ ] **SEOG-01**: Each scholarship page has clean URL, proper meta tags, and Schema.org structured data
-- [ ] **SEOG-02**: Country landing pages auto-generated ("/scholarships/germany") with unique meta descriptions
-- [ ] **SEOG-03**: Degree-level landing pages auto-generated ("/scholarships/phd")
+- [x] **SEOG-01**: Each scholarship page has clean URL, proper meta tags, and Schema.org structured data
+- [x] **SEOG-02**: Country landing pages auto-generated ("/scholarships/germany") with unique meta descriptions
+- [x] **SEOG-03**: Degree-level landing pages auto-generated ("/scholarships/phd")
 
 ### UI/UX Design
 
@@ -203,12 +203,12 @@ Deferred to future release. Tracked but not in current roadmap.
 | DTLP-09 | Phase 7 | Complete |
 | DTLP-10 | Phase 7 | Complete |
 | DTLP-11 | Phase 7 | Complete |
-| DISC-01 | Phase 8 | Pending |
-| DISC-02 | Phase 8 | Pending |
-| DISC-03 | Phase 8 | Pending |
-| SEOG-01 | Phase 9 | Pending |
-| SEOG-02 | Phase 9 | Pending |
-| SEOG-03 | Phase 9 | Pending |
+| DISC-01 | Phase 8 | Complete |
+| DISC-02 | Phase 8 | Complete |
+| DISC-03 | Phase 8 | Complete |
+| SEOG-01 | Phase 9 | Complete |
+| SEOG-02 | Phase 9 | Complete |
+| SEOG-03 | Phase 9 | Complete |
 | SA-01 | Phase 10 | Complete |
 | SA-02 | Phase 10 | Complete |
 | SA-03 | Phase 10 | Complete |

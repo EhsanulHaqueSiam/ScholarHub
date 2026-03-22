@@ -1,8 +1,8 @@
 name: Scrape Scholarships
 
 on:
-  schedule:
-    - cron: '0 4 * * *' # Daily at 04:00 UTC
+  # schedule:
+  #   - cron: '0 4 * * *' # Daily at 04:00 UTC  # TEMPORARILY DISABLED
   workflow_dispatch:
     inputs:
       source:

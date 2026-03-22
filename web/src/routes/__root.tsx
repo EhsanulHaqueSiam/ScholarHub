@@ -85,7 +85,6 @@ function RootComponent() {
         {/* Organization JSON-LD -- static, trusted content for SEO structured data */}
         <script
           type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: Static trusted Organization JSON-LD for SEO -- no user input
           dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
         />
         <CompareProvider>

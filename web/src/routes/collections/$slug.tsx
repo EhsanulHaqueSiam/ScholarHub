@@ -1,6 +1,6 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "convex/react";
 import { LayoutGrid, List } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CollectionHeader } from "@/components/collections/CollectionHeader";
@@ -12,19 +12,28 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { SORT_OPTIONS } from "@/lib/filters";
+import { buildItemListJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMeta } from "@/lib/seo/meta";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
 const PAGE_SIZE = 20;
 
+const SITE_URL =
+  typeof window !== "undefined"
+    ? window.location.origin
+    : (import.meta.env?.VITE_SITE_URL ?? "https://scholarhub.io");
+
 export const Route = createFileRoute("/collections/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      {
-        title: `${params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} | ScholarHub`,
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    const name = params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const { meta, links } = buildPageMeta({
+      title: `${name} | ScholarHub`,
+      description: `Browse the ${name} scholarship collection on ScholarHub. Find curated scholarships matching this theme.`,
+      canonicalPath: `/collections/${params.slug}`,
+    });
+    return { meta, links };
+  },
   component: CollectionDetailPage,
 });
 
@@ -295,6 +304,21 @@ function CollectionDetailPage() {
           </ErrorBoundary>
         </div>
       </div>
+
+      {/* ItemList JSON-LD structured data for collection scholarships */}
+      {hasResults && (
+        <script type="application/ld+json">
+          {JSON.stringify(
+            buildItemListJsonLd(
+              scholarships.map((s, i) => ({
+                name: s.title,
+                url: `${SITE_URL}/scholarships/${s.slug ?? s._id}`,
+                position: i + 1,
+              })),
+            ),
+          )}
+        </script>
+      )}
 
       <BackToTop />
     </div>
