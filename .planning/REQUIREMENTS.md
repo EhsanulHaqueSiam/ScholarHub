@@ -90,7 +90,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UIDX-01**: Neo-brutalism design style — bold, high-contrast, distinctive visual identity
 - [x] **UIDX-02**: Mobile-responsive design (mobile-first approach)
 - [x] **UIDX-03**: High information density presented in easily digestible format
-- [ ] **UIDX-04**: Use frontend-design skill for all UI implementation
+- [x] **UIDX-04**: Use frontend-design skill for all UI implementation
 
 ### Infrastructure
 
@@ -177,7 +177,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | ADMN-06 | Phase 5 | Pending |
 | ADMN-07 | Phase 5 | Pending |
 | ADMN-08 | Phase 5 | Pending |
-| UIDX-04 | Phase 5 | Pending |
+| UIDX-04 | Phase 5 | Complete |
 | PDIR-01 | Phase 6 | Complete |
 | PDIR-02 | Phase 6 | Complete |
 | PDIR-03 | Phase 6 | Complete |

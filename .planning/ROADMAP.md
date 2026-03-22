@@ -107,7 +107,7 @@ Plans:
 
 Plans:
 - [ ] 05-01-PLAN.md -- Schema evolution (scholarship_revisions), admin mutations (approve, reject, bulk ops, edit, trust), auto-publish in aggregation, tests
-- [ ] 05-02-PLAN.md -- TipTap install, destructive button variant, admin route layout, StatsBar/StatCard components
+- [x] 05-02-PLAN.md -- TipTap install, destructive button variant, admin route layout, StatsBar/StatCard components
 - [ ] 05-03-PLAN.md -- ReviewQueue with status tabs, QueueRow expandable rows, BulkActionBar, DuplicateBadge, selection hook
 - [ ] 05-04-PLAN.md -- EditPanel slide-out sheet, EditForm with all fields, TipTap EditorialEditor, RevisionHistory, dual-format EditorialTips
 - [ ] 05-05-PLAN.md -- SourceTrustManager, EditPanel wiring, integration, visual verification checkpoint
