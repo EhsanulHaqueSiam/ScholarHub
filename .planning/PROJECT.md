@@ -22,8 +22,8 @@ Students can discover every relevant international scholarship in one place, wit
 - [ ] Massive source discovery — find 1000+ scholarship sources (aggregators, official programs like DAAD/Erasmus/MEXT, university-specific scholarships, government programs, foundations)
 - [x] Multi-source aggregation — combine data from first-party and third-party sources into unified scholarship entries (Validated in Phase 4: Data Aggregation)
 - [x] Deduplication — detect same scholarship across multiple sources, merge richest info from each (Validated in Phase 4: Data Aggregation)
-- [ ] Admin dashboard — review scraped data, fix/correct errors, add editorial notes, add missing info, approve/reject scholarships
-- [ ] Auto-post option — mark trusted sources for automatic publishing without manual review
+- [x] Admin dashboard — review scraped data, fix/correct errors, add editorial notes, add missing info, approve/reject scholarships (Validated in Phase 5: Admin Dashboard)
+- [x] Auto-post option — mark trusted sources for automatic publishing without manual review (Validated in Phase 5: Admin Dashboard)
 - [x] Public scholarship directory — filterable by country, degree level (bachelor, masters, PhD), and other filters (Validated in Phase 06.1: Public Directory with Prestige System)
 - [ ] Scholarship detail page — deadline, amount, country, eligibility, application link, admin-added tips
 - [x] Deadline handling — archive/mark expired scholarships, auto-resurface for next cycle (Validated in Phase 4: Data Aggregation)
