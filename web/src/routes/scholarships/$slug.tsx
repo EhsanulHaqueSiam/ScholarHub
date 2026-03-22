@@ -285,7 +285,35 @@ function ScholarshipDetailPage() {
 
           {/* Country Info -- per host country: cost, admission/visa, intakes, post-study work */}
           {(() => {
-            const codes = parseHostCountries(scholarship.host_country);
+            let codes = parseHostCountries(scholarship.host_country);
+
+            // Fallback: infer country from application URL TLD when host_country is unresolvable
+            if (codes.length === 0 && scholarship.application_url) {
+              try {
+                const hostname = new URL(scholarship.application_url).hostname;
+                const tld = hostname.split(".").pop()?.toUpperCase();
+                const tldMap: Record<string, string> = {
+                  AU: "AU",
+                  UK: "GB",
+                  DE: "DE",
+                  JP: "JP",
+                  CA: "CA",
+                  FR: "FR",
+                  NL: "NL",
+                  SE: "SE",
+                  CH: "CH",
+                  KR: "KR",
+                  SG: "SG",
+                  NZ: "NZ",
+                  IE: "IE",
+                  DK: "DK",
+                };
+                if (tld && tldMap[tld]) codes = [tldMap[tld]];
+              } catch {
+                /* invalid URL */
+              }
+            }
+
             const countriesWithData = codes
               .map((code) => ({
                 code,

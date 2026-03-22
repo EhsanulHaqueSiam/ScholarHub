@@ -75,25 +75,45 @@ export const POPULAR_DESTINATIONS = [
 
 /**
  * Parse host_country field into individual country codes.
- * Handles: "AU" (single), "AUTRCOVE" (concatenated pairs), "AU,TR,CO" (comma-separated).
+ * Handles: "AU" (single), "AUTRCOVE" (concatenated pairs), "AU,TR,CO" (comma-separated),
+ * "Australia" (full name), "Australia, Germany" (comma-separated names).
  * Returns array of 2-letter ISO codes.
  */
 export function parseHostCountries(hostCountry: string): string[] {
   if (!hostCountry) return [];
 
-  // Single 2-letter code
-  if (hostCountry.length === 2) return [hostCountry.toUpperCase()];
+  // Strip parentheses and trim
+  const cleaned = hostCountry.replace(/[()]/g, "").trim();
+  if (!cleaned) return [];
 
-  // Comma-separated (with optional spaces)
-  if (hostCountry.includes(",")) {
-    return hostCountry
+  // Skip generic values that don't identify a specific country
+  const lower = cleaned.toLowerCase();
+  if (
+    lower === "all countries" ||
+    lower === "international" ||
+    lower === "worldwide" ||
+    lower === "global"
+  ) {
+    return [];
+  }
+
+  // Single 2-letter code
+  if (cleaned.length === 2) return [cleaned.toUpperCase()];
+
+  // Comma-separated (codes or full names)
+  if (cleaned.includes(",")) {
+    return cleaned
       .split(",")
-      .map((c) => c.trim().toUpperCase())
+      .map((c) => c.trim())
+      .map((c) => {
+        if (c.length === 2) return c.toUpperCase();
+        return getCountryCode(c) ?? "";
+      })
       .filter((c) => c.length === 2);
   }
 
   // Concatenated 2-letter codes (e.g. "AUTRCOVE")
-  const upper = hostCountry.toUpperCase();
+  const upper = cleaned.toUpperCase();
   if (upper.length >= 4 && upper.length % 2 === 0 && /^[A-Z]+$/.test(upper)) {
     const codes: string[] = [];
     for (let i = 0; i < upper.length; i += 2) {
@@ -102,8 +122,11 @@ export function parseHostCountries(hostCountry: string): string[] {
     return codes;
   }
 
-  // Fallback: treat as single value
-  return [hostCountry.toUpperCase()];
+  // Try full country name reverse lookup (e.g. "Australia" → "AU")
+  const code = getCountryCode(cleaned);
+  if (code) return [code];
+
+  return [];
 }
 
 /** Timezone -> Country mapping for nationality auto-detection */
