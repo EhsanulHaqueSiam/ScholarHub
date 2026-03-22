@@ -44,6 +44,9 @@
 
   /* Semantic colors */
   --destructive: oklch(52% 0.24 27);
+
+  /* Comparison difference highlight */
+  --compare-diff-bg: oklch(92% 0.06 90);
 }
 
 .dark {
@@ -78,6 +81,9 @@
 
   /* Semantic colors - dark mode */
   --destructive: oklch(60% 0.20 25);
+
+  /* Comparison difference highlight - dark mode */
+  --compare-diff-bg: oklch(25% 0.04 85);
 }
 
 @theme inline {
