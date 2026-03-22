@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 
 interface DetailBreadcrumbProps {
   scholarshipTitle: string;
@@ -10,24 +11,28 @@ export function DetailBreadcrumb({
   searchParams,
 }: DetailBreadcrumbProps) {
   return (
-    <nav aria-label="Breadcrumb">
+    <nav
+      aria-label="Breadcrumb"
+      className="inline-flex items-center gap-2 rounded-base border-2 border-border bg-secondary-background px-3 py-1.5 shadow-shadow"
+    >
       <ol className="flex items-center gap-1 text-sm">
         <li>
           <Link
             to="/scholarships"
             search={searchParams}
-            className="hover:underline underline-offset-4"
+            className="font-heading text-foreground/70 transition-colors hover:text-foreground"
           >
             Scholarships
           </Link>
         </li>
         <li>
-          <span className="text-foreground/40" aria-hidden="true">
-            &gt;
-          </span>
+          <ChevronRight
+            className="size-3.5 text-foreground/40"
+            aria-hidden="true"
+          />
         </li>
         <li>
-          <span className="truncate max-w-[160px] md:max-w-[300px] inline-block align-bottom">
+          <span className="font-heading truncate max-w-[200px] md:max-w-[400px] inline-block align-bottom">
             {scholarshipTitle}
           </span>
         </li>
