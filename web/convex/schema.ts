@@ -186,6 +186,16 @@ export default defineSchema({
     previous_cycle_id: v.optional(v.id("scholarships")),
     expected_reopen_month: v.optional(v.number()),
     tags: v.optional(v.array(v.string())),
+    suggested_tags: v.optional(
+      v.array(
+        v.object({
+          tag: v.string(),
+          reason: v.string(),
+          suggested_at: v.number(),
+        }),
+      ),
+    ),
+    related_ids: v.optional(v.array(v.id("scholarships"))),
     // Per-scholarship study info (admin-editable, overrides static country data)
     study_info: v.optional(
       v.object({
