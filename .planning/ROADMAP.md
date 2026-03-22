@@ -188,8 +188,8 @@ Plans:
 
 Plans:
 - [x] 09-01-PLAN.md -- SEO foundation library (JSON-LD builders, meta helpers, landing content generators, sitemap utility), Convex SEO queries, root layout enhancements (OG defaults, hreflang, GA4, GSC)
-- [ ] 09-02-PLAN.md -- Route SEO enhancements (Grant JSON-LD + BreadcrumbList on detail, ItemList on collections/compare, country page stats/FAQ/cross-links, degree page full rebuild)
-- [ ] 09-03-PLAN.md -- Technical SEO server routes (sitemap.xml, robots.txt, dynamic OG image generation with satori)
+- [x] 09-02-PLAN.md -- Route SEO enhancements (Grant JSON-LD + BreadcrumbList on detail, ItemList on collections/compare, country page stats/FAQ/cross-links, degree page full rebuild)
+- [x] 09-03-PLAN.md -- Technical SEO server routes (sitemap.xml, robots.txt, dynamic OG image generation with satori)
 
 ## Progress
 
