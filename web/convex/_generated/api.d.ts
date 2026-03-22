@@ -11,8 +11,6 @@
 import type * as admin from "../admin.js";
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as aggregation from "../aggregation.js";
-import type * as collections from "../collections.js";
-import type * as tags from "../tags.js";
 import type * as aggregationHelpers from "../aggregationHelpers.js";
 import type * as collections from "../collections.js";
 import type * as comparison from "../comparison.js";
