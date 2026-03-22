@@ -164,11 +164,17 @@ Plans:
   1. Admin-created curated collections exist as tag-based, auto-populating lists (e.g., "Top Fully Funded 2026", "No GRE Required") that students can browse
   2. User can select 2-3 scholarships and view them in a side-by-side comparison table highlighting key differences
   3. Scholarship detail pages show a "Related Scholarships" section with relevant alternatives
-**Plans**: TBD
+**Plans**: 8 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [x] 08-01-PLAN.md -- Convex backend: schema additions, tag system, auto-tagging, related scoring, collection CRUD, comparison query, trigger wiring
+- [ ] 08-02-PLAN.md -- CSS design tokens, tag badge variant, collection card styles
+- [ ] 08-03-PLAN.md -- Admin collections tab, collection edit form
+- [ ] 08-04-PLAN.md -- Admin tags tab, tag management, suggested tag review
+- [ ] 08-05-PLAN.md -- Public collection browsing, featured collections row
+- [ ] 08-06-PLAN.md -- Comparison page, compare bar, compare context
+- [ ] 08-07-PLAN.md -- Detail page tags, related scholarships section
+- [ ] 08-08-PLAN.md -- Seed collections, daily cron, integration, visual verification
 
 ### Phase 9: SEO & Growth
 **Goal**: Scholarship pages are discoverable by search engines with proper structured data, and auto-generated landing pages drive organic traffic for country and degree-level searches
@@ -199,7 +205,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
-| 8. Discovery Features | 0/2 | Not started | - |
+| 8. Discovery Features | 1/8 | In Progress | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
 
 ### Phase 10: Study Australia Scrapers
