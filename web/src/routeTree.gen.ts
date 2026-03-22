@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ScholarshipsClosingSoonRouteImport } from './routes/scholarships/closing-soon'
 import { Route as ScholarshipsSlugRouteImport } from './routes/scholarships/$slug'
 import { Route as ScholarshipsDegreeDegreeRouteImport } from './routes/scholarships/degree/$degree'
 import { Route as ScholarshipsCountryCountryRouteImport } from './routes/scholarships/country/$country'
 
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,6 +32,11 @@ const ScholarshipsIndexRoute = ScholarshipsIndexRouteImport.update({
   id: '/scholarships/',
   path: '/scholarships/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const ScholarshipsClosingSoonRoute = ScholarshipsClosingSoonRouteImport.update({
   id: '/scholarships/closing-soon',
@@ -51,8 +63,10 @@ const ScholarshipsCountryCountryRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/admin/': typeof AdminIndexRoute
   '/scholarships/': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -61,6 +75,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/admin': typeof AdminIndexRoute
   '/scholarships': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -68,8 +83,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
+  '/admin/': typeof AdminIndexRoute
   '/scholarships/': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -78,8 +95,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
+    | '/admin/'
     | '/scholarships/'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
@@ -88,14 +107,17 @@ export interface FileRouteTypes {
     | '/'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
+    | '/admin'
     | '/scholarships'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
+    | '/admin/'
     | '/scholarships/'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
@@ -103,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   ScholarshipsSlugRoute: typeof ScholarshipsSlugRoute
   ScholarshipsClosingSoonRoute: typeof ScholarshipsClosingSoonRoute
   ScholarshipsIndexRoute: typeof ScholarshipsIndexRoute
@@ -112,6 +135,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -125,6 +155,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/scholarships/'
       preLoaderRoute: typeof ScholarshipsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/scholarships/closing-soon': {
       id: '/scholarships/closing-soon'
@@ -157,8 +194,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   ScholarshipsSlugRoute: ScholarshipsSlugRoute,
   ScholarshipsClosingSoonRoute: ScholarshipsClosingSoonRoute,
   ScholarshipsIndexRoute: ScholarshipsIndexRoute,
