@@ -36,14 +36,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Admin Dashboard
 
-- [ ] **ADMN-01**: Admin can view review queue of pending scraped scholarships
-- [ ] **ADMN-02**: Admin can edit any scholarship field (fix scraped data, fill gaps, rewrite descriptions)
-- [ ] **ADMN-03**: Admin can approve or reject scholarships with single action
-- [ ] **ADMN-04**: Admin can bulk-approve or bulk-reject multiple scholarships
-- [ ] **ADMN-05**: Admin can configure source trust levels (auto-publish, needs-review, blocked)
-- [ ] **ADMN-06**: Trusted sources auto-publish scholarships without manual review
+- [x] **ADMN-01**: Admin can view review queue of pending scraped scholarships
+- [x] **ADMN-02**: Admin can edit any scholarship field (fix scraped data, fill gaps, rewrite descriptions)
+- [x] **ADMN-03**: Admin can approve or reject scholarships with single action
+- [x] **ADMN-04**: Admin can bulk-approve or bulk-reject multiple scholarships
+- [x] **ADMN-05**: Admin can configure source trust levels (auto-publish, needs-review, blocked)
+- [x] **ADMN-06**: Trusted sources auto-publish scholarships without manual review
 - [ ] **ADMN-07**: Admin can add editorial notes and tips per scholarship (rich text)
-- [ ] **ADMN-08**: No duplicate scholarships can be published (dedup enforced at publish)
+- [x] **ADMN-08**: No duplicate scholarships can be published (dedup enforced at publish)
 
 ### Public Directory
 
@@ -169,14 +169,14 @@ Deferred to future release. Tracked but not in current roadmap.
 | AGGR-04 | Phase 4 | Complete |
 | AGGR-05 | Phase 4 | Complete |
 | AGGR-06 | Phase 4 | Complete |
-| ADMN-01 | Phase 5 | Pending |
-| ADMN-02 | Phase 5 | Pending |
-| ADMN-03 | Phase 5 | Pending |
-| ADMN-04 | Phase 5 | Pending |
-| ADMN-05 | Phase 5 | Pending |
-| ADMN-06 | Phase 5 | Pending |
+| ADMN-01 | Phase 5 | Complete |
+| ADMN-02 | Phase 5 | Complete |
+| ADMN-03 | Phase 5 | Complete |
+| ADMN-04 | Phase 5 | Complete |
+| ADMN-05 | Phase 5 | Complete |
+| ADMN-06 | Phase 5 | Complete |
 | ADMN-07 | Phase 5 | Pending |
-| ADMN-08 | Phase 5 | Pending |
+| ADMN-08 | Phase 5 | Complete |
 | UIDX-04 | Phase 5 | Complete |
 | PDIR-01 | Phase 6 | Complete |
 | PDIR-02 | Phase 6 | Complete |

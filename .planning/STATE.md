@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-22T09:01:34.206Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-22T09:04:58.203Z"
 last_activity: 2026-03-22
 progress:
   total_phases: 11
   completed_phases: 7
   total_plans: 33
-  completed_plans: 29
+  completed_plans: 30
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 05 (admin-dashboard) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Plan: 2 of 5
 | Phase 04 P01 | 2min | 2 tasks | 3 files |
 | Phase 04 P02 | 6min | 2 tasks | 4 files |
 | Phase 05 P02 | 3min | 2 tasks | 7 files |
+| Phase 05 P01 | 6min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -161,6 +162,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Trigger-wrapped internalMutation via customMutation(rawInternalMutation, customCtx(wrapDB)) for auto-computing prestige/search_text on aggregation writes
 - [Phase 05]: Inline dark mode toggle in AdminHeader matching Navbar pattern, no separate useTheme hook
 - [Phase 05]: Updated generated api.d.ts to include admin module for TypeScript compatibility
+- [Phase 05]: isAdmin guard stub always returns true for Phase 5 (D-08), ready for Clerk integration
+- [Phase 05]: determineStatus uses null initial trust baseline to correctly handle blocked-only sources
+- [Phase 05]: Aggregation pipeline uses determineStatus for trust-based auto-publish instead of hardcoded published status
 
 ### Pending Todos
 
@@ -187,7 +191,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T09:01:34.203Z
+Last session: 2026-03-22T09:04:58.200Z
 Last activity: 2026-03-22
-Stopped at: Completed 05-02-PLAN.md
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
