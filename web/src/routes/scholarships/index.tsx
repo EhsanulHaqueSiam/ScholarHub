@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FeaturedCollectionsRow } from "@/components/collections/FeaturedCollectionsRow";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FeaturedRow } from "@/components/directory/FeaturedRow";
@@ -218,6 +219,11 @@ function ScholarshipsDirectory() {
         {/* Featured Row */}
         <div className="mb-8">
           <FeaturedRow nationalities={featuredNationalities} />
+        </div>
+
+        {/* Featured Collections Row */}
+        <div className="mb-8">
+          <FeaturedCollectionsRow />
         </div>
 
         {/* Quick Filters */}

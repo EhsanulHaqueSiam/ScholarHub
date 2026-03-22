@@ -72,6 +72,9 @@ export function Navbar() {
           <NavLink to="/scholarships" exact>
             Scholarships
           </NavLink>
+          <NavLink to="/collections" exact>
+            Collections
+          </NavLink>
           <NavLink to="/scholarships/closing-soon" exact>
             Closing Soon
           </NavLink>
@@ -122,6 +125,15 @@ export function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Scholarships
+            </Link>
+            <Link
+              to="/collections"
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
+              onClick={() => setMenuOpen(false)}
+            >
+              Collections
             </Link>
             <Link
               to="/scholarships/closing-soon"
