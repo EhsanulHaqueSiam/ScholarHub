@@ -1,6 +1,9 @@
 import { useMutation, useQuery } from "convex/react";
+import { Check, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ALL_TAGS, getTagLabel } from "@/lib/tags";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { EditorialEditor } from "./EditorialEditor";
@@ -769,6 +772,9 @@ export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProp
             </div>
           </div>
         </details>
+
+        {/* Tags (D-34) -- immediate mutations, not part of form dirty state */}
+        <TagsSection scholarshipId={scholarshipId} />
       </div>
 
       {/* Sticky footer */}
@@ -779,6 +785,156 @@ export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProp
         <Button variant="default" onClick={handleSave} disabled={saving || !isDirty}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * TagsSection: Per-scholarship tag management with autocomplete and suggested tag review.
+ * Operates via immediate mutations -- not part of the form's dirty state. D-34
+ */
+function TagsSection({ scholarshipId }: { scholarshipId: Id<"scholarships"> }) {
+  const tagData = useQuery(api.tags.getScholarshipTags, { scholarshipId });
+  const addTagMut = useMutation(api.tags.addTagToScholarship);
+  const removeTagMut = useMutation(api.tags.removeTag);
+  const acceptTagMut = useMutation(api.tags.acceptSuggestedTag);
+  const rejectTagMut = useMutation(api.tags.rejectSuggestedTag);
+
+  const [tagInput, setTagInput] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const currentTags = tagData?.tags ?? [];
+  const suggestedTags = tagData?.suggested_tags ?? [];
+
+  const filteredTags = useMemo(() => {
+    if (!tagInput) return ALL_TAGS.filter((t) => !currentTags.includes(t.id));
+    const q = tagInput.toLowerCase();
+    return ALL_TAGS.filter(
+      (t) => !currentTags.includes(t.id) && (t.label.toLowerCase().includes(q) || t.id.includes(q)),
+    );
+  }, [tagInput, currentTags]);
+
+  async function handleAddTag(tagId: string) {
+    await addTagMut({ scholarshipId, tag: tagId });
+    setTagInput("");
+    setShowDropdown(false);
+  }
+
+  async function handleAddFreeformTag() {
+    if (!tagInput.trim()) return;
+    const tagId = tagInput
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "");
+    if (tagId) {
+      await addTagMut({ scholarshipId, tag: tagId });
+      setTagInput("");
+      setShowDropdown(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 border-t-2 border-border pt-4">
+      <span className="text-sm font-heading block mb-2">Tags</span>
+
+      {/* Current tags */}
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        {currentTags.map((tag) => (
+          <Badge key={tag} variant="tag" className="gap-1">
+            {getTagLabel(tag)}
+            <button
+              type="button"
+              onClick={() => removeTagMut({ scholarshipId, tag })}
+              className="text-foreground/50 hover:text-foreground ml-0.5"
+              aria-label={`Remove tag ${getTagLabel(tag)}`}
+            >
+              <X className="size-3" />
+            </button>
+          </Badge>
+        ))}
+        {currentTags.length === 0 && (
+          <span className="text-xs text-foreground/40">No tags assigned</span>
+        )}
+      </div>
+
+      {/* Suggested tags */}
+      {suggestedTags.length > 0 && (
+        <div className="mb-3">
+          <span className="text-xs text-foreground/60 block mb-1">Suggested</span>
+          <div className="flex flex-wrap gap-1.5">
+            {suggestedTags.map((suggested) => (
+              <span key={suggested.tag} className="inline-flex items-center gap-0.5">
+                <Badge variant="tagSuggested" className="text-[11px]">
+                  {getTagLabel(suggested.tag)}
+                </Badge>
+                <button
+                  type="button"
+                  onClick={() => acceptTagMut({ scholarshipId, tag: suggested.tag })}
+                  className="p-0.5 rounded-sm hover:bg-urgency-open/20 text-urgency-open transition-colors"
+                  aria-label={`Accept tag ${getTagLabel(suggested.tag)}`}
+                >
+                  <Check className="size-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => rejectTagMut({ scholarshipId, tag: suggested.tag })}
+                  className="p-0.5 rounded-sm hover:bg-destructive/20 text-destructive transition-colors"
+                  aria-label={`Reject tag ${getTagLabel(suggested.tag)}`}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tag input with autocomplete */}
+      <div className="relative">
+        <input
+          type="text"
+          className="h-8 px-2 border-2 border-border rounded-base bg-background text-xs w-full focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="Add tag (type to search, Enter for custom)"
+          value={tagInput}
+          onChange={(e) => {
+            setTagInput(e.target.value);
+            setShowDropdown(true);
+          }}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={() => {
+            // Delay to allow click on dropdown
+            setTimeout(() => setShowDropdown(false), 200);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (filteredTags.length > 0) {
+                handleAddTag(filteredTags[0].id);
+              } else {
+                handleAddFreeformTag();
+              }
+            }
+            if (e.key === "Escape") {
+              setShowDropdown(false);
+            }
+          }}
+        />
+        {showDropdown && tagInput && filteredTags.length > 0 && (
+          <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-36 overflow-y-auto border-2 border-border rounded-base bg-background shadow-shadow">
+            {filteredTags.slice(0, 10).map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                className="w-full text-left px-2 py-1.5 text-xs hover:bg-secondary-background transition-colors"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleAddTag(tag.id)}
+              >
+                {tag.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
