@@ -39,6 +39,7 @@ export function useScholarshipFilters() {
     field: parseCommaSeparated(search.field),
     funding: parseCommaSeparated(search.funding),
     tier: parseCommaSeparated(search.tier),
+    tags: parseCommaSeparated(search.tags),
     sort: search.sort ?? "deadline",
     view: search.view ?? "grid",
     showClosed: search.show_closed ?? false,
@@ -70,6 +71,7 @@ export function useScholarshipFilters() {
         filters.tier.length > 0
           ? (filters.tier as Array<"gold" | "silver" | "bronze" | "unranked">)
           : undefined,
+      tags: filters.tags.length > 0 ? filters.tags : undefined,
       sort: filters.sort,
       showClosed: filters.showClosed || undefined,
       closingSoon: filters.closingSoon || undefined,
@@ -83,6 +85,7 @@ export function useScholarshipFilters() {
       filters.field.join(),
       filters.funding.join(),
       filters.tier.join(),
+      filters.tags.join(),
       filters.sort,
       filters.showClosed,
       filters.closingSoon,
@@ -121,6 +124,7 @@ export function useScholarshipFilters() {
     filters.field.length > 0,
     filters.funding.length > 0,
     filters.tier.length > 0,
+    filters.tags.length > 0,
     filters.q,
     filters.showClosed,
     filters.closingSoon,

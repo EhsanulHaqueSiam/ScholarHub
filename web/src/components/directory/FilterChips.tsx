@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { DEGREE_LEVELS, FIELDS_OF_STUDY, FUNDING_TYPES } from "@/lib/filters";
+import { getTagLabel } from "@/lib/tags";
 
 /**
  * Active filter pills above results.
@@ -82,6 +83,16 @@ export function FilterChips() {
       filterKey: "tier",
       value,
       label: `Tier: ${value.charAt(0).toUpperCase() + value.slice(1)}`,
+    });
+  }
+
+  // Tag chips
+  for (const tagId of filters.tags) {
+    chips.push({
+      key: `tags-${tagId}`,
+      filterKey: "tags",
+      value: tagId,
+      label: `Tag: ${getTagLabel(tagId)}`,
     });
   }
 

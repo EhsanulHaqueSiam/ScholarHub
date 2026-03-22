@@ -24,6 +24,7 @@ import type * as prestige from "../prestige.js";
 import type * as related from "../related.js";
 import type * as scraping from "../scraping.js";
 import type * as seed from "../seed.js";
+import type * as seedCollections from "../seed-collections.js";
 import type * as sources from "../sources.js";
 import type * as tagging from "../tagging.js";
 import type * as tags from "../tags.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   related: typeof related;
   scraping: typeof scraping;
   seed: typeof seed;
+  "seed-collections": typeof seedCollections;
   sources: typeof sources;
   tagging: typeof tagging;
   tags: typeof tags;
