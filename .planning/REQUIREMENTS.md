@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ADMN-04**: Admin can bulk-approve or bulk-reject multiple scholarships
 - [x] **ADMN-05**: Admin can configure source trust levels (auto-publish, needs-review, blocked)
 - [x] **ADMN-06**: Trusted sources auto-publish scholarships without manual review
-- [ ] **ADMN-07**: Admin can add editorial notes and tips per scholarship (rich text)
+- [x] **ADMN-07**: Admin can add editorial notes and tips per scholarship (rich text)
 - [x] **ADMN-08**: No duplicate scholarships can be published (dedup enforced at publish)
 
 ### Public Directory
@@ -175,7 +175,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | ADMN-04 | Phase 5 | Complete |
 | ADMN-05 | Phase 5 | Complete |
 | ADMN-06 | Phase 5 | Complete |
-| ADMN-07 | Phase 5 | Pending |
+| ADMN-07 | Phase 5 | Complete |
 | ADMN-08 | Phase 5 | Complete |
 | UIDX-04 | Phase 5 | Complete |
 | PDIR-01 | Phase 6 | Complete |
