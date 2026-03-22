@@ -167,14 +167,14 @@ Plans:
 **Plans**: 8 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Convex schema (collections table, scholarships additions), tag constants, auto-tagging rules, related scoring algorithm, collection/comparison queries, trigger extensions
-- [ ] 08-02-PLAN.md -- CSS variables (comparison highlight, tag outline, suggested tag amber), badge tag/tagSuggested variants, navbar Collections link
-- [ ] 08-03-PLAN.md -- Admin UI: CollectionsManager with table + slide-out edit form, TagsManager with grouped list + suggested review + bulk tag, admin route 4-tab wiring
-- [ ] 08-04-PLAN.md -- CompareContext provider, CompareCheckbox overlay, CompareBar floating bottom bar, root provider wiring, ScholarshipCard/ListItem checkbox integration
-- [ ] 08-05-PLAN.md -- CollectionCard, FeaturedCollectionsRow, CollectionHeader, /collections browse page, /collections/$slug detail page, directory featured collections row
-- [ ] 08-06-PLAN.md -- ComparisonTable with difference highlighting, SearchToAdd dropdown, /scholarships/compare route with SEO and empty states
-- [ ] 08-07-PLAN.md -- TagBadges in detail hero section, RelatedScholarships section after Sources, detail route wiring
-- [ ] 08-08-PLAN.md -- Seed 10 collections, daily crons (count refresh + related_ids), directory ?tags= filter, visual verification checkpoint
+- [x] 08-01-PLAN.md -- Convex backend: schema additions, tag system, auto-tagging, related scoring, collection CRUD, comparison query, trigger wiring
+- [x] 08-02-PLAN.md -- CSS variables, badge tag/tagSuggested variants, navbar Collections link
+- [ ] 08-03-PLAN.md -- Admin UI: CollectionsManager, TagsManager, EditForm tags, BulkActionBar tag action
+- [ ] 08-04-PLAN.md -- CompareContext provider, CompareCheckbox, CompareBar, card integration
+- [ ] 08-05-PLAN.md -- CollectionCard, FeaturedCollectionsRow, /collections routes
+- [ ] 08-06-PLAN.md -- ComparisonTable, SearchToAdd, /scholarships/compare route
+- [ ] 08-07-PLAN.md -- TagBadges, CollectionBadges, RelatedScholarships in detail page
+- [ ] 08-08-PLAN.md -- Seed collections, daily crons, directory tag filter, visual verification
 
 ### Phase 9: SEO & Growth
 **Goal**: Scholarship pages are discoverable by search engines with proper structured data, and auto-generated landing pages drive organic traffic for country and degree-level searches
@@ -205,7 +205,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
-| 8. Discovery Features | 0/8 | Not started | - |
+| 8. Discovery Features | 2/8 | In Progress | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
 
 ### Phase 10: Study Australia Scrapers

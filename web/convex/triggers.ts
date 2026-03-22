@@ -1,6 +1,8 @@
 import { Triggers } from "convex-helpers/server/triggers";
 import type { DataModel } from "./_generated/dataModel";
-import { calculatePrestigeScore, scoreTier, buildSearchText } from "./prestige";
+import { buildSearchText, calculatePrestigeScore, scoreTier } from "./prestige";
+import { computeRelatedIds } from "./related";
+import { computeAutoTags } from "./tagging";
 
 const triggers = new Triggers<DataModel>();
 
@@ -8,6 +10,9 @@ triggers.register("scholarships", async (ctx, change) => {
   if (change.operation === "delete") return;
 
   const doc = change.newDoc;
+  const oldDoc = change.oldDoc;
+
+  // --- Prestige scoring ---
   const score = calculatePrestigeScore({
     funding_type: doc.funding_type,
     provider_organization: doc.provider_organization,
@@ -21,17 +26,66 @@ triggers.register("scholarships", async (ctx, change) => {
     eligibility_nationalities: doc.eligibility_nationalities,
   });
 
-  // Only patch if values changed to avoid infinite trigger loops
-  if (
-    doc.prestige_score !== score ||
-    doc.prestige_tier !== tier ||
-    doc.search_text !== searchText
-  ) {
-    await ctx.db.patch(doc._id, {
-      prestige_score: score,
-      prestige_tier: tier,
-      search_text: searchText,
+  const prestigeChanged =
+    doc.prestige_score !== score || doc.prestige_tier !== tier || doc.search_text !== searchText;
+
+  // --- Auto-tagging (D-26) ---
+  const newSuggestions = computeAutoTags({
+    title: doc.title,
+    description: doc.description,
+    eligibility_nationalities: doc.eligibility_nationalities,
+    degree_levels: doc.degree_levels,
+    fields_of_study: doc.fields_of_study,
+    host_country: doc.host_country,
+    tags: doc.tags,
+    suggested_tags: doc.suggested_tags,
+  });
+  const hasSuggestions = newSuggestions.length > 0;
+
+  // --- Related scholarships (D-76) ---
+  // Only recompute on insert or when key fields changed
+  let newRelatedIds: any[] | null = null;
+  const shouldRecomputeRelated =
+    change.operation === "insert" ||
+    (oldDoc &&
+      (oldDoc.provider_organization !== doc.provider_organization ||
+        oldDoc.host_country !== doc.host_country ||
+        JSON.stringify(oldDoc.degree_levels) !== JSON.stringify(doc.degree_levels) ||
+        oldDoc.funding_type !== doc.funding_type ||
+        JSON.stringify(oldDoc.tags) !== JSON.stringify(doc.tags)));
+
+  if (shouldRecomputeRelated) {
+    newRelatedIds = await computeRelatedIds(ctx, {
+      _id: doc._id,
+      provider_organization: doc.provider_organization,
+      host_country: doc.host_country,
+      degree_levels: doc.degree_levels,
+      funding_type: doc.funding_type,
+      tags: doc.tags,
+      status: doc.status,
     });
+  }
+
+  // --- Build patch ---
+  const patch: Record<string, any> = {};
+
+  if (prestigeChanged) {
+    patch.prestige_score = score;
+    patch.prestige_tier = tier;
+    patch.search_text = searchText;
+  }
+
+  if (hasSuggestions) {
+    patch.suggested_tags = [...(doc.suggested_tags ?? []), ...newSuggestions];
+  }
+
+  if (newRelatedIds !== null && JSON.stringify(newRelatedIds) !== JSON.stringify(doc.related_ids)) {
+    patch.related_ids = newRelatedIds;
+  }
+
+  // Only patch if something changed to avoid infinite trigger loops
+  if (Object.keys(patch).length > 0) {
+    await ctx.db.patch(doc._id, patch);
   }
 });
 
