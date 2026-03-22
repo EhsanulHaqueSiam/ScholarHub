@@ -74,6 +74,6 @@ Students can discover every relevant international scholarship in one place, wit
 ---
 ## Current State
 
-Phase 4 (Data Aggregation) complete — aggregation pipeline runs inside Convex as internal mutations triggered after scrape runs. Composite matching (title + org + country + degree level overlap) deduplicates across sources, trust-weighted merge (government > official_program > foundation > aggregator) selects richest data, cycle detection links annual programs via previous_cycle_id, auto-archive handles expired scholarships with expected_reopen_month. 82 tests passing, 6/6 AGGR requirements verified.
+Phase 8 (Discovery Features) complete — students can discover scholarships through curated collections (10 seed collections with tag-based auto-populating filters), compare 2-3 scholarships side-by-side with difference highlighting, and find related scholarships from detail pages via 5-factor weighted scoring. Admin UI includes collection management, tag system with auto-tagging, suggested tag review, and bulk operations. Daily crons maintain collection counts and related IDs. 3/3 DISC requirements verified.
 
-*Last updated: 2026-03-22 after Phase 4 completion*
+*Last updated: 2026-03-23 after Phase 8 completion*
