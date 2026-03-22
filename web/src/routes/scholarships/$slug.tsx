@@ -13,6 +13,7 @@ import { FundingSection } from "@/components/detail/FundingSection";
 import { HeroSection } from "@/components/detail/HeroSection";
 import { HowToApplySection } from "@/components/detail/HowToApplySection";
 import { OverviewSection } from "@/components/detail/OverviewSection";
+import { RelatedScholarships } from "@/components/detail/RelatedScholarships";
 import { SourcesSection } from "@/components/detail/SourcesSection";
 import { StickyBar } from "@/components/detail/StickyBar";
 import { BackToTop } from "@/components/layout/BackToTop";
@@ -38,6 +39,7 @@ const detailSearchSchema = z.object({
   funding: z.string().optional(),
   tier: z.string().optional(),
   sort: z.string().optional(),
+  tags: z.string().optional(),
 });
 
 export const Route = createFileRoute("/scholarships/$slug")({
@@ -171,6 +173,10 @@ function ScholarshipDetailPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const isHeroVisible = useIsHeroVisible(heroRef);
   const scholarship = useQuery(api.directory.getScholarshipDetail, { slug });
+  const scholarshipCollections = useQuery(
+    api.collections.getScholarshipCollections,
+    scholarship ? { scholarshipId: scholarship._id } : "skip",
+  );
 
   // Loading state
   if (scholarship === undefined) {
@@ -259,6 +265,8 @@ function ScholarshipDetailPage() {
             degreeLevels={scholarship.degree_levels}
             fundingType={scholarship.funding_type}
             applicationUrl={scholarship.application_url ?? undefined}
+            tags={scholarship.tags}
+            collections={scholarshipCollections ?? undefined}
           />
 
           {/* Overview */}
@@ -379,6 +387,9 @@ function ScholarshipDetailPage() {
             lastVerified={scholarship.last_verified ?? undefined}
             sourceCount={scholarship.source_ids.length}
           />
+
+          {/* Similar Scholarships (DISC-03) */}
+          <RelatedScholarships scholarshipId={scholarship._id} />
         </div>
       </div>
 
