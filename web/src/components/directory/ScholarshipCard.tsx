@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Banknote, Check, Copy } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { CompareCheckbox } from "@/components/comparison/CompareCheckbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +71,9 @@ export const ScholarshipCard = memo(function ScholarshipCard({
             "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
         )}
       >
+        {/* Compare checkbox - top left */}
+        <CompareCheckbox slug={slug} title={scholarship.title} variant="card" />
+
         {/* Host country flag badge - top right */}
         <div className="absolute top-3 end-3 z-10">
           {(() => {
