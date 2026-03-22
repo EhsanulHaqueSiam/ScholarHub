@@ -21,6 +21,9 @@ const badgeVariants = cva(
         urgencyClosed: "bg-urgency-closed text-white border-urgency-closed",
         new: "bg-main text-main-foreground motion-safe:animate-pulse",
         limitedInfo: "bg-secondary-background text-foreground border-border",
+        tag: "bg-transparent text-foreground border-[1.5px] border-[var(--tag-outline-border)] dark:border-[var(--tag-outline-border)] hover:bg-secondary-background cursor-pointer",
+        tagSuggested:
+          "bg-[var(--tag-suggested-bg)] dark:bg-[var(--tag-suggested-bg)] text-foreground border-[1.5px] border-[var(--tag-suggested-border)] dark:border-[var(--tag-suggested-border)]",
       },
     },
     defaultVariants: {
