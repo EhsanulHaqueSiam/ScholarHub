@@ -153,8 +153,8 @@ function ScholarshipsDirectory() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(queryArgs)]);
 
-  // Total scholarship count for trust signal
-  const totalCount = useQuery(api.directory.getScholarshipCount, {});
+  // Use loaded results count instead of a separate heavy count query
+  const totalCount = totalAvailable > 0 ? totalAvailable : undefined;
 
   // Handle search — fires on user Enter/submit (suggestions are already debounced in SearchBar)
   const handleSearch = useCallback(
