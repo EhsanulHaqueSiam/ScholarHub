@@ -506,3 +506,84 @@ export const bulkPublishRawRecords = mutation({
     return { promoted, skipped, remaining: unpromoted.length - promoted - skipped };
   },
 });
+
+/**
+ * Demote published scholarships with missing important information to pending_review.
+ * Checks for: missing description, application_url, slug, "Unknown" provider, "International" country.
+ * Supports dryRun mode to preview what would be demoted without making changes.
+ */
+export const demoteIncompleteScholarships = mutation({
+  args: {
+    dryRun: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const isDryRun = args.dryRun ?? false;
+    let checked = 0;
+    let demoted = 0;
+    const reasons: Record<string, number> = {};
+
+    const published = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .take(500);
+
+    for (const scholarship of published) {
+      checked++;
+      const missingFields: string[] = [];
+
+      // Check description
+      if (
+        scholarship.description === undefined ||
+        scholarship.description === null ||
+        scholarship.description.trim() === ""
+      ) {
+        missingFields.push("description");
+      }
+
+      // Check application_url
+      if (
+        scholarship.application_url === undefined ||
+        scholarship.application_url === null ||
+        scholarship.application_url.trim() === ""
+      ) {
+        missingFields.push("application_url");
+      }
+
+      // Check slug
+      if (
+        scholarship.slug === undefined ||
+        scholarship.slug === null ||
+        scholarship.slug.trim() === ""
+      ) {
+        missingFields.push("slug");
+      }
+
+      // Check provider_organization fallback value
+      if (scholarship.provider_organization === "Unknown") {
+        missingFields.push("provider_organization");
+      }
+
+      // Check host_country fallback value
+      if (scholarship.host_country === "International") {
+        missingFields.push("host_country");
+      }
+
+      if (missingFields.length > 0) {
+        // Tally each reason
+        for (const field of missingFields) {
+          reasons[field] = (reasons[field] ?? 0) + 1;
+        }
+
+        if (!isDryRun) {
+          await ctx.db.patch(scholarship._id, {
+            status: "pending_review",
+            editorial_notes: `Auto-demoted: missing ${missingFields.join(", ")}`,
+          });
+        }
+        demoted++;
+      }
+    }
+
+    return { demoted, checked, reasons };
+  },
+});
