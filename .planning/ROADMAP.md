@@ -90,7 +90,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Schema evolution (match_key, match_status), aggregation helper functions (normalize, match, merge, cycle, archive), unit tests
+- [x] 04-01-PLAN.md -- Schema evolution (match_key, match_status), aggregation helper functions (normalize, match, merge, cycle, archive), unit tests
 - [ ] 04-02-PLAN.md -- Aggregation pipeline mutations (trigger-wrapped batch processing, dedup, merge, cycle detection), completeRun wiring, archive cron, integration tests
 
 ### Phase 5: Admin Dashboard

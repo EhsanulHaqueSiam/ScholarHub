@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed quick task 260322-hcw (Demote incomplete published scholarships)
-last_updated: "2026-03-22T06:40:36.780Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-22T06:44:16.023Z"
 last_activity: 2026-03-22
 progress:
   total_phases: 11
   completed_phases: 6
   total_plans: 28
-  completed_plans: 26
+  completed_plans: 27
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 04 (data-aggregation) — EXECUTING
-Plan: 1 of 2
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Plan: 1 of 2
 | Phase 07 P03 | 2min | 1 tasks | 2 files |
 | Phase 10 P01 | 3min | 2 tasks | 6 files |
 | Phase 10 P02 | 2min | 2 tasks | 4 files |
+| Phase 04 P01 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -150,6 +151,9 @@ Recent decisions affecting current work:
 - [Phase 10]: map_study_australia_record as module-level helper for direct testing and reuse
 - [Phase 10]: Scholarships config uses populated field_mappings from research (not empty dict from plan) to pass existing test_all_configs_have_field_mappings
 - [Phase 10]: Provider config separate from scholarships for independent scrape frequency and future enrichment
+- [Phase 04]: 3-field match key (title|org|country) with separate degree overlap check per D-01/Pitfall 4
+- [Phase 04]: Pure helper functions separated from Convex mutations for testability without convex-test
+- [Phase 04]: parseDeadlineToTimestamp bridges string-to-number gap for raw_records deadline field
 
 ### Pending Todos
 
@@ -176,7 +180,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T06:42:07Z
+Last session: 2026-03-22T06:44:16.021Z
 Last activity: 2026-03-22
-Stopped at: Completed quick task 260322-hky (Fix desktop pagination to replace content)
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
