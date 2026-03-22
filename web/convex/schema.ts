@@ -141,6 +141,9 @@ export default defineSchema({
     canonical_id: v.optional(v.id("scholarships")),
     scrape_run_id: v.optional(v.id("scrape_runs")),
     quality_flags: v.optional(v.array(v.string())),
+    match_status: v.optional(
+      v.union(v.literal("matched"), v.literal("possible_duplicate"), v.literal("new")),
+    ),
     last_verified: v.optional(v.number()),
   })
     .index("by_source", ["source_id"])
@@ -179,6 +182,7 @@ export default defineSchema({
     prestige_tier: v.optional(prestigeTierValidator),
     prestige_score: v.optional(v.number()),
     search_text: v.optional(v.string()),
+    match_key: v.optional(v.string()),
   })
     .index("by_status", ["status"])
     .index("by_country_status", ["host_country", "status"])
@@ -188,6 +192,7 @@ export default defineSchema({
     .index("by_country_deadline", ["host_country", "application_deadline"])
     .index("by_slug", ["slug"])
     .index("by_prestige_status", ["prestige_tier", "status"])
+    .index("by_match_key", ["match_key"])
     .index("by_status_prestige_deadline", ["status", "prestige_tier", "application_deadline"])
     .searchIndex("search_scholarships", {
       searchField: "search_text",
