@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-22T18:05:44.111Z"
+status: Ready to plan
+stopped_at: Completed 08-08-PLAN.md
+last_updated: "2026-03-22T20:10:49.738Z"
 last_activity: 2026-03-22
 progress:
   total_phases: 11
-  completed_phases: 8
-  total_plans: 34
-  completed_plans: 34
+  completed_phases: 9
+  total_plans: 42
+  completed_plans: 42
 ---
 
 # Project State
@@ -20,11 +20,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 05 — admin-dashboard
+**Current focus:** Phase 08 — discovery-features
 
 ## Current Position
 
-Phase: 06.1
+Phase: 10
 Plan: Not started
 
 ## Performance Metrics
@@ -79,6 +79,14 @@ Plan: Not started
 | Phase 05 P04 | 4min | 2 tasks | 6 files |
 | Phase 05 P05 | 2min | 2 tasks | 4 files |
 | Phase 05 P06 | 1min | 1 tasks | 1 files |
+| Phase 08 P02 | 3min | 2 tasks | 3 files |
+| Phase 08 P01 | 9min | 2 tasks | 13 files |
+| Phase 08 P04 | 3min | 2 tasks | 6 files |
+| Phase 08 P05 | 5min | 2 tasks | 10 files |
+| Phase 08 P03 | 9min | 2 tasks | 14 files |
+| Phase 08 P07 | 3min | 2 tasks | 9 files |
+| Phase 08 P06 | 4min | 2 tasks | 8 files |
+| Phase 08 P08 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -175,6 +183,20 @@ Recent decisions affecting current work:
 - [Phase 05]: isHtml regex detection enables backward-compatible dual-format editorial note rendering (HTML from TipTap, markdown from auto-notes)
 - [Phase 05]: Used React state for admin view switching (queue/sources) rather than URL routes
 - [Phase 05]: Used Convex conditional skip pattern for countAffectedScholarships query in SourceTrustManager dialog
+- [Phase 08]: Dark mode badge variants reference same CSS variable names since .dark class overrides variable values
+- [Phase 08]: Collections use filter-based membership (matchesCollectionFilters) not explicit lists
+- [Phase 08]: Auto-tagging produces suggestions only (not auto-confirmed) per D-28
+- [Phase 08]: Related scoring bounded to .take(50) per trigger invocation to avoid unbounded reads
+- [Phase 08]: Batch tag rename/delete uses internal mutation + scheduler for unbounded sets
+- [Phase 08]: Compare checkbox positioned top-left on cards (not top-right) to avoid collision with country flag badges
+- [Phase 08]: Sort pills and ViewToggle inlined in collection detail page -- directory versions depend on useScholarshipFilters hook tied to URL state
+- [Phase 08]: Tag mutations in EditForm are immediate (not part of form dirty state) -- same pattern as editorial tips
+- [Phase 08]: Tag badges use transparent bg with hover for subtle outline appearance
+- [Phase 08]: Collections query uses skip sentinel to avoid querying before scholarship data loads
+- [Phase 08]: Created blocking dependency files (comparison.ts, CompareContext, CSS vars) inline for parallel execution
+- [Phase 08]: Semantic HTML table with th scope=col/row for WCAG AA comparison accessibility
+- [Phase 08]: Cron times staggered at 5:00 and 6:00 UTC to avoid overlap with existing 3:00/4:00 UTC crons
+- [Phase 08]: Batch cron pattern: 10 collections per recomputeAllCounts batch, 50 scholarships per refreshAllRelatedIds batch, with scheduler continuation
 
 ### Pending Todos
 
@@ -202,7 +224,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T18:05:44.108Z
+Last session: 2026-03-22T20:00:25.027Z
 Last activity: 2026-03-22
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-discovery-features/08-CONTEXT.md
+Stopped at: Completed 08-08-PLAN.md
+Resume file: None
