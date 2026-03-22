@@ -18,7 +18,7 @@ import { StickyBar } from "@/components/detail/StickyBar";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
-import { getCountryData } from "@/lib/country-data";
+import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
@@ -314,13 +314,26 @@ function ScholarshipDetailPage() {
               }
             }
 
+            const studyInfo = scholarship.study_info as Record<string, string> | undefined;
             const countriesWithData = codes
               .map((code) => ({
                 code,
-                data: getCountryData(code),
+                data: buildStudyData(studyInfo, getCountryData(code), code),
                 name: getCountryName(code),
               }))
               .filter((c) => c.data !== null);
+
+            // If no recognized countries but study_info exists, show generic section
+            if (
+              countriesWithData.length === 0 &&
+              studyInfo &&
+              Object.values(studyInfo).some(Boolean)
+            ) {
+              const genericData = buildStudyData(studyInfo, null, "XX");
+              if (genericData) {
+                countriesWithData.push({ code: "XX", data: genericData, name: "this country" });
+              }
+            }
 
             if (countriesWithData.length === 0) return null;
 

@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
 import { EditorialEditor } from "./EditorialEditor";
 
 interface EditFormProps {
@@ -12,19 +12,56 @@ interface EditFormProps {
 }
 
 const DEGREE_OPTIONS = ["bachelor", "master", "phd", "postdoc"] as const;
-const FUNDING_TYPE_OPTIONS = [
-  "fully_funded",
-  "partial",
-  "tuition_waiver",
-  "stipend_only",
-] as const;
-const STATUS_OPTIONS = [
-  "draft",
-  "pending_review",
-  "published",
-  "rejected",
-  "archived",
-] as const;
+const FUNDING_TYPE_OPTIONS = ["fully_funded", "partial", "tuition_waiver", "stipend_only"] as const;
+const STATUS_OPTIONS = ["draft", "pending_review", "published", "rejected", "archived"] as const;
+
+interface StudyInfo {
+  tuition_undergrad: string;
+  tuition_postgrad: string;
+  tuition_phd: string;
+  tuition_mba: string;
+  living_cost_note: string;
+  cost_accommodation: string;
+  cost_food: string;
+  cost_transport: string;
+  cost_utilities: string;
+  admission_requirements: string;
+  lang_ielts: string;
+  lang_toefl: string;
+  lang_pte: string;
+  visa_documents: string;
+  intake_main_name: string;
+  intake_main_months: string;
+  intake_secondary_name: string;
+  intake_secondary_months: string;
+  post_study_visa: string;
+  post_study_duration: string;
+  post_study_description: string;
+}
+
+const EMPTY_STUDY_INFO: StudyInfo = {
+  tuition_undergrad: "",
+  tuition_postgrad: "",
+  tuition_phd: "",
+  tuition_mba: "",
+  living_cost_note: "",
+  cost_accommodation: "",
+  cost_food: "",
+  cost_transport: "",
+  cost_utilities: "",
+  admission_requirements: "",
+  lang_ielts: "",
+  lang_toefl: "",
+  lang_pte: "",
+  visa_documents: "",
+  intake_main_name: "",
+  intake_main_months: "",
+  intake_secondary_name: "",
+  intake_secondary_months: "",
+  post_study_visa: "",
+  post_study_duration: "",
+  post_study_description: "",
+};
 
 interface FormValues {
   title: string;
@@ -47,6 +84,7 @@ interface FormValues {
   application_deadline_text: string;
   application_url: string;
   editorial_notes: string;
+  study_info: StudyInfo;
 }
 
 function scholarshipToForm(scholarship: Record<string, unknown>): FormValues {
@@ -54,37 +92,31 @@ function scholarshipToForm(scholarship: Record<string, unknown>): FormValues {
     title: (scholarship.title as string) || "",
     description: (scholarship.description as string) || "",
     status: (scholarship.status as string) || "pending_review",
-    provider_organization:
-      (scholarship.provider_organization as string) || "",
+    provider_organization: (scholarship.provider_organization as string) || "",
     host_country: (scholarship.host_country as string) || "",
     degree_levels: (scholarship.degree_levels as string[]) || [],
-    fields_of_study: (
-      (scholarship.fields_of_study as string[]) || []
-    ).join(", "),
-    eligibility_nationalities: (
-      (scholarship.eligibility_nationalities as string[]) || []
-    ).join(", "),
+    fields_of_study: ((scholarship.fields_of_study as string[]) || []).join(", "),
+    eligibility_nationalities: ((scholarship.eligibility_nationalities as string[]) || []).join(
+      ", ",
+    ),
     funding_type: (scholarship.funding_type as string) || "partial",
     funding_tuition: (scholarship.funding_tuition as boolean) || false,
     funding_living: (scholarship.funding_living as boolean) || false,
     funding_travel: (scholarship.funding_travel as boolean) || false,
     funding_insurance: (scholarship.funding_insurance as boolean) || false,
-    award_amount_min: scholarship.award_amount_min
-      ? String(scholarship.award_amount_min)
-      : "",
-    award_amount_max: scholarship.award_amount_max
-      ? String(scholarship.award_amount_max)
-      : "",
+    award_amount_min: scholarship.award_amount_min ? String(scholarship.award_amount_min) : "",
+    award_amount_max: scholarship.award_amount_max ? String(scholarship.award_amount_max) : "",
     award_currency: (scholarship.award_currency as string) || "",
     application_deadline: scholarship.application_deadline
-      ? new Date(scholarship.application_deadline as number)
-          .toISOString()
-          .split("T")[0]
+      ? new Date(scholarship.application_deadline as number).toISOString().split("T")[0]
       : "",
-    application_deadline_text:
-      (scholarship.application_deadline_text as string) || "",
+    application_deadline_text: (scholarship.application_deadline_text as string) || "",
     application_url: (scholarship.application_url as string) || "",
     editorial_notes: (scholarship.editorial_notes as string) || "",
+    study_info: {
+      ...EMPTY_STUDY_INFO,
+      ...((scholarship.study_info as Partial<StudyInfo>) || {}),
+    },
   };
 }
 
@@ -97,11 +129,7 @@ const fieldGroupClass = "mb-4";
  * EditForm: All-fields edit form for a scholarship inside the EditPanel.
  * Tracks dirty state and only sends changed fields on save.
  */
-export function EditForm({
-  scholarshipId,
-  onSaved,
-  onDirtyChange,
-}: EditFormProps) {
+export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProps) {
   const scholarship = useQuery(api.admin.getScholarshipForEdit, {
     scholarshipId,
   });
@@ -114,9 +142,7 @@ export function EditForm({
   // Initialize form when scholarship loads
   useEffect(() => {
     if (scholarship && !formValues) {
-      const values = scholarshipToForm(
-        scholarship as unknown as Record<string, unknown>
-      );
+      const values = scholarshipToForm(scholarship as unknown as Record<string, unknown>);
       setFormValues(values);
       setInitialValues(values);
     }
@@ -133,25 +159,19 @@ export function EditForm({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  const updateField = useCallback(
-    <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
-      setFormValues((prev) => (prev ? { ...prev, [field]: value } : prev));
-    },
-    []
-  );
+  const updateField = useCallback(<K extends keyof FormValues>(field: K, value: FormValues[K]) => {
+    setFormValues((prev) => (prev ? { ...prev, [field]: value } : prev));
+  }, []);
 
-  const toggleDegree = useCallback(
-    (degree: string) => {
-      setFormValues((prev) => {
-        if (!prev) return prev;
-        const levels = prev.degree_levels.includes(degree)
-          ? prev.degree_levels.filter((d) => d !== degree)
-          : [...prev.degree_levels, degree];
-        return { ...prev, degree_levels: levels };
-      });
-    },
-    []
-  );
+  const toggleDegree = useCallback((degree: string) => {
+    setFormValues((prev) => {
+      if (!prev) return prev;
+      const levels = prev.degree_levels.includes(degree)
+        ? prev.degree_levels.filter((d) => d !== degree)
+        : [...prev.degree_levels, degree];
+      return { ...prev, degree_levels: levels };
+    });
+  }, []);
 
   const handleSave = useCallback(async () => {
     if (!formValues || !initialValues || !isDirty) return;
@@ -161,40 +181,26 @@ export function EditForm({
       // Build updates object with only changed fields
       const updates: Record<string, unknown> = {};
 
-      if (formValues.title !== initialValues.title)
-        updates.title = formValues.title;
+      if (formValues.title !== initialValues.title) updates.title = formValues.title;
       if (formValues.description !== initialValues.description)
         updates.description = formValues.description;
-      if (formValues.status !== initialValues.status)
-        updates.status = formValues.status;
-      if (
-        formValues.provider_organization !==
-        initialValues.provider_organization
-      )
+      if (formValues.status !== initialValues.status) updates.status = formValues.status;
+      if (formValues.provider_organization !== initialValues.provider_organization)
         updates.provider_organization = formValues.provider_organization;
       if (formValues.host_country !== initialValues.host_country)
         updates.host_country = formValues.host_country;
-      if (
-        JSON.stringify(formValues.degree_levels) !==
-        JSON.stringify(initialValues.degree_levels)
-      )
+      if (JSON.stringify(formValues.degree_levels) !== JSON.stringify(initialValues.degree_levels))
         updates.degree_levels = formValues.degree_levels;
-      if (
-        formValues.fields_of_study !== initialValues.fields_of_study
-      )
+      if (formValues.fields_of_study !== initialValues.fields_of_study)
         updates.fields_of_study = formValues.fields_of_study
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
-      if (
-        formValues.eligibility_nationalities !==
-        initialValues.eligibility_nationalities
-      )
-        updates.eligibility_nationalities =
-          formValues.eligibility_nationalities
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+      if (formValues.eligibility_nationalities !== initialValues.eligibility_nationalities)
+        updates.eligibility_nationalities = formValues.eligibility_nationalities
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
       if (formValues.funding_type !== initialValues.funding_type)
         updates.funding_type = formValues.funding_type;
       if (formValues.funding_tuition !== initialValues.funding_tuition)
@@ -215,23 +221,24 @@ export function EditForm({
           : undefined;
       if (formValues.award_currency !== initialValues.award_currency)
         updates.award_currency = formValues.award_currency;
-      if (
-        formValues.application_deadline !==
-        initialValues.application_deadline
-      )
+      if (formValues.application_deadline !== initialValues.application_deadline)
         updates.application_deadline = formValues.application_deadline
           ? new Date(formValues.application_deadline).getTime()
           : undefined;
-      if (
-        formValues.application_deadline_text !==
-        initialValues.application_deadline_text
-      )
-        updates.application_deadline_text =
-          formValues.application_deadline_text;
+      if (formValues.application_deadline_text !== initialValues.application_deadline_text)
+        updates.application_deadline_text = formValues.application_deadline_text;
       if (formValues.application_url !== initialValues.application_url)
         updates.application_url = formValues.application_url;
       if (formValues.editorial_notes !== initialValues.editorial_notes)
         updates.editorial_notes = formValues.editorial_notes;
+      if (JSON.stringify(formValues.study_info) !== JSON.stringify(initialValues.study_info)) {
+        // Only send non-empty fields
+        const info: Record<string, string> = {};
+        for (const [k, val] of Object.entries(formValues.study_info)) {
+          if (val) info[k] = val;
+        }
+        updates.study_info = Object.keys(info).length > 0 ? info : undefined;
+      }
 
       if (Object.keys(updates).length > 0) {
         await updateScholarship({
@@ -246,20 +253,11 @@ export function EditForm({
     } finally {
       setSaving(false);
     }
-  }, [
-    formValues,
-    initialValues,
-    isDirty,
-    scholarshipId,
-    updateScholarship,
-    onSaved,
-  ]);
+  }, [formValues, initialValues, isDirty, scholarshipId, updateScholarship, onSaved]);
 
   const handleClose = useCallback(() => {
     if (isDirty) {
-      const discard = window.confirm(
-        "You have unsaved changes. Discard and close?"
-      );
+      const discard = window.confirm("You have unsaved changes. Discard and close?");
       if (!discard) return;
     }
     onSaved();
@@ -332,9 +330,7 @@ export function EditForm({
             type="text"
             className={inputClass}
             value={formValues.provider_organization}
-            onChange={(e) =>
-              updateField("provider_organization", e.target.value)
-            }
+            onChange={(e) => updateField("provider_organization", e.target.value)}
           />
         </div>
 
@@ -357,10 +353,7 @@ export function EditForm({
           <span className={labelClass}>Degree Levels</span>
           <div className="flex flex-wrap gap-3 mt-1">
             {DEGREE_OPTIONS.map((degree) => (
-              <label
-                key={degree}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
+              <label key={degree} className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formValues.degree_levels.includes(degree)}
@@ -383,9 +376,7 @@ export function EditForm({
             className="min-h-[60px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Comma-separated, e.g. Engineering, Medicine, Law"
             value={formValues.fields_of_study}
-            onChange={(e) =>
-              updateField("fields_of_study", e.target.value)
-            }
+            onChange={(e) => updateField("fields_of_study", e.target.value)}
           />
         </div>
 
@@ -399,9 +390,7 @@ export function EditForm({
             className="min-h-[60px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Comma-separated, e.g. All nationalities, EU only"
             value={formValues.eligibility_nationalities}
-            onChange={(e) =>
-              updateField("eligibility_nationalities", e.target.value)
-            }
+            onChange={(e) => updateField("eligibility_nationalities", e.target.value)}
           />
         </div>
 
@@ -436,10 +425,7 @@ export function EditForm({
                 ["funding_insurance", "Insurance"],
               ] as const
             ).map(([field, label]) => (
-              <label
-                key={field}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
+              <label key={field} className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formValues[field]}
@@ -462,9 +448,7 @@ export function EditForm({
                 className={inputClass}
                 placeholder="Min"
                 value={formValues.award_amount_min}
-                onChange={(e) =>
-                  updateField("award_amount_min", e.target.value)
-                }
+                onChange={(e) => updateField("award_amount_min", e.target.value)}
               />
             </div>
             <div className="flex-1">
@@ -473,9 +457,7 @@ export function EditForm({
                 className={inputClass}
                 placeholder="Max"
                 value={formValues.award_amount_max}
-                onChange={(e) =>
-                  updateField("award_amount_max", e.target.value)
-                }
+                onChange={(e) => updateField("award_amount_max", e.target.value)}
               />
             </div>
           </div>
@@ -492,9 +474,7 @@ export function EditForm({
             className={inputClass}
             placeholder="e.g. USD, EUR, GBP"
             value={formValues.award_currency}
-            onChange={(e) =>
-              updateField("award_currency", e.target.value)
-            }
+            onChange={(e) => updateField("award_currency", e.target.value)}
           />
         </div>
 
@@ -508,9 +488,7 @@ export function EditForm({
             type="date"
             className={inputClass}
             value={formValues.application_deadline}
-            onChange={(e) =>
-              updateField("application_deadline", e.target.value)
-            }
+            onChange={(e) => updateField("application_deadline", e.target.value)}
           />
         </div>
 
@@ -525,9 +503,7 @@ export function EditForm({
             className={inputClass}
             placeholder="e.g. Rolling admissions, March 31 2026"
             value={formValues.application_deadline_text}
-            onChange={(e) =>
-              updateField("application_deadline_text", e.target.value)
-            }
+            onChange={(e) => updateField("application_deadline_text", e.target.value)}
           />
         </div>
 
@@ -542,9 +518,7 @@ export function EditForm({
             className={inputClass}
             placeholder="https://..."
             value={formValues.application_url}
-            onChange={(e) =>
-              updateField("application_url", e.target.value)
-            }
+            onChange={(e) => updateField("application_url", e.target.value)}
           />
         </div>
 
@@ -556,22 +530,253 @@ export function EditForm({
             onChange={(html) => updateField("editorial_notes", html)}
           />
         </div>
+
+        {/* ---- Study Info (per-scholarship) ---- */}
+        <details className="border-2 border-border rounded-base p-4 mt-2">
+          <summary className="font-heading text-sm cursor-pointer select-none">
+            Study Info (per-scholarship)
+          </summary>
+          <div className="mt-4 space-y-0">
+            {/* Tuition Fees */}
+            <p className="text-xs font-heading uppercase tracking-wide mb-2 mt-2">Tuition Fees</p>
+            {(
+              [
+                ["tuition_undergrad", "Undergraduate", "e.g. €10,000 – €25,000/year"],
+                ["tuition_postgrad", "Postgraduate", "e.g. €10,000 – €35,000/year"],
+                ["tuition_phd", "PhD", "e.g. €5,000 – €15,000/year"],
+                ["tuition_mba", "MBA", "e.g. €15,000 – €40,000/year"],
+              ] as const
+            ).map(([key, label, placeholder]) => (
+              <div key={key} className={fieldGroupClass}>
+                <label className={labelClass}>{label}</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder={placeholder}
+                  value={formValues.study_info[key]}
+                  onChange={(e) =>
+                    updateField("study_info", { ...formValues.study_info, [key]: e.target.value })
+                  }
+                />
+              </div>
+            ))}
+
+            {/* Living Costs */}
+            <p className="text-xs font-heading uppercase tracking-wide mb-2 mt-4">Living Costs</p>
+            <div className={fieldGroupClass}>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className="min-h-[60px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="e.g. Dublin is more expensive, but cities like Cork provide affordable alternatives."
+                value={formValues.study_info.living_cost_note}
+                onChange={(e) =>
+                  updateField("study_info", {
+                    ...formValues.study_info,
+                    living_cost_note: e.target.value,
+                  })
+                }
+              />
+            </div>
+            {(
+              [
+                ["cost_accommodation", "Accommodation", "e.g. €400 – €900/month"],
+                ["cost_food", "Food & Groceries", "e.g. €200 – €350/month"],
+                ["cost_transport", "Transport", "e.g. €50 – €120/month"],
+                ["cost_utilities", "Utilities & Internet", "e.g. €100 – €150/month"],
+              ] as const
+            ).map(([key, label, placeholder]) => (
+              <div key={key} className={fieldGroupClass}>
+                <label className={labelClass}>{label}</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder={placeholder}
+                  value={formValues.study_info[key]}
+                  onChange={(e) =>
+                    updateField("study_info", { ...formValues.study_info, [key]: e.target.value })
+                  }
+                />
+              </div>
+            ))}
+
+            {/* Admission & Visa */}
+            <p className="text-xs font-heading uppercase tracking-wide mb-2 mt-4">
+              Admission & Visa
+            </p>
+            <div className={fieldGroupClass}>
+              <label className={labelClass}>Admission Requirements</label>
+              <textarea
+                className="min-h-[80px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="One per line, e.g.&#10;Strong academic results&#10;English proficiency (IELTS/TOEFL)&#10;Statement of purpose"
+                value={formValues.study_info.admission_requirements}
+                onChange={(e) =>
+                  updateField("study_info", {
+                    ...formValues.study_info,
+                    admission_requirements: e.target.value,
+                  })
+                }
+              />
+            </div>
+            {(
+              [
+                ["lang_ielts", "IELTS", "e.g. 6.0 – 6.5 overall"],
+                ["lang_toefl", "TOEFL", "e.g. 80 – 90 iBT"],
+                ["lang_pte", "PTE", "e.g. 56 – 63"],
+              ] as const
+            ).map(([key, label, placeholder]) => (
+              <div key={key} className={fieldGroupClass}>
+                <label className={labelClass}>{label}</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder={placeholder}
+                  value={formValues.study_info[key]}
+                  onChange={(e) =>
+                    updateField("study_info", { ...formValues.study_info, [key]: e.target.value })
+                  }
+                />
+              </div>
+            ))}
+            <div className={fieldGroupClass}>
+              <label className={labelClass}>Visa Documents</label>
+              <textarea
+                className="min-h-[80px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="One per line, e.g.&#10;Letter of acceptance&#10;Proof of tuition payment&#10;Evidence of funds (€10,000+)&#10;Valid passport"
+                value={formValues.study_info.visa_documents}
+                onChange={(e) =>
+                  updateField("study_info", {
+                    ...formValues.study_info,
+                    visa_documents: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            {/* Intake Periods */}
+            <p className="text-xs font-heading uppercase tracking-wide mb-2 mt-4">Intake Periods</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Main Intake Name</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. Autumn"
+                  value={formValues.study_info.intake_main_name}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      intake_main_name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Main Intake Months</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. September – October"
+                  value={formValues.study_info.intake_main_months}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      intake_main_months: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Secondary Intake Name</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. Spring"
+                  value={formValues.study_info.intake_secondary_name}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      intake_secondary_name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Secondary Intake Months</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. January – February"
+                  value={formValues.study_info.intake_secondary_months}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      intake_secondary_months: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Post-Study Work */}
+            <p className="text-xs font-heading uppercase tracking-wide mb-2 mt-4">
+              Post-Study Work
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Visa Name</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. Graduate Route"
+                  value={formValues.study_info.post_study_visa}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      post_study_visa: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className={fieldGroupClass}>
+                <label className={labelClass}>Duration</label>
+                <input
+                  type="text"
+                  className={inputClass}
+                  placeholder="e.g. 2 years"
+                  value={formValues.study_info.post_study_duration}
+                  onChange={(e) =>
+                    updateField("study_info", {
+                      ...formValues.study_info,
+                      post_study_duration: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className={fieldGroupClass}>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className="min-h-[60px] resize-y border-2 border-border rounded-base bg-background text-sm p-3 w-full focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="e.g. Graduates can work in any field for 2 years after completing their degree."
+                value={formValues.study_info.post_study_description}
+                onChange={(e) =>
+                  updateField("study_info", {
+                    ...formValues.study_info,
+                    post_study_description: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+        </details>
       </div>
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 bg-secondary-background border-t-2 border-border py-4 px-6 -mx-6 mt-6 flex justify-end gap-2">
-        <Button
-          variant="neutral"
-          onClick={handleClose}
-          disabled={saving}
-        >
+        <Button variant="neutral" onClick={handleClose} disabled={saving}>
           Close Panel
         </Button>
-        <Button
-          variant="default"
-          onClick={handleSave}
-          disabled={saving || !isDirty}
-        >
+        <Button variant="default" onClick={handleSave} disabled={saving || !isDirty}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>

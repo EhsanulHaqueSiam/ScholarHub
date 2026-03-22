@@ -46,7 +46,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   US: {
     code: "US",
     tuitionRanges: {
-      undergraduate: { min: 10000, max: 55000, currency: "USD", note: "Public in-state lower; private universities higher" },
+      undergraduate: {
+        min: 10000,
+        max: 55000,
+        currency: "USD",
+        note: "Public in-state lower; private universities higher",
+      },
       postgraduate: { min: 15000, max: 60000, currency: "USD" },
       phd: { min: 0, max: 40000, currency: "USD", note: "Many PhD programs offer full funding" },
     },
@@ -86,11 +91,13 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       { name: "Spring", months: "January", isMain: false },
       { name: "Summer", months: "May - June", isMain: false },
     ],
-    applicationTimeline: "Apply 9-12 months before intended start. Fall deadlines typically December-March.",
+    applicationTimeline:
+      "Apply 9-12 months before intended start. Fall deadlines typically December-March.",
     postStudyWork: {
       visaName: "OPT (Optional Practical Training)",
       duration: "1-3 years",
-      description: "12 months of work authorization for all graduates, with a 24-month STEM extension available for STEM degree holders, totaling up to 36 months.",
+      description:
+        "12 months of work authorization for all graduates, with a 24-month STEM extension available for STEM degree holders, totaling up to 36 months.",
       conditions: [
         "Must apply before program end date",
         "Employment must be related to field of study",
@@ -101,7 +108,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   GB: {
     code: "GB",
     tuitionRanges: {
-      undergraduate: { min: 10000, max: 38000, currency: "GBP", note: "Higher for medicine and clinical degrees" },
+      undergraduate: {
+        min: 10000,
+        max: 38000,
+        currency: "GBP",
+        note: "Higher for medicine and clinical degrees",
+      },
       postgraduate: { min: 11000, max: 40000, currency: "GBP" },
       phd: { min: 4000, max: 25000, currency: "GBP", note: "Many funded PhD positions available" },
     },
@@ -139,11 +151,13 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       { name: "Autumn", months: "September - October", isMain: true },
       { name: "Spring", months: "January - February", isMain: false },
     ],
-    applicationTimeline: "UCAS deadline in January for undergraduate. Postgraduate varies by university.",
+    applicationTimeline:
+      "UCAS deadline in January for undergraduate. Postgraduate varies by university.",
     postStudyWork: {
       visaName: "Graduate Route",
       duration: "2 years (3 years for PhD)",
-      description: "Unsponsored work visa allowing graduates to stay and work at any skill level. No job offer needed to apply.",
+      description:
+        "Unsponsored work visa allowing graduates to stay and work at any skill level. No job offer needed to apply.",
       conditions: [
         "Must have completed a UK degree",
         "Must apply before current student visa expires",
@@ -154,9 +168,24 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   DE: {
     code: "DE",
     tuitionRanges: {
-      undergraduate: { min: 0, max: 500, currency: "EUR", note: "Public universities charge only semester fees; private universities \u20ac10k-\u20ac30k/year" },
-      postgraduate: { min: 0, max: 500, currency: "EUR", note: "Same as undergraduate at public universities" },
-      phd: { min: 0, max: 300, currency: "EUR", note: "PhD positions often salaried research roles" },
+      undergraduate: {
+        min: 0,
+        max: 500,
+        currency: "EUR",
+        note: "Public universities charge only semester fees; private universities \u20ac10k-\u20ac30k/year",
+      },
+      postgraduate: {
+        min: 0,
+        max: 500,
+        currency: "EUR",
+        note: "Same as undergraduate at public universities",
+      },
+      phd: {
+        min: 0,
+        max: 300,
+        currency: "EUR",
+        note: "PhD positions often salaried research roles",
+      },
     },
     livingCost: {
       monthlyMin: 800,
@@ -198,7 +227,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Job Seeker Visa (Section 20 AufenthG)",
       duration: "18 months",
-      description: "Graduates can stay up to 18 months to seek employment related to their qualification. Can work in any job during the search period.",
+      description:
+        "Graduates can stay up to 18 months to seek employment related to their qualification. Can work in any job during the search period.",
       conditions: [
         "Must have completed a German degree",
         "Proof of financial self-sufficiency",
@@ -211,7 +241,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     tuitionRanges: {
       undergraduate: { min: 15000, max: 45000, currency: "CAD" },
       postgraduate: { min: 15000, max: 50000, currency: "CAD" },
-      phd: { min: 7000, max: 20000, currency: "CAD", note: "Most funded PhD programs cover tuition" },
+      phd: {
+        min: 7000,
+        max: 20000,
+        currency: "CAD",
+        note: "Most funded PhD programs cover tuition",
+      },
     },
     livingCost: {
       monthlyMin: 1000,
@@ -253,7 +288,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Post-Graduation Work Permit (PGWP)",
       duration: "Up to 3 years",
-      description: "Open work permit matching the length of your study program. No job offer required. Provides a pathway to permanent residency through Express Entry.",
+      description:
+        "Open work permit matching the length of your study program. No job offer required. Provides a pathway to permanent residency through Express Entry.",
       conditions: [
         "Must have studied at an eligible DLI",
         "Program must have been at least 8 months",
@@ -266,7 +302,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     tuitionRanges: {
       undergraduate: { min: 20000, max: 50000, currency: "AUD" },
       postgraduate: { min: 22000, max: 55000, currency: "AUD" },
-      phd: { min: 20000, max: 45000, currency: "AUD", note: "Research Training Program covers fees for many students" },
+      phd: {
+        min: 20000,
+        max: 45000,
+        currency: "AUD",
+        note: "Research Training Program covers fees for many students",
+      },
     },
     livingCost: {
       monthlyMin: 1500,
@@ -307,7 +348,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Temporary Graduate Visa (subclass 485)",
       duration: "2-4 years",
-      description: "Post-Study Work stream allows graduates to live and work in Australia. Duration depends on qualification level and study location (regional areas get extra years).",
+      description:
+        "Post-Study Work stream allows graduates to live and work in Australia. Duration depends on qualification level and study location (regional areas get extra years).",
       conditions: [
         "Must have completed at least 2 years of study in Australia",
         "Must apply within 6 months of completing studies",
@@ -319,9 +361,24 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   FR: {
     code: "FR",
     tuitionRanges: {
-      undergraduate: { min: 170, max: 3770, currency: "EUR", note: "Public universities: \u20ac170 (licence); Grandes \u00c9coles and private: \u20ac10k-\u20ac30k" },
-      postgraduate: { min: 243, max: 3770, currency: "EUR", note: "Public universities: \u20ac243 (master); private institutions significantly higher" },
-      phd: { min: 380, max: 380, currency: "EUR", note: "Doctoral registration fee at public universities" },
+      undergraduate: {
+        min: 170,
+        max: 3770,
+        currency: "EUR",
+        note: "Public universities: \u20ac170 (licence); Grandes \u00c9coles and private: \u20ac10k-\u20ac30k",
+      },
+      postgraduate: {
+        min: 243,
+        max: 3770,
+        currency: "EUR",
+        note: "Public universities: \u20ac243 (master); private institutions significantly higher",
+      },
+      phd: {
+        min: 380,
+        max: 380,
+        currency: "EUR",
+        note: "Doctoral registration fee at public universities",
+      },
     },
     livingCost: {
       monthlyMin: 800,
@@ -354,7 +411,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Campus France attestation",
       "Travel insurance",
     ],
-    visaNote: "VLS-TS (long-stay student visa) required. Apply through Campus France and French consulate.",
+    visaNote:
+      "VLS-TS (long-stay student visa) required. Apply through Campus France and French consulate.",
     intakes: [
       { name: "Autumn", months: "September - October", isMain: true },
       { name: "Spring", months: "January - February", isMain: false },
@@ -363,7 +421,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "APS (Autorisation Provisoire de S\u00e9jour)",
       duration: "2 years (non-renewable, job search period)",
-      description: "Allows graduates to stay in France to find employment related to their degree. Can convert to a work permit once employment is secured.",
+      description:
+        "Allows graduates to stay in France to find employment related to their degree. Can convert to a work permit once employment is secured.",
       conditions: [
         "Must have completed a master's degree or higher",
         "Must apply before current visa expires",
@@ -406,16 +465,19 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Health insurance (Dutch basic health insurance or equivalent)",
       "Proof of accommodation",
     ],
-    visaNote: "University sponsors your MVV entry visa and residence permit. Non-EU students must register with IND.",
+    visaNote:
+      "University sponsors your MVV entry visa and residence permit. Non-EU students must register with IND.",
     intakes: [
       { name: "Autumn", months: "September", isMain: true },
       { name: "Spring", months: "February", isMain: false },
     ],
-    applicationTimeline: "Apply by April 1 for numerus fixus, May 1 for other programs (September start).",
+    applicationTimeline:
+      "Apply by April 1 for numerus fixus, May 1 for other programs (September start).",
     postStudyWork: {
       visaName: "Orientation Year (Zoekjaar)",
       duration: "1 year",
-      description: "Allows graduates to stay in the Netherlands to find employment, start a business, or explore career options. Can switch to a highly skilled migrant permit.",
+      description:
+        "Allows graduates to stay in the Netherlands to find employment, start a business, or explore career options. Can switch to a highly skilled migrant permit.",
       conditions: [
         "Must apply within 3 years of graduation",
         "Must have completed a Dutch degree",
@@ -426,7 +488,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   JP: {
     code: "JP",
     tuitionRanges: {
-      undergraduate: { min: 535000, max: 1700000, currency: "JPY", note: "National universities ~\u00a5535k; private universities up to \u00a51.7M" },
+      undergraduate: {
+        min: 535000,
+        max: 1700000,
+        currency: "JPY",
+        note: "National universities ~\u00a5535k; private universities up to \u00a51.7M",
+      },
       postgraduate: { min: 535000, max: 1500000, currency: "JPY" },
     },
     livingCost: {
@@ -458,7 +525,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Proof of financial support",
       "Passport-sized photographs",
     ],
-    visaNote: "Student visa (ryugaku) required. University applies for CoE; student applies for visa at Japanese embassy.",
+    visaNote:
+      "Student visa (ryugaku) required. University applies for CoE; student applies for visa at Japanese embassy.",
     intakes: [
       { name: "Spring", months: "April", isMain: true },
       { name: "Autumn", months: "October", isMain: false },
@@ -467,7 +535,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Designated Activities Visa (Job Seeking)",
       duration: "6-12 months",
-      description: "Graduates can extend their stay to seek employment in Japan. Can be extended once for a total of up to 12 months.",
+      description:
+        "Graduates can extend their stay to seek employment in Japan. Can be extended once for a total of up to 12 months.",
       conditions: [
         "Must have recommendation from university",
         "Proof of sufficient living expenses",
@@ -480,7 +549,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     tuitionRanges: {
       undergraduate: { min: 80000, max: 295000, currency: "SEK" },
       postgraduate: { min: 80000, max: 295000, currency: "SEK" },
-      phd: { min: 0, max: 0, currency: "SEK", note: "PhD students are employed and receive a salary" },
+      phd: {
+        min: 0,
+        max: 0,
+        currency: "SEK",
+        note: "PhD students are employed and receive a salary",
+      },
     },
     livingCost: {
       monthlyMin: 8500,
@@ -511,16 +585,19 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Proof of funds (SEK 8,568/month for 10 months)",
       "Passport-sized photographs",
     ],
-    visaNote: "Residence permit required. Apply online through Swedish Migration Agency (Migrationsverket).",
+    visaNote:
+      "Residence permit required. Apply online through Swedish Migration Agency (Migrationsverket).",
     intakes: [
       { name: "Autumn", months: "August - September", isMain: true },
       { name: "Spring", months: "January", isMain: false },
     ],
-    applicationTimeline: "Apply through universityadmissions.se by January 15 (autumn) or August 15 (spring).",
+    applicationTimeline:
+      "Apply through universityadmissions.se by January 15 (autumn) or August 15 (spring).",
     postStudyWork: {
       visaName: "Residence Permit Extension for Job Seeking",
       duration: "6 months (recently extended to 9 months)",
-      description: "Graduates can extend their residence permit to look for work or start a business in Sweden.",
+      description:
+        "Graduates can extend their residence permit to look for work or start a business in Sweden.",
       conditions: [
         "Must apply before current permit expires",
         "Must have completed studies in Sweden",
@@ -531,8 +608,18 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   CH: {
     code: "CH",
     tuitionRanges: {
-      undergraduate: { min: 500, max: 2000, currency: "CHF", note: "Public universities (ETH Zurich, EPFL); private institutions CHF 10k-30k" },
-      postgraduate: { min: 500, max: 2000, currency: "CHF", note: "Same range at public universities" },
+      undergraduate: {
+        min: 500,
+        max: 2000,
+        currency: "CHF",
+        note: "Public universities (ETH Zurich, EPFL); private institutions CHF 10k-30k",
+      },
+      postgraduate: {
+        min: 500,
+        max: 2000,
+        currency: "CHF",
+        note: "Same range at public universities",
+      },
       phd: { min: 0, max: 1500, currency: "CHF", note: "PhD students typically receive a salary" },
     },
     livingCost: {
@@ -566,16 +653,19 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Academic certificates and transcripts",
       "Motivation letter",
     ],
-    visaNote: "Student visa and residence permit (Aufenthaltsbewilligung) required. Apply at Swiss embassy.",
+    visaNote:
+      "Student visa and residence permit (Aufenthaltsbewilligung) required. Apply at Swiss embassy.",
     intakes: [
       { name: "Autumn", months: "September", isMain: true },
       { name: "Spring", months: "February", isMain: false },
     ],
-    applicationTimeline: "Deadlines vary; typically February for autumn, September for spring semester.",
+    applicationTimeline:
+      "Deadlines vary; typically February for autumn, September for spring semester.",
     postStudyWork: {
       visaName: "Job Seeker Permit",
       duration: "6 months",
-      description: "Graduates can remain in Switzerland for 6 months to seek employment. Switzerland has high demand for skilled professionals especially in STEM fields.",
+      description:
+        "Graduates can remain in Switzerland for 6 months to seek employment. Switzerland has high demand for skilled professionals especially in STEM fields.",
       conditions: [
         "Must have completed a Swiss degree",
         "Employment must match qualification level",
@@ -627,7 +717,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "D-10 Job Seeking Visa",
       duration: "6 months - 2 years",
-      description: "Allows graduates to seek employment in South Korea. Can be extended and converted to an employment visa (E-7) upon finding a job.",
+      description:
+        "Allows graduates to seek employment in South Korea. Can be extended and converted to an employment visa (E-7) upon finding a job.",
       conditions: [
         "Must have completed a Korean degree",
         "GPA requirements may apply",
@@ -638,7 +729,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   SG: {
     code: "SG",
     tuitionRanges: {
-      undergraduate: { min: 10000, max: 50000, currency: "SGD", note: "MOE-subsidized tuition for eligible students; unsubsidized rates higher" },
+      undergraduate: {
+        min: 10000,
+        max: 50000,
+        currency: "SGD",
+        note: "MOE-subsidized tuition for eligible students; unsubsidized rates higher",
+      },
       postgraduate: { min: 15000, max: 60000, currency: "SGD" },
     },
     livingCost: {
@@ -670,7 +766,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Proof of financial means",
       "Medical examination report",
     ],
-    visaNote: "Student's Pass issued by ICA. University initiates the application through SOLAR+ system.",
+    visaNote:
+      "Student's Pass issued by ICA. University initiates the application through SOLAR+ system.",
     intakes: [
       { name: "Autumn", months: "August", isMain: true },
       { name: "Spring", months: "January", isMain: false },
@@ -679,7 +776,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Work Pass (various types)",
       duration: "Depends on pass type",
-      description: "Graduates can apply for Employment Pass (professional roles), S Pass (mid-level), or Work Permit. Strong job market for graduates from local universities.",
+      description:
+        "Graduates can apply for Employment Pass (professional roles), S Pass (mid-level), or Work Permit. Strong job market for graduates from local universities.",
       conditions: [
         "Must secure a job offer from a Singapore employer",
         "Salary thresholds apply per pass type",
@@ -692,7 +790,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     tuitionRanges: {
       undergraduate: { min: 22000, max: 50000, currency: "NZD" },
       postgraduate: { min: 25000, max: 55000, currency: "NZD" },
-      phd: { min: 6500, max: 9000, currency: "NZD", note: "PhD students pay domestic tuition rates" },
+      phd: {
+        min: 6500,
+        max: 9000,
+        currency: "NZD",
+        note: "PhD students pay domestic tuition rates",
+      },
     },
     livingCost: {
       monthlyMin: 1200,
@@ -733,7 +836,8 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     postStudyWork: {
       visaName: "Post-Study Work Visa",
       duration: "1-3 years",
-      description: "Open work visa for graduates. Duration depends on qualification level and study location. Degrees from outside Auckland may receive additional time.",
+      description:
+        "Open work visa for graduates. Duration depends on qualification level and study location. Degrees from outside Auckland may receive additional time.",
       conditions: [
         "Must have completed a New Zealand qualification",
         "Program must have been at least 30 weeks duration",
@@ -746,7 +850,12 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
     tuitionRanges: {
       undergraduate: { min: 10000, max: 35000, currency: "EUR" },
       postgraduate: { min: 10000, max: 40000, currency: "EUR" },
-      phd: { min: 5000, max: 20000, currency: "EUR", note: "Many funded PhD positions through IRC and SFI" },
+      phd: {
+        min: 5000,
+        max: 20000,
+        currency: "EUR",
+        note: "Many funded PhD positions through IRC and SFI",
+      },
     },
     livingCost: {
       monthlyMin: 1000,
@@ -778,16 +887,19 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Private medical insurance",
       "Evidence of academic qualifications",
     ],
-    visaNote: "Stamp 2 student immigration permission. Non-EU students must register with local immigration office.",
+    visaNote:
+      "Stamp 2 student immigration permission. Non-EU students must register with local immigration office.",
     intakes: [
       { name: "Autumn", months: "September", isMain: true },
       { name: "Spring", months: "January - February", isMain: false },
     ],
-    applicationTimeline: "CAO applications for undergraduate: February 1 deadline. Postgraduate: varies by institution.",
+    applicationTimeline:
+      "CAO applications for undergraduate: February 1 deadline. Postgraduate: varies by institution.",
     postStudyWork: {
       visaName: "Third Level Graduate Programme (Stay Back)",
       duration: "1-2 years",
-      description: "Honours degree holders get 1 year; master's and PhD graduates get 2 years to find employment in Ireland. Leads to Critical Skills or General Employment permits.",
+      description:
+        "Honours degree holders get 1 year; master's and PhD graduates get 2 years to find employment in Ireland. Leads to Critical Skills or General Employment permits.",
       conditions: [
         "Must have completed an Irish qualification at Level 8+",
         "Must apply within 6 months of exam results",
@@ -798,9 +910,24 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
   DK: {
     code: "DK",
     tuitionRanges: {
-      undergraduate: { min: 45000, max: 120000, currency: "DKK", note: "EU/EEA students study free; fees apply to non-EU students" },
-      postgraduate: { min: 45000, max: 120000, currency: "DKK", note: "Same fee structure as undergraduate" },
-      phd: { min: 0, max: 0, currency: "DKK", note: "PhD students are salaried employees of the university" },
+      undergraduate: {
+        min: 45000,
+        max: 120000,
+        currency: "DKK",
+        note: "EU/EEA students study free; fees apply to non-EU students",
+      },
+      postgraduate: {
+        min: 45000,
+        max: 120000,
+        currency: "DKK",
+        note: "Same fee structure as undergraduate",
+      },
+      phd: {
+        min: 0,
+        max: 0,
+        currency: "DKK",
+        note: "PhD students are salaried employees of the university",
+      },
     },
     livingCost: {
       monthlyMin: 6500,
@@ -832,16 +959,19 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
       "Proof of accommodation in Denmark",
       "Health insurance",
     ],
-    visaNote: "Residence permit required for non-EU students. Apply through nyidanmark.dk or Danish embassy.",
+    visaNote:
+      "Residence permit required for non-EU students. Apply through nyidanmark.dk or Danish embassy.",
     intakes: [
       { name: "Autumn", months: "September", isMain: true },
       { name: "Spring", months: "February", isMain: false },
     ],
-    applicationTimeline: "Apply through optagelse.dk by March 15 (undergraduate). Master's deadlines vary.",
+    applicationTimeline:
+      "Apply through optagelse.dk by March 15 (undergraduate). Master's deadlines vary.",
     postStudyWork: {
       visaName: "Establishment Card",
       duration: "6 months (extended to up to 2 years in recent reforms)",
-      description: "Allows graduates to remain in Denmark to seek employment or start a business. Danish government actively encourages international talent retention.",
+      description:
+        "Allows graduates to remain in Denmark to seek employment or start a business. Danish government actively encourages international talent retention.",
       conditions: [
         "Must have completed a Danish degree",
         "Must apply before current permit expires",
@@ -857,4 +987,135 @@ export const COUNTRY_DATA: Record<string, CountryData> = {
  */
 export function getCountryData(code: string): CountryData | null {
   return COUNTRY_DATA[code.toUpperCase()] ?? null;
+}
+
+/**
+ * Per-scholarship study info from admin.
+ * String fields that override static country defaults.
+ */
+interface StudyInfoOverride {
+  tuition_undergrad?: string;
+  tuition_postgrad?: string;
+  tuition_phd?: string;
+  tuition_mba?: string;
+  living_cost_note?: string;
+  cost_accommodation?: string;
+  cost_food?: string;
+  cost_transport?: string;
+  cost_utilities?: string;
+  admission_requirements?: string;
+  lang_ielts?: string;
+  lang_toefl?: string;
+  lang_pte?: string;
+  visa_documents?: string;
+  intake_main_name?: string;
+  intake_main_months?: string;
+  intake_secondary_name?: string;
+  intake_secondary_months?: string;
+  post_study_visa?: string;
+  post_study_duration?: string;
+  post_study_description?: string;
+}
+
+/**
+ * Build CountryData from per-scholarship study_info, falling back to country defaults.
+ * Returns null only if neither source has data.
+ */
+export function buildStudyData(
+  studyInfo: StudyInfoOverride | undefined,
+  countryDefaults: CountryData | null,
+  countryCode: string,
+): CountryData | null {
+  if (!studyInfo && !countryDefaults) return null;
+
+  const hasStudyInfo = studyInfo && Object.values(studyInfo).some((v) => v);
+  if (!hasStudyInfo && !countryDefaults) return null;
+
+  const defaults = countryDefaults;
+  const si = studyInfo ?? {};
+
+  return {
+    code: countryCode,
+    tuitionRanges: {
+      undergraduate: si.tuition_undergrad
+        ? { min: 0, max: 0, currency: "", note: si.tuition_undergrad }
+        : (defaults?.tuitionRanges.undergraduate ?? { min: 0, max: 0, currency: "USD" }),
+      postgraduate: si.tuition_postgrad
+        ? { min: 0, max: 0, currency: "", note: si.tuition_postgrad }
+        : (defaults?.tuitionRanges.postgraduate ?? { min: 0, max: 0, currency: "USD" }),
+      phd: si.tuition_phd
+        ? { min: 0, max: 0, currency: "", note: si.tuition_phd }
+        : defaults?.tuitionRanges.phd,
+    },
+    livingCost: {
+      monthlyMin: defaults?.livingCost.monthlyMin ?? 0,
+      monthlyMax: defaults?.livingCost.monthlyMax ?? 0,
+      currency: defaults?.livingCost.currency ?? "",
+      breakdown: buildLivingBreakdown(si, defaults),
+    },
+    admissionRequirements: si.admission_requirements
+      ? si.admission_requirements.split("\n").filter(Boolean)
+      : (defaults?.admissionRequirements ?? []),
+    languageRequirements: buildLanguageReqs(si, defaults),
+    visaDocuments: si.visa_documents
+      ? si.visa_documents.split("\n").filter(Boolean)
+      : (defaults?.visaDocuments ?? []),
+    visaNote: defaults?.visaNote,
+    intakes: buildIntakes(si, defaults),
+    applicationTimeline: defaults?.applicationTimeline,
+    postStudyWork: {
+      visaName: si.post_study_visa ?? defaults?.postStudyWork.visaName ?? "",
+      duration: si.post_study_duration ?? defaults?.postStudyWork.duration ?? "",
+      description: si.post_study_description ?? defaults?.postStudyWork.description ?? "",
+      conditions: defaults?.postStudyWork.conditions,
+    },
+  };
+}
+
+function buildLivingBreakdown(
+  si: StudyInfoOverride,
+  defaults: CountryData | null,
+): { item: string; range: string }[] | undefined {
+  const hasOverride =
+    si.cost_accommodation || si.cost_food || si.cost_transport || si.cost_utilities;
+  if (!hasOverride) return defaults?.livingCost.breakdown;
+  const items: { item: string; range: string }[] = [];
+  if (si.cost_accommodation) items.push({ item: "Accommodation", range: si.cost_accommodation });
+  if (si.cost_food) items.push({ item: "Food & Groceries", range: si.cost_food });
+  if (si.cost_transport) items.push({ item: "Transport", range: si.cost_transport });
+  if (si.cost_utilities) items.push({ item: "Utilities & Internet", range: si.cost_utilities });
+  return items;
+}
+
+function buildLanguageReqs(
+  si: StudyInfoOverride,
+  defaults: CountryData | null,
+): { test: string; minScore: string }[] {
+  const hasOverride = si.lang_ielts || si.lang_toefl || si.lang_pte;
+  if (!hasOverride) return defaults?.languageRequirements ?? [];
+  const reqs: { test: string; minScore: string }[] = [];
+  if (si.lang_ielts) reqs.push({ test: "IELTS", minScore: si.lang_ielts });
+  if (si.lang_toefl) reqs.push({ test: "TOEFL iBT", minScore: si.lang_toefl });
+  if (si.lang_pte) reqs.push({ test: "PTE", minScore: si.lang_pte });
+  return reqs;
+}
+
+function buildIntakes(
+  si: StudyInfoOverride,
+  defaults: CountryData | null,
+): { name: string; months: string; isMain: boolean }[] {
+  const hasOverride = si.intake_main_name || si.intake_secondary_name;
+  if (!hasOverride) return defaults?.intakes ?? [];
+  const intakes: { name: string; months: string; isMain: boolean }[] = [];
+  if (si.intake_main_name) {
+    intakes.push({ name: si.intake_main_name, months: si.intake_main_months ?? "", isMain: true });
+  }
+  if (si.intake_secondary_name) {
+    intakes.push({
+      name: si.intake_secondary_name,
+      months: si.intake_secondary_months ?? "",
+      isMain: false,
+    });
+  }
+  return intakes;
 }
