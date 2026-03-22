@@ -12,6 +12,7 @@ import type * as admin from "../admin.js";
 import type * as adminHelpers from "../adminHelpers.js";
 import type * as aggregation from "../aggregation.js";
 import type * as aggregationHelpers from "../aggregationHelpers.js";
+import type * as collections from "../collections.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
 import type * as directory from "../directory.js";
@@ -24,17 +25,14 @@ import type * as seed from "../seed.js";
 import type * as sources from "../sources.js";
 import type * as triggers from "../triggers.js";
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
+import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   adminHelpers: typeof adminHelpers;
   aggregation: typeof aggregation;
   aggregationHelpers: typeof aggregationHelpers;
+  collections: typeof collections;
   crons: typeof crons;
   dashboard: typeof dashboard;
   directory: typeof directory;
@@ -56,10 +54,7 @@ declare const fullApi: ApiFromModules<{
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
->;
+export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -69,9 +64,6 @@ export declare const api: FilterApi<
  * const myFunctionReference = internal.myModule.myFunction;
  * ```
  */
-export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
->;
+export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
 
 export declare const components: {};
