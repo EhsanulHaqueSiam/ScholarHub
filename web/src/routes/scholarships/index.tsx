@@ -175,12 +175,7 @@ function ScholarshipsDirectory() {
       <section className="pt-20 pb-12 md:pt-24 md:pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <h1 className="font-heading text-[32px] md:text-[48px] leading-[1.1] text-foreground">
-            Browse{" "}
-            {totalCount !== undefined ? (
-              <span>{totalCount.toLocaleString()}+</span>
-            ) : (
-              <span>2,400+</span>
-            )}{" "}
+            Browse {totalCount !== undefined && <>{totalCount.toLocaleString()}+ </>}
             International Scholarships
           </h1>
           <p className="font-base text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
