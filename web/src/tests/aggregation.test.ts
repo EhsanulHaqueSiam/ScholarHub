@@ -32,17 +32,12 @@ async function createSource(
 /**
  * Helper to insert a raw_record directly into the database.
  */
-async function insertRawRecord(
-  t: any,
-  sourceId: any,
-  overrides: Partial<any> = {},
-) {
+async function insertRawRecord(t: any, sourceId: any, overrides: Partial<any> = {}) {
   return await t.run(async (ctx: any) => {
     return await ctx.db.insert("raw_records", {
       source_id: sourceId,
       title: overrides.title ?? "Test Scholarship",
-      provider_organization:
-        overrides.provider_organization ?? "Test Org",
+      provider_organization: overrides.provider_organization ?? "Test Org",
       host_country: overrides.host_country ?? "DE",
       degree_levels: overrides.degree_levels ?? ["master"],
       description: overrides.description ?? "Test description",
@@ -150,7 +145,7 @@ describe("aggregateBatch", () => {
 
     // Insert second record with slightly different title but same normalized key
     await insertRawRecord(t, sourceB, {
-      title: "Chevening Scholarship 2026",
+      title: "Chevening Scholarship 2025",
       provider_organization: "FCDO",
       host_country: "GB",
       degree_levels: ["master"],
@@ -215,9 +210,7 @@ describe("aggregateBatch", () => {
       return await ctx.db.query("scholarships").collect();
     });
     expect(scholarships).toHaveLength(1);
-    expect(scholarships[0].description).toBe(
-      "Detailed government description with more info",
-    );
+    expect(scholarships[0].description).toBe("Detailed government description with more info");
   });
 
   it("preserves raw_records with canonical_id link", async () => {
@@ -297,9 +290,7 @@ describe("aggregateBatch", () => {
     const rawRecords = await t.run(async (ctx: any) => {
       return await ctx.db.query("raw_records").collect();
     });
-    const possibleDup = rawRecords.find(
-      (r: any) => r.match_status === "possible_duplicate",
-    );
+    const possibleDup = rawRecords.find((r: any) => r.match_status === "possible_duplicate");
     expect(possibleDup).toBeDefined();
   });
 
@@ -345,9 +336,7 @@ describe("aggregateBatch", () => {
     expect(scholarships).toHaveLength(2);
 
     // Sort by creation time to identify 2025 and 2026
-    const sorted = scholarships.sort(
-      (a: any, b: any) => a._creationTime - b._creationTime,
-    );
+    const sorted = scholarships.sort((a: any, b: any) => a._creationTime - b._creationTime);
     const scholarship2025 = sorted[0];
     const scholarship2026 = sorted[1];
 
@@ -367,9 +356,7 @@ describe("aggregateBatch", () => {
     });
 
     // Insert raw_record with deadline 60 days ago
-    const sixtyDaysAgo = new Date(
-      Date.now() - 60 * 24 * 60 * 60 * 1000,
-    );
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
     const deadlineStr = sixtyDaysAgo.toISOString().split("T")[0];
 
     await insertRawRecord(t, source, {

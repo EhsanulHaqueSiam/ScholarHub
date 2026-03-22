@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { internalMutation, mutation } from "./_generated/server";
 import {
   scrapeMethodValidator,
@@ -54,6 +55,15 @@ export const completeRun = mutation({
       records_unchanged: args.records_unchanged,
       duration_seconds: args.duration_seconds,
     });
+
+    // Trigger aggregation pipeline for newly inserted raw_records
+    if (args.status === "completed" && args.records_inserted > 0) {
+      await ctx.scheduler.runAfter(0, internal.aggregation.aggregateBatch, {
+        cursor: null,
+        batchSize: 50,
+        runId: args.run_id,
+      });
+    }
   },
 });
 
