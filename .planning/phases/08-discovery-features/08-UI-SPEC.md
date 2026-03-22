@@ -34,8 +34,8 @@ Declared values (must be multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline badge padding, box-shadow offset |
-| sm | 8px | Compact element spacing, tag badge gap, compare checkbox inset |
-| md | 16px | Default element spacing, card content padding, collection card gap |
+| sm | 8px | Compact element spacing, tag badge gap, compare checkbox inset, floating compare bar vertical padding |
+| md | 16px | Default element spacing, card content padding, collection card gap, floating compare bar horizontal padding |
 | lg | 24px | Section padding, collection header padding, comparison table cell padding |
 | xl | 32px | Layout gaps, collection grid gap, compare bar inner padding |
 | 2xl | 48px | Major section breaks, related scholarships top margin, collection browse page top spacing |
@@ -43,10 +43,21 @@ Declared values (must be multiples of 4):
 
 Exceptions:
 - Compare checkbox overlay: 8px inset from card top-right corner
-- Floating compare bar: 16px horizontal padding, 12px vertical padding (12px is 3 * 4, compliant)
+- Floating compare bar: 16px horizontal padding, 8px vertical padding
 - Collection emoji display: 48px font-size (decorative, not spacing)
 
 Source: Existing card.tsx uses `py-6` (24px) and `px-6` (24px), `gap-6` (24px). Scale matches established patterns.
+
+---
+
+## Focal Points
+
+Each primary screen has a single focal point that the executor must ensure dominates the visual hierarchy.
+
+| Screen | Focal Point | How to Achieve |
+|--------|-------------|----------------|
+| /collections browse | The collection card grid itself -- emoji circles draw the eye first | Emoji circles (64px with accent tint) are the largest, most colorful elements on the page. Page title and subtitle are centered but visually subdued (muted subtitle). No competing sidebar or banner. |
+| /scholarships/compare | The comparison table difference highlights | Highlighted cells with `--compare-diff-bg` warm yellow tint are the only colored surfaces in the table. Column headers (scholarship names) are secondary focal via `font-heading`. The table dominates viewport width. |
 
 ---
 
@@ -183,6 +194,7 @@ Source: D-54 (hover on desktop, always visible on mobile), D-99 (keyboard: Tab +
 | 3 selected | Bar visible, 3 chips, "Compare" button enabled, "Clear all" link | Max reached, no more can be added |
 
 Position: Fixed bottom, 16px from edges, z-50. Mobile: full-width with 8px horizontal margin. Desktop: centered, max-width 640px.
+Padding: 16px horizontal (md), 8px vertical (sm).
 Animation: slide-up from bottom on appear, slide-down on dismiss. Respects `prefers-reduced-motion` (instant show/hide).
 ARIA: `aria-live="polite"` announces selection changes to screen readers (D-100).
 
