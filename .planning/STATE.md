@@ -164,6 +164,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260321-i17 | Build Japan scholarship scrapers (studyinjapan.go.jp CSV + jpss.jp HTML) | 2026-03-21 | bf8b5dc | [260321-i17-build-japan-scholarship-scrapers-for-stu](./quick/260321-i17-build-japan-scholarship-scrapers-for-stu/) |
+| 260322-hcw | Demote published scholarships with missing important info to pending_review | 2026-03-22 | 36f6528 | [260322-hcw-demote-public-scholarships-with-missing-](./quick/260322-hcw-demote-public-scholarships-with-missing-/) |
 
 ### Blockers/Concerns
 
@@ -173,6 +174,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T07:05:53Z
-Stopped at: Completed quick task 260321-i17 (Japan scholarship scrapers)
+Last session: 2026-03-22T06:33:12Z
+Stopped at: Completed quick task 260322-hcw (Demote incomplete published scholarships)
 Resume file: None
