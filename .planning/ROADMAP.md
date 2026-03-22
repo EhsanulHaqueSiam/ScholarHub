@@ -174,7 +174,7 @@ Plans:
 - [x] 08-05-PLAN.md -- CollectionCard, FeaturedCollectionsRow, /collections routes
 - [x] 08-06-PLAN.md -- ComparisonTable, SearchToAdd, /scholarships/compare route
 - [x] 08-07-PLAN.md -- TagBadges, CollectionBadges, RelatedScholarships in detail page
-- [ ] 08-08-PLAN.md -- Seed collections, daily crons, directory tag filter, visual verification
+- [x] 08-08-PLAN.md -- Seed collections, daily crons, directory tag filter, visual verification
 
 ### Phase 9: SEO & Growth
 **Goal**: Scholarship pages are discoverable by search engines with proper structured data, and auto-generated landing pages drive organic traffic for country and degree-level searches
@@ -205,7 +205,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
-| 8. Discovery Features | 7/8 | In Progress | - |
+| 8. Discovery Features | 8/8 | In Progress | - |
 | 9. SEO & Growth | 0/2 | Not started | - |
 
 ### Phase 10: Study Australia Scrapers
