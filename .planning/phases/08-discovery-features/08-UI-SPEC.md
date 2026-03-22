@@ -122,7 +122,7 @@ Source: Existing prestige tier colors and urgency colors in index.css. Differenc
 |-----------|----------|-----------------|-----------|
 | CollectionCard | `collections/CollectionCard.tsx` | none (uses Card unranked) | collection, className |
 | FeaturedCollectionsRow | `collections/FeaturedCollectionsRow.tsx` | none | nationalities? |
-| CollectionHeader | `collections/CollectionHeader.tsx` | none | collection |
+| CollectionHeader | `collections/CollectionHeader.tsx` | none | collection. Copy link icon button uses `aria-label="Copy collection link"` |
 | CompareContext | `comparison/CompareContext.tsx` | n/a (provider) | children |
 | CompareCheckbox | `comparison/CompareCheckbox.tsx` | none | slug, title, variant: "card" or "detail" |
 | CompareBar | `comparison/CompareBar.tsx` | none | none (reads context) |
@@ -274,7 +274,7 @@ Source: D-40 (dual placement), D-41 (4-6 featured, horizontal scroll, "View all"
 
 | Element | Specification |
 |---------|--------------|
-| Header | CollectionHeader: emoji (64px), name (text-2xl font-heading), markdown description (react-markdown with allowedElements whitelist), scholarship count badge (neutral), copy link button |
+| Header | CollectionHeader: emoji (64px), name (text-2xl font-heading), markdown description (react-markdown with allowedElements whitelist), scholarship count badge (neutral), copy link icon button (`aria-label="Copy collection link"`) |
 | Sort | Default sort from collection `default_sort` field. Sort pills visible below header. Label: "Sorted by: {sort}" as muted text above pills. Student can override. |
 | Listing | Reuse directory ScholarshipCard/ScholarshipListItem grid, ViewToggle, Pagination. Same responsive grid (1-col mobile, 2-col sm, 3-col lg). |
 | Loading | Content-shaped skeleton: header skeleton (emoji circle + text lines) + SkeletonCard grid |
@@ -305,11 +305,11 @@ Source: D-46 (simple grid, sorted by priority, no filtering), D-47 (empty state 
 | Empty state: collections browse | Heading: "Collections coming soon!" / Body: "Browse all scholarships instead." / Button: "Browse Scholarships" |
 | Empty state: comparison (no selections) | Heading: "Compare scholarships side-by-side" / Body: "Select 2-3 scholarships from the directory to see how they stack up. Look for the compare checkbox on any scholarship card." / Button: "Browse Scholarships" |
 | Empty state: comparison (partial -- some slugs not found) | Banner: "Some scholarships could not be loaded. Showing available results." (warning-style inline banner) |
-| Error state: collections browse | "Something went wrong loading collections. Please try again." / Button: "Retry" |
+| Error state: collections browse | "Something went wrong loading collections. Please try again." / Button: "Retry Loading" |
 | Error state: collection detail | "This collection could not be loaded. It may have been archived or removed." / Button: "Browse All Collections" |
-| Error state: comparison page | "Failed to load comparison data. Please try again." / Button: "Retry" |
-| Destructive: archive collection | Confirmation dialog: "Archive this collection? It will be hidden from public view but can be reactivated later." / Buttons: "Cancel" / "Archive" (destructive variant) |
-| Destructive: delete tag | Confirmation dialog: "Delete tag '{tag_label}'? This tag is used by {N} scholarships and {M} collections. It will be removed from all of them." / Buttons: "Cancel" / "Delete Tag" (destructive variant) |
+| Error state: comparison page | "Failed to load comparison data. Please try again." / Button: "Retry Loading" |
+| Destructive: archive collection | Confirmation dialog: "Archive this collection? It will be hidden from public view but can be reactivated later." / Buttons: "Keep Collection" / "Archive Collection" (destructive variant) |
+| Destructive: delete tag | Confirmation dialog: "Delete tag '{tag_label}'? This tag is used by {N} scholarships and {M} collections. It will be removed from all of them." / Buttons: "Keep Tag" / "Delete Tag" (destructive variant) |
 | Destructive: reject suggested tag | No confirmation -- immediate action (low-stakes, reversible by re-running auto-tagger) |
 | Comparison page title | "{Scholarship A} vs {Scholarship B} Scholarship Comparison \| ScholarHub" (D-63, full names for 3-way too) |
 | Compare bar announcement (ARIA) | "{title} added to comparison. {N} of 3 selected." / "{title} removed from comparison." |
@@ -359,11 +359,11 @@ Source: RESEARCH.md "No new packages needed. The existing stack covers all requi
 | Element | Specification |
 |---------|--------------|
 | Tab label | "Collections" (after "Sources" tab) |
-| Table columns | Name (with emoji prefix), Status (badge: draft/active/archived), Scholarships (cached count), Sort Order (editable numeric input), Actions (Edit / Archive / Preview) |
+| Table columns | Name (with emoji prefix), Status (badge: draft/active/archived), Scholarships (cached count), Sort Order (editable numeric input), Actions (Edit / Archive Collection / Preview) |
 | Sort order input | Inline numeric input field, 0-999 range, saves on blur. Numeric input chosen over drag-and-drop for simplicity and fewer edge cases per RESEARCH.md recommendation. |
 | Create button | "New Collection" button (default variant) above table |
 | Edit form | Radix Dialog slide-out sheet (same EditPanel pattern): name, slug (auto-generated with override), emoji (text input), markdown description (textarea), status select, featured toggle, default sort select, filter criteria fields (multi-select for each), live preview section showing matching scholarship count + first 5 cards |
-| Bulk actions | BulkActionBar pattern: Archive selected / Activate selected |
+| Bulk actions | BulkActionBar pattern: "Archive Collection" selected / "Activate Collection" selected |
 
 Source: D-81 (extend tab switching), D-82 (table list + slide-out), D-83 (live preview), D-84 (discretion: numeric input over drag-and-drop)
 
@@ -405,10 +405,11 @@ Source: D-85 through D-87, D-62 (comparison SEO), D-113 (basic titles only for c
 | Compare bar | `aria-live="polite"` region, announces add/remove to screen readers | WCAG 2.1 AA |
 | Collection cards | Focusable with visible focus ring (2px accent, 2px offset), `role="link"` via Link component | WCAG 2.1 AA |
 | Tag badges | Tooltip accessible via Radix Tooltip (keyboard + screen reader), click target minimum 24x24px | WCAG 2.1 AA |
+| Copy link button | Icon-only button in CollectionHeader requires `aria-label="Copy collection link"` | WCAG 2.1 AA |
 | All animations | `motion-safe:` prefix on animate-pulse, slide transitions. Instant show/hide with `prefers-reduced-motion` | WCAG 2.1 AA |
 | Color contrast | All text meets 4.5:1 ratio against backgrounds. Difference highlight bg uses low-saturation tint that preserves text contrast | WCAG 2.1 AA |
 
-Source: D-98 through D-102
+Source: D-98 through D-102, D-45 (copy link pattern)
 
 ---
 
