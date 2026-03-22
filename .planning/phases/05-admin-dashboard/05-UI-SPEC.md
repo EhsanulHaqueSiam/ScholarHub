@@ -137,7 +137,7 @@ Source: existing `web/src/index.css` CSS variables, Badge/Button CVA variants
 |-----------|--------|---------------|
 | Card, CardHeader, CardContent | `web/src/components/ui/card.tsx` | Stats cards (prestige="unranked"), edit panel sections |
 | Badge | `web/src/components/ui/badge.tsx` | Status badges (urgency variants), trust level badges, duplicate warning |
-| Button | `web/src/components/ui/button.tsx` | Approve (default), Reject (add destructive variant), Save, Cancel (neutral) |
+| Button | `web/src/components/ui/button.tsx` | Approve (default), Reject (add destructive variant), Save, Close Panel (neutral) |
 | Pagination | `web/src/components/directory/Pagination.tsx` | Queue pagination (client-side, 20 per page) |
 
 ### New Button Variant Needed
@@ -206,6 +206,7 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 - Single horizontal row, min-height: 56px
 - Layout: `[checkbox 40px] [title flex-1] [country 80px] [source 120px] [degrees 100px] [deadline 100px] [status badge 100px] [expand chevron 32px]`
 - Left checkbox: 20px with 10px padding each side for 40px touch target
+- Expand chevron: 32px touch target with tooltip "Expand row" (collapsed) / "Collapse row" (expanded)
 - Background: --secondary-background
 - Bottom border: 1px solid --border (thinner than card borders for density)
 - Hover: translate-y-[-1px] with subtle shadow
@@ -232,8 +233,8 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 - Overlay: --overlay (oklch(0% 0 0 / 0.8))
 - Slide-in animation: translate-x from 100% to 0%, 300ms ease-out
 - Internal padding: 24px (p-6)
-- Close button: top-right, X icon, 40px touch target
-- Panel sections: sticky header (title + close), scrollable body, sticky footer (Save + Cancel)
+- Close button: top-right, X icon, 40px touch target, tooltip "Close panel"
+- Panel sections: sticky header (title + close), scrollable body, sticky footer (Save + Close Panel)
 
 ### EditForm
 
@@ -244,7 +245,7 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 - Select dropdowns (status, degree_levels): native select with neo-brutalism border styling
 - Degree levels, fields_of_study: multi-select checkboxes in a collapsible section
 - Editorial notes: TipTap EditorialEditor component (see below)
-- Save button: Button variant="default" (accent). Cancel: Button variant="neutral"
+- Save button: Button variant="default" (accent). Close Panel: Button variant="neutral"
 - Footer: sticky at panel bottom, bg-secondary-background, top border 2px, py-4 px-6
 
 ### EditorialEditor (TipTap)
@@ -252,6 +253,7 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 - TipTap with StarterKit + Link + Placeholder extensions
 - Toolbar: horizontal bar with icon buttons for Bold, Italic, Link, BulletList, OrderedList, Heading (H2/H3)
 - Toolbar buttons: 32px square, 2px border, rounded-base, --secondary-background bg
+- Each toolbar button has a tooltip describing its action (see Tooltip Declarations below)
 - Active toolbar button: --main bg, --main-foreground text
 - Editor content area: min-height 120px, padding 16px, bg-background
 - Wrapper: 2px border --border, rounded-base
@@ -297,6 +299,31 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 
 ---
 
+## Tooltip Declarations
+
+All icon-only interactive elements require a visible tooltip on hover/focus. Use Radix Tooltip (200ms open delay, 8px offset) for consistent behavior.
+
+| Element | Tooltip Text | Location |
+|---------|-------------|----------|
+| EditPanel close X button | "Close panel" | EditPanel sticky header, top-right |
+| QueueRow expand chevron (collapsed) | "Expand row" | QueueRow compact state, rightmost column |
+| QueueRow expand chevron (expanded) | "Collapse row" | QueueRow expanded state, rightmost column |
+| TipTap toolbar: Bold | "Bold" | EditorialEditor toolbar |
+| TipTap toolbar: Italic | "Italic" | EditorialEditor toolbar |
+| TipTap toolbar: Link | "Insert link" | EditorialEditor toolbar |
+| TipTap toolbar: Bullet list | "Bullet list" | EditorialEditor toolbar |
+| TipTap toolbar: Ordered list | "Numbered list" | EditorialEditor toolbar |
+| TipTap toolbar: Heading H2 | "Heading 2" | EditorialEditor toolbar |
+| TipTap toolbar: Heading H3 | "Heading 3" | EditorialEditor toolbar |
+| RevisionHistory toggle chevron | "Show change history" / "Hide change history" | EditPanel, below form |
+
+Implementation notes:
+- Wrap each icon-only button with `<Tooltip><TooltipTrigger asChild>...</TooltipTrigger><TooltipContent>text</TooltipContent></Tooltip>`.
+- Provide a `<TooltipProvider delayDuration={200}>` at the admin layout root to configure open delay once.
+- Each icon-only button must also carry `aria-label` matching the tooltip text for screen readers (see Accessibility Contracts).
+
+---
+
 ## Interaction Contracts
 
 ### Expandable Row
@@ -321,16 +348,17 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 1. Click "Edit" button on expanded row opens EditPanel with slide-from-right animation
 2. Panel loads instantly with prefetched data (hover prefetch on Edit button)
 3. Escape key or overlay click closes panel
-4. Unsaved changes: if form is dirty and user tries to close, show "Discard changes?" confirmation
+4. Unsaved changes: if form is dirty and user tries to close, show "Discard changes?" confirmation (see Unsaved changes prompt in Copywriting)
 5. "Save Changes" submits all field updates in a single mutation
 6. After save: panel closes, queue row updates reactively (Convex subscription)
+7. "Close Panel" button in footer dismisses the panel (triggers dirty-check if form has unsaved changes)
 
 ### Approve / Reject
 
 1. Single approve: click "Approve" on expanded row. Immediate status change, row moves to Published tab.
-2. Single reject: click "Reject" on expanded row. Confirmation dialog: "Reject [title]? This scholarship will not be visible to students." Two buttons: "Reject" (destructive) / "Cancel" (neutral).
+2. Single reject: click "Reject" on expanded row. Confirmation dialog: "Reject [title]? This scholarship will not be visible to students." Two buttons: "Reject" (destructive) / "Keep Scholarship" (neutral).
 3. Bulk approve: click "Approve N selected" on BulkActionBar. No confirmation (approve is non-destructive).
-4. Bulk reject: click "Reject N selected" on BulkActionBar. Confirmation dialog: "Reject N scholarships? They will not be visible to students." Two buttons: "Reject All" (destructive) / "Cancel" (neutral).
+4. Bulk reject: click "Reject N selected" on BulkActionBar. Confirmation dialog: "Reject N scholarships? They will not be visible to students." Two buttons: "Reject All" (destructive) / "Keep All" (neutral).
 5. Dedup block (ADMN-08): if approving a scholarship whose match_key duplicates an already-published record, show inline error: "Cannot approve: a published scholarship with the same title and organization already exists." with a link to the duplicate.
 
 ### Tab Switching
@@ -358,15 +386,21 @@ Usage: "Reject" button, "Reject N selected" in bulk action bar.
 | Error state | "Failed to load review queue. Check your Convex deployment status and try again." |
 | Reject confirmation (single) | "Reject [title]? This scholarship will not be visible to students." |
 | Reject confirmation (bulk) | "Reject N scholarships? They will not be visible to students." |
+| Reject confirm button (single) | "Reject" |
+| Reject cancel button (single) | "Keep Scholarship" |
+| Reject confirm button (bulk) | "Reject All" |
+| Reject cancel button (bulk) | "Keep All" |
 | Dedup block message | "Cannot approve: a published scholarship with the same title and organization already exists." |
 | Unsaved changes prompt | "You have unsaved changes. Discard and close?" |
+| Unsaved changes confirm button | "Discard Changes" |
+| Unsaved changes cancel button | "Continue Editing" |
 | Editorial placeholder | "Add tips for applicants..." |
 | Trust change confirmation | "Changing trust level to [level] will affect N pending scholarships. Continue?" |
 | Select all label | "Select all visible" |
 | Bulk bar count | "N scholarships selected" |
 | Clear selection | "Clear selection" |
 | Save button | "Save Changes" |
-| Cancel button | "Cancel" |
+| Close panel button | "Close Panel" |
 | Desktop-only message | "Admin dashboard requires a desktop browser (1024px minimum)." |
 | Stats: total | "Total Scholarships" |
 | Stats: pending | "Pending Review" |
@@ -399,15 +433,19 @@ Source: RESEARCH.md verified versions via npm view on 2026-03-22.
 | Requirement | Implementation |
 |-------------|---------------|
 | Expandable rows | `role="row"` with `aria-expanded`, `aria-controls` pointing to expanded content ID |
+| Expand/collapse chevron | `aria-label="Expand row"` / `aria-label="Collapse row"` (matches tooltip text, toggles with state) |
 | Bulk selection checkboxes | Native `<input type="checkbox">` with visible label, `aria-label="Select [title]"` |
 | Select all checkbox | `aria-label="Select all visible scholarships"`, indeterminate state when partial |
 | Tabs | Radix Tabs provides keyboard navigation (arrow keys), `aria-selected`, `role="tablist"` |
 | EditPanel (Sheet) | Radix Dialog provides focus trap, `aria-modal="true"`, `aria-label="Edit [title]"`, Escape to close |
+| EditPanel close button | `aria-label="Close panel"` (matches tooltip text) |
 | BulkActionBar | `role="toolbar"`, `aria-label="Bulk actions for N selected scholarships"` |
 | TipTap editor | `aria-label="Editorial notes editor"`, toolbar buttons have `aria-pressed` for toggle state |
+| TipTap toolbar buttons | Each icon-only button carries `aria-label` matching its tooltip text (e.g., "Bold", "Italic", "Insert link") |
 | Status badges | Badge text is sufficient (no additional aria-label needed -- "pending_review" is descriptive) |
 | Confirmation dialogs | Radix AlertDialog for reject confirmations with focus on cancel button by default |
 | Color contrast | All urgency badge variants meet WCAG AA (4.5:1) against their background -- verified in Phase 6.1 |
+| Tooltips | Radix Tooltip with 200ms delay; content accessible to keyboard users via focus trigger |
 
 ---
 
