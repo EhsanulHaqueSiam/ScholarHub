@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Check, Copy } from "lucide-react";
+import { Banknote, Check, Copy } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -116,12 +116,15 @@ export const ScholarshipCard = memo(function ScholarshipCard({
               ))}
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="text-sm">
             <span className="font-heading text-xs">
               {formatFundingType(scholarship.funding_type)}
             </span>
             {formatFundingAmount(scholarship) && (
-              <span className="text-xs">{formatFundingAmount(scholarship)}</span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Banknote className="size-3.5 text-foreground/70 shrink-0" />
+                <span className="text-sm font-heading">{formatFundingAmount(scholarship)}</span>
+              </div>
             )}
           </div>
         </CardContent>
