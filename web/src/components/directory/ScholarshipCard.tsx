@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check, Copy } from "lucide-react";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,7 @@ import type { Doc } from "../../../convex/_generated/dataModel";
 
 type Scholarship = Doc<"scholarships">;
 
-export function ScholarshipCard({
+export const ScholarshipCard = memo(function ScholarshipCard({
   scholarship,
   disableHover,
 }: {
@@ -151,4 +151,4 @@ export function ScholarshipCard({
       </Card>
     </Link>
   );
-}
+});

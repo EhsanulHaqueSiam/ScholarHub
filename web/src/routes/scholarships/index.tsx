@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery, useQuery } from "convex/react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FeaturedRow } from "@/components/directory/FeaturedRow";
@@ -118,12 +118,19 @@ function ScholarshipsDirectory() {
   // Total scholarship count for trust signal
   const totalCount = useQuery(api.directory.getScholarshipCount, {});
 
-  // Handle search
+  // Handle search — fires on user Enter/submit (suggestions are already debounced in SearchBar)
   const handleSearch = useCallback(
     (query: string) => {
       setFilter("q", query || undefined);
     },
     [setFilter],
+  );
+
+  // Stabilize nationalities array reference for FeaturedRow memo
+  const featuredNationalities = useMemo(
+    () => (filters.from.length > 0 ? filters.from : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filters.from.join()],
   );
 
   const isGridView = filters.view === "grid";
@@ -177,7 +184,7 @@ function ScholarshipsDirectory() {
       <div className="max-w-[1280px] mx-auto px-4 pb-16">
         {/* Featured Row */}
         <div className="mb-8">
-          <FeaturedRow nationalities={filters.from.length > 0 ? filters.from : undefined} />
+          <FeaturedRow nationalities={featuredNationalities} />
         </div>
 
         {/* Quick Filters */}

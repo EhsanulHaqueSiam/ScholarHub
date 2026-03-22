@@ -66,8 +66,9 @@ export const listScholarships = query({
         });
 
       // Search index doesn't support .filter() or pagination natively the same way,
-      // so we collect and post-filter then manually paginate
-      const allResults = await searchQuery.collect();
+      // so we take a capped set and post-filter then manually paginate.
+      // Cap at 1000 to avoid reading the entire table on broad searches.
+      const allResults = await searchQuery.take(1000);
       const filtered = applyPostFilters(allResults, {
         hostCountries:
           args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
@@ -212,15 +213,15 @@ export const getFeaturedScholarships = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 6;
 
-    // Query gold-tier scholarships first
+    // Query gold-tier scholarships first — cap at 50 to avoid unbounded reads
     const goldResults = await ctx.db
       .query("scholarships")
       .withIndex("by_status_prestige_deadline", (q) =>
         q.eq("status", "published").eq("prestige_tier", "gold"),
       )
-      .collect();
+      .take(50);
 
-    // If not enough gold, get silver too
+    // If not enough gold, get silver too — cap at 50
     let silverResults: typeof goldResults = [];
     if (goldResults.length < limit) {
       silverResults = await ctx.db
@@ -228,7 +229,7 @@ export const getFeaturedScholarships = query({
         .withIndex("by_status_prestige_deadline", (q) =>
           q.eq("status", "published").eq("prestige_tier", "silver"),
         )
-        .collect();
+        .take(50);
     }
 
     let combined = [...goldResults, ...silverResults];
@@ -271,6 +272,10 @@ export const getFeaturedScholarships = query({
 
 /**
  * Get total count of published (or specified status) scholarships.
+ *
+ * Optimization: Uses .take() with a reasonable upper bound instead of
+ * .collect() to cap document reads. The count is used as a trust signal
+ * ("Browse 2,400+ scholarships") so exact precision beyond the cap isn't needed.
  */
 export const getScholarshipCount = query({
   args: {
@@ -278,10 +283,11 @@ export const getScholarshipCount = query({
   },
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
+    // Cap at 10,000 to avoid unbounded reads - UI shows "X+" anyway
     const results = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", status))
-      .collect();
+      .take(10000);
     return results.length;
   },
 });

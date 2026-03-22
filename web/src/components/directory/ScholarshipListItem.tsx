@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Check, Copy } from "lucide-react";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,7 +74,11 @@ function formatDeadline(deadline: number | undefined): string | null {
   }).format(new Date(deadline));
 }
 
-export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship }) {
+export const ScholarshipListItem = memo(function ScholarshipListItem({
+  scholarship,
+}: {
+  scholarship: Scholarship;
+}) {
   const [copied, setCopied] = useState(false);
   const prestigeTier = (scholarship.prestige_tier ?? "unranked") as PrestigeTier;
   const urgency = getDeadlineUrgency(scholarship.application_deadline);
@@ -216,4 +220,4 @@ export function ScholarshipListItem({ scholarship }: { scholarship: Scholarship 
       </Card>
     </Link>
   );
-}
+});

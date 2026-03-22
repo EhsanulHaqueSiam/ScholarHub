@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 import { ScholarshipCard } from "./ScholarshipCard";
@@ -15,7 +15,7 @@ interface FeaturedRowProps {
  * Static row with left/right scroll arrows (no auto-carousel).
  * Mobile: horizontal snap scroll. Desktop: overflow-hidden with arrow buttons.
  */
-export function FeaturedRow({ nationalities }: FeaturedRowProps) {
+export const FeaturedRow = memo(function FeaturedRow({ nationalities }: FeaturedRowProps) {
   const featured = useQuery(api.directory.getFeaturedScholarships, {
     nationalities: nationalities && nationalities.length > 0 ? nationalities : undefined,
     limit: 6,
@@ -124,4 +124,4 @@ export function FeaturedRow({ nationalities }: FeaturedRowProps) {
       </div>
     </section>
   );
-}
+});
