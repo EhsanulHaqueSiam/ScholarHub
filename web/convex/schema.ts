@@ -267,4 +267,16 @@ export default defineSchema({
     .index("by_record", ["record_id"])
     .index("by_source", ["source_id"])
     .index("by_changed_at", ["changed_at"]),
+
+  // Admin revision history for scholarship edits
+  scholarship_revisions: defineTable({
+    scholarship_id: v.id("scholarships"),
+    field_name: v.string(),
+    old_value: v.optional(v.string()),
+    new_value: v.optional(v.string()),
+    changed_at: v.number(),
+    changed_by: v.optional(v.string()),
+  })
+    .index("by_scholarship", ["scholarship_id", "changed_at"])
+    .index("by_changed_at", ["changed_at"]),
 });
