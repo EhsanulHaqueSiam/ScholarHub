@@ -98,7 +98,7 @@ export function CompareCheckbox({ slug, title, variant }: CompareCheckboxProps) 
     return (
       <div
         className={cn(
-          "absolute top-2 right-2 z-10",
+          "absolute top-2 left-2 z-10",
           "opacity-0 group-hover:opacity-100 md:opacity-0 max-md:opacity-100 transition-opacity",
           checked && "opacity-100",
         )}
@@ -127,7 +127,11 @@ export function CompareCheckbox({ slug, title, variant }: CompareCheckboxProps) 
 
   // variant === "listItem"
   return (
-    <div className="shrink-0" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+    <div
+      className="shrink-0"
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
       {disabled ? (
         <Tooltip.Provider delayDuration={200}>
           <Tooltip.Root>

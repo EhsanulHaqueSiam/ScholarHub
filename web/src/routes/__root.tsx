@@ -6,6 +6,8 @@ import {
   ScriptOnce,
   Scripts,
 } from "@tanstack/react-router";
+import { CompareBar } from "@/components/comparison/CompareBar";
+import { CompareProvider } from "@/components/comparison/CompareContext";
 import appCss from "../index.css?url";
 
 interface RouterContext {
@@ -49,7 +51,10 @@ function RootComponent() {
             localStorage.theme === 'dark'
           );
         `}</ScriptOnce>
-        <Outlet />
+        <CompareProvider>
+          <Outlet />
+          <CompareBar />
+        </CompareProvider>
         <Scripts />
       </body>
     </html>

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Banknote, Check, Copy } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { CompareCheckbox } from "@/components/comparison/CompareCheckbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -116,10 +117,18 @@ export const ScholarshipListItem = memo(function ScholarshipListItem({
         )}
       >
         <div className="flex flex-col gap-4 md:flex-row md:items-start">
+          {/* Compare checkbox - inline left */}
+          <div className="hidden md:flex items-start pt-6 ps-4">
+            <CompareCheckbox slug={slug} title={scholarship.title} variant="listItem" />
+          </div>
+
           {/* Left: Main content */}
           <div className="flex-1 min-w-0">
             <CardHeader>
               <div className="flex items-center gap-2 flex-wrap">
+                <div className="md:hidden">
+                  <CompareCheckbox slug={slug} title={scholarship.title} variant="listItem" />
+                </div>
                 <CardTitle className="text-xl">{scholarship.title}</CardTitle>
                 {countryCodes.slice(0, 5).map((code) => (
                   <Badge key={code} variant="neutral" className="text-base px-1.5">
