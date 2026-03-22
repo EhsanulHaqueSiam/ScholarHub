@@ -44,6 +44,16 @@
 
   /* Semantic colors */
   --destructive: oklch(52% 0.24 27);
+
+  /* Phase 8: Comparison difference highlight */
+  --compare-diff-bg: oklch(92% 0.06 90);
+
+  /* Phase 8: Tag outline badge */
+  --tag-outline-border: oklch(70% 0.02 0);
+
+  /* Phase 8: Suggested tag amber */
+  --tag-suggested-border: oklch(75% 0.12 85);
+  --tag-suggested-bg: oklch(95% 0.04 85);
 }
 
 .dark {
@@ -78,6 +88,16 @@
 
   /* Semantic colors - dark mode */
   --destructive: oklch(60% 0.20 25);
+
+  /* Phase 8: Comparison difference highlight */
+  --compare-diff-bg: oklch(25% 0.04 85);
+
+  /* Phase 8: Tag outline badge */
+  --tag-outline-border: oklch(45% 0.02 275);
+
+  /* Phase 8: Suggested tag amber */
+  --tag-suggested-border: oklch(60% 0.10 85);
+  --tag-suggested-bg: oklch(22% 0.04 85);
 }
 
 @theme inline {
