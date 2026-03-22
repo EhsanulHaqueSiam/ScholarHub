@@ -2,6 +2,18 @@
   command = "npm run build"
   publish = "dist/client"
 
+# Serve robots.txt from root (crawlers expect /robots.txt)
+[[redirects]]
+  from = "/robots.txt"
+  to = "/api/robots.txt"
+  status = 200
+
+# Serve sitemap.xml from root (crawlers expect /sitemap.xml)
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/api/sitemap.xml"
+  status = 200
+
 # SPA fallback — all routes serve index.html
 [[redirects]]
   from = "/*"
