@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCountryFlag, getCountryName } from "@/lib/countries";
+import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
 import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
@@ -72,15 +72,32 @@ export const ScholarshipCard = memo(function ScholarshipCard({
       >
         {/* Host country flag badge - top right */}
         <div className="absolute top-3 end-3 z-10">
-          <Badge variant="neutral" className="text-base">
-            <span aria-label={getCountryName(scholarship.host_country)} role="img">
-              {getCountryFlag(scholarship.host_country)}
-            </span>
-          </Badge>
+          {(() => {
+            const codes = parseHostCountries(scholarship.host_country);
+            const maxShow = 3;
+            const visible = codes.slice(0, maxShow);
+            const remaining = codes.length - maxShow;
+            return (
+              <div className="flex items-center gap-1">
+                {visible.map((code) => (
+                  <Badge key={code} variant="neutral" className="text-base px-1.5">
+                    <span aria-label={getCountryName(code)} role="img">
+                      {getCountryFlag(code)}
+                    </span>
+                  </Badge>
+                ))}
+                {remaining > 0 && (
+                  <Badge variant="neutral" className="text-xs px-1.5">
+                    +{remaining}
+                  </Badge>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Header: Title + Provider */}
-        <CardHeader className="pe-12">
+        <CardHeader className="pe-20">
           <CardTitle className="text-xl line-clamp-2">{scholarship.title}</CardTitle>
           <CardDescription className="truncate">
             {scholarship.provider_organization}

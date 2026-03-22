@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCountryFlag, getCountryName } from "@/lib/countries";
+import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
 import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
@@ -84,6 +84,7 @@ export const ScholarshipListItem = memo(function ScholarshipListItem({
   const urgency = getDeadlineUrgency(scholarship.application_deadline);
   const isNewScholarship = isNew(scholarship._creationTime);
   const limitedInfo = hasLimitedInfo(scholarship);
+  const countryCodes = parseHostCountries(scholarship.host_country);
   const slug = scholarship.slug ?? scholarship._id;
   const deadlineText = formatDeadline(scholarship.application_deadline);
 
@@ -120,11 +121,18 @@ export const ScholarshipListItem = memo(function ScholarshipListItem({
             <CardHeader>
               <div className="flex items-center gap-2 flex-wrap">
                 <CardTitle className="text-xl">{scholarship.title}</CardTitle>
-                <Badge variant="neutral" className="text-base">
-                  <span aria-label={getCountryName(scholarship.host_country)} role="img">
-                    {getCountryFlag(scholarship.host_country)}
-                  </span>
-                </Badge>
+                {countryCodes.slice(0, 5).map((code) => (
+                  <Badge key={code} variant="neutral" className="text-base px-1.5">
+                    <span aria-label={getCountryName(code)} role="img">
+                      {getCountryFlag(code)}
+                    </span>
+                  </Badge>
+                ))}
+                {countryCodes.length > 5 && (
+                  <Badge variant="neutral" className="text-xs px-1.5">
+                    +{countryCodes.length - 5}
+                  </Badge>
+                )}
               </div>
               <CardDescription>{scholarship.provider_organization}</CardDescription>
             </CardHeader>

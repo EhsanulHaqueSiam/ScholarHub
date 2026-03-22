@@ -6,9 +6,7 @@ countries.registerLocale(enLocale);
 /** Flag emoji from ISO 3166-1 alpha-2 code */
 export function getCountryFlag(code: string): string {
   const upper = code.toUpperCase();
-  return String.fromCodePoint(
-    ...[...upper].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65),
-  );
+  return String.fromCodePoint(...[...upper].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 }
 
 /** Country name from ISO code */
@@ -74,6 +72,39 @@ export const POPULAR_DESTINATIONS = [
   "IE",
   "DK",
 ];
+
+/**
+ * Parse host_country field into individual country codes.
+ * Handles: "AU" (single), "AUTRCOVE" (concatenated pairs), "AU,TR,CO" (comma-separated).
+ * Returns array of 2-letter ISO codes.
+ */
+export function parseHostCountries(hostCountry: string): string[] {
+  if (!hostCountry) return [];
+
+  // Single 2-letter code
+  if (hostCountry.length === 2) return [hostCountry.toUpperCase()];
+
+  // Comma-separated (with optional spaces)
+  if (hostCountry.includes(",")) {
+    return hostCountry
+      .split(",")
+      .map((c) => c.trim().toUpperCase())
+      .filter((c) => c.length === 2);
+  }
+
+  // Concatenated 2-letter codes (e.g. "AUTRCOVE")
+  const upper = hostCountry.toUpperCase();
+  if (upper.length >= 4 && upper.length % 2 === 0 && /^[A-Z]+$/.test(upper)) {
+    const codes: string[] = [];
+    for (let i = 0; i < upper.length; i += 2) {
+      codes.push(upper.slice(i, i + 2));
+    }
+    return codes;
+  }
+
+  // Fallback: treat as single value
+  return [hostCountry.toUpperCase()];
+}
 
 /** Timezone -> Country mapping for nationality auto-detection */
 export const TIMEZONE_TO_COUNTRY: Record<string, string> = {
