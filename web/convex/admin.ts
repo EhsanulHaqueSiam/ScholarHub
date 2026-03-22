@@ -174,6 +174,33 @@ export const getScholarshipForEdit = query({
   },
 });
 
+/**
+ * Get all sources for the Source Trust Manager.
+ * Returns all sources with their trust levels and categories.
+ */
+export const getAllSources = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("sources").collect();
+  },
+});
+
+/**
+ * Count pending scholarships affected by a source trust level change.
+ * Used by SourceTrustManager to show impact before confirming.
+ */
+export const countAffectedScholarships = query({
+  args: { sourceId: v.id("sources") },
+  handler: async (ctx, args) => {
+    const pendingScholarships = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+      .take(10000);
+
+    return pendingScholarships.filter((s) => s.source_ids.includes(args.sourceId)).length;
+  },
+});
+
 // ---------- Mutations ----------
 
 /**

@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { DesktopPagination } from "@/components/directory/Pagination";
 import { useAdminSelection } from "@/hooks/useAdminSelection";
 import { cn } from "@/lib/utils";
-import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { BulkActionBar } from "./BulkActionBar";
 import { QueueRow } from "./QueueRow";
 
@@ -53,7 +53,11 @@ const EMPTY_STATE_COPY: Record<string, { heading: string; body: string }> = {
   },
 };
 
-export function ReviewQueue() {
+interface ReviewQueueProps {
+  onEditScholarship: (id: Id<"scholarships">, title: string) => void;
+}
+
+export function ReviewQueue({ onEditScholarship }: ReviewQueueProps) {
   const [activeTab, setActiveTab] = useState<string>("pending_review");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedId, setExpandedId] = useState<Id<"scholarships"> | null>(null);
@@ -72,14 +76,8 @@ export function ReviewQueue() {
   const sortedItems = useMemo(() => {
     if (!rawItems) return [];
     return [...rawItems].sort((a, b) => {
-      const aMaxTrust = Math.max(
-        ...a.resolved_sources.map((s) => TRUST_RANK[s.category] ?? 0),
-        0,
-      );
-      const bMaxTrust = Math.max(
-        ...b.resolved_sources.map((s) => TRUST_RANK[s.category] ?? 0),
-        0,
-      );
+      const aMaxTrust = Math.max(...a.resolved_sources.map((s) => TRUST_RANK[s.category] ?? 0), 0);
+      const bMaxTrust = Math.max(...b.resolved_sources.map((s) => TRUST_RANK[s.category] ?? 0), 0);
       if (bMaxTrust !== aMaxTrust) return bMaxTrust - aMaxTrust;
       return b._creationTime - a._creationTime;
     });
@@ -128,7 +126,10 @@ export function ReviewQueue() {
   return (
     <section>
       <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-        <Tabs.List className="flex gap-4 border-b-2 border-border mb-4" aria-label="Queue status filter">
+        <Tabs.List
+          className="flex gap-4 border-b-2 border-border mb-4"
+          aria-label="Queue status filter"
+        >
           {STATUS_TABS.map((tab) => (
             <Tabs.Trigger
               key={tab.value}
@@ -181,13 +182,9 @@ export function ReviewQueue() {
                     scholarship={item}
                     isExpanded={expandedId === item._id}
                     isSelected={selection.isSelected(item._id)}
-                    onToggleExpand={() =>
-                      setExpandedId(expandedId === item._id ? null : item._id)
-                    }
+                    onToggleExpand={() => setExpandedId(expandedId === item._id ? null : item._id)}
                     onToggleSelect={() => selection.toggle(item._id)}
-                    onEdit={() => {
-                      // EditPanel wired in Plan 04
-                    }}
+                    onEdit={() => onEditScholarship(item._id, item.title)}
                   />
                 ))}
               </div>
