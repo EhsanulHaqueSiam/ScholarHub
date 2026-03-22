@@ -16,6 +16,7 @@ async function createSource(
     name: string;
     category: string;
     url: string;
+    trust_level: string;
   }> = {},
 ) {
   return await t.mutation(anyApi.sources.upsertSource, {
@@ -23,6 +24,7 @@ async function createSource(
     url: overrides.url ?? `https://example-${Date.now()}-${Math.random()}.com`,
     category: (overrides.category ?? "aggregator") as any,
     scrape_method: "scrape" as const,
+    trust_level: (overrides.trust_level ?? "needs_review") as any,
     scrape_frequency_hours: 24,
     wave: 1,
     is_active: true,
@@ -353,6 +355,7 @@ describe("aggregateBatch", () => {
     const source = await createSource(t, {
       name: "Expired Source",
       url: "https://expired.example.com",
+      trust_level: "auto_publish",
     });
 
     // Insert raw_record with deadline 60 days ago
@@ -364,7 +367,9 @@ describe("aggregateBatch", () => {
       provider_organization: "ExpOrg",
       host_country: "US",
       degree_levels: ["master"],
+      description: "A complete description for auto-publish",
       application_deadline: deadlineStr,
+      application_url: "https://expired.example.com/apply",
     });
 
     await t.mutation(anyApi.aggregation.aggregateBatch, {
@@ -372,7 +377,7 @@ describe("aggregateBatch", () => {
       batchSize: 50,
     });
 
-    // The scholarship should be archived
+    // The scholarship should be archived (published first via auto_publish, then auto-archived)
     const scholarships = await t.run(async (ctx: any) => {
       return await ctx.db.query("scholarships").collect();
     });
@@ -446,5 +451,131 @@ describe("archiveExpired", () => {
     });
     expect(scholarships).toHaveLength(1);
     expect(scholarships[0].status).toBe("published");
+  });
+});
+
+describe("auto-publish (ADMN-06)", () => {
+  it("sets published for auto_publish source with complete fields", async () => {
+    const t = convexTest(schema, modules);
+
+    const sourceId = await createSource(t, {
+      name: "Auto Publish Source",
+      category: "government",
+      trust_level: "auto_publish",
+      url: "https://auto-pub.example.com",
+    });
+
+    await insertRawRecord(t, sourceId, {
+      title: "Auto Publish Scholarship",
+      provider_organization: "Gov Org",
+      host_country: "DE",
+      degree_levels: ["master"],
+      description: "Complete description for auto-publish test",
+      application_url: "https://auto-pub.example.com/apply",
+    });
+
+    await t.mutation(anyApi.aggregation.aggregateBatch, {
+      cursor: null,
+      batchSize: 50,
+    });
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships).toHaveLength(1);
+    expect(scholarships[0].status).toBe("published");
+  });
+
+  it("sets pending_review for auto_publish source with missing description", async () => {
+    const t = convexTest(schema, modules);
+
+    const sourceId = await createSource(t, {
+      name: "Incomplete Source",
+      category: "government",
+      trust_level: "auto_publish",
+      url: "https://incomplete.example.com",
+    });
+
+    await insertRawRecord(t, sourceId, {
+      title: "Incomplete Scholarship",
+      provider_organization: "Gov Org",
+      host_country: "DE",
+      degree_levels: ["master"],
+      description: undefined,
+      application_url: "https://incomplete.example.com/apply",
+    });
+
+    await t.mutation(anyApi.aggregation.aggregateBatch, {
+      cursor: null,
+      batchSize: 50,
+    });
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships).toHaveLength(1);
+    expect(scholarships[0].status).toBe("pending_review");
+  });
+
+  it("sets pending_review for needs_review source regardless of field completeness", async () => {
+    const t = convexTest(schema, modules);
+
+    const sourceId = await createSource(t, {
+      name: "Review Source",
+      category: "aggregator",
+      trust_level: "needs_review",
+      url: "https://review.example.com",
+    });
+
+    await insertRawRecord(t, sourceId, {
+      title: "Review Scholarship",
+      provider_organization: "Some Org",
+      host_country: "DE",
+      degree_levels: ["master"],
+      description: "Complete description",
+      application_url: "https://review.example.com/apply",
+    });
+
+    await t.mutation(anyApi.aggregation.aggregateBatch, {
+      cursor: null,
+      batchSize: 50,
+    });
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships).toHaveLength(1);
+    expect(scholarships[0].status).toBe("pending_review");
+  });
+
+  it("sets rejected for blocked source", async () => {
+    const t = convexTest(schema, modules);
+
+    const sourceId = await createSource(t, {
+      name: "Blocked Source",
+      category: "aggregator",
+      trust_level: "blocked",
+      url: "https://blocked.example.com",
+    });
+
+    await insertRawRecord(t, sourceId, {
+      title: "Blocked Scholarship",
+      provider_organization: "Some Org",
+      host_country: "DE",
+      degree_levels: ["master"],
+      description: "Complete description",
+      application_url: "https://blocked.example.com/apply",
+    });
+
+    await t.mutation(anyApi.aggregation.aggregateBatch, {
+      cursor: null,
+      batchSize: 50,
+    });
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships).toHaveLength(1);
+    expect(scholarships[0].status).toBe("rejected");
   });
 });

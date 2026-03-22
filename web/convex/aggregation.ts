@@ -11,6 +11,7 @@ import { v } from "convex/values";
 import { customCtx, customMutation } from "convex-helpers/server/customFunctions";
 import { internal } from "./_generated/api";
 import { internalMutation as rawInternalMutation } from "./_generated/server";
+import { determineStatus } from "./adminHelpers";
 import {
   computeExpectedReopenMonth,
   computeMatchKey,
@@ -354,6 +355,19 @@ async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
     last_verified: Date.now(),
   });
 
+  // Re-evaluate status if scholarship is not yet published (D-14/D-16)
+  if (scholarship.status !== "published") {
+    const newStatus = await determineStatus(ctx, sourceIds, {
+      title: resolvedTitle,
+      description: resolvedDescription,
+      host_country: resolvedCountry,
+      application_url: resolvedAppUrl,
+    });
+    if (newStatus === "published") {
+      await ctx.db.patch(scholarship._id, { status: "published" });
+    }
+  }
+
   // Link raw_record to the scholarship
   await ctx.db.patch(record._id, {
     canonical_id: scholarship._id,
@@ -412,6 +426,14 @@ async function createScholarship(
   // Parse deadline
   const deadlineTimestamp = parseDeadlineToTimestamp(record.application_deadline);
 
+  // Determine status from source trust level + field completeness (D-14, D-15, D-16)
+  const status = await determineStatus(ctx, [record.source_id], {
+    title: record.title,
+    description: record.description,
+    host_country: record.host_country,
+    application_url: record.application_url || record.source_url,
+  });
+
   const scholarshipId = await ctx.db.insert("scholarships", {
     title: record.title.trim(),
     slug,
@@ -429,7 +451,7 @@ async function createScholarship(
     application_deadline: deadlineTimestamp,
     application_deadline_text: record.application_deadline || undefined,
     application_url: record.application_url || record.source_url,
-    status: "published",
+    status,
     source_ids: [record.source_id],
     match_key: matchKey,
     last_verified: Date.now(),

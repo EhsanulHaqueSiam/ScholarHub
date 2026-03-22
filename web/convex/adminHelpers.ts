@@ -60,7 +60,8 @@ export async function determineStatus(
   },
 ): Promise<"published" | "pending_review" | "rejected"> {
   // Resolve all sources, find highest trust level
-  let highestTrust: "auto_publish" | "needs_review" | "blocked" = "needs_review";
+  // Start with null so the first source sets the baseline
+  let highestTrust: "auto_publish" | "needs_review" | "blocked" | null = null;
   const trustOrder: Record<string, number> = {
     auto_publish: 3,
     needs_review: 2,
@@ -71,10 +72,13 @@ export async function determineStatus(
     const source = await ctx.db.get(sourceId);
     if (!source) continue;
     const sourceTrust = source.trust_level as "auto_publish" | "needs_review" | "blocked";
-    if ((trustOrder[sourceTrust] ?? 0) > (trustOrder[highestTrust] ?? 0)) {
+    if (highestTrust === null || (trustOrder[sourceTrust] ?? 0) > (trustOrder[highestTrust] ?? 0)) {
       highestTrust = sourceTrust;
     }
   }
+
+  // Default to needs_review if no sources found
+  if (highestTrust === null) highestTrust = "needs_review";
 
   if (highestTrust === "blocked") return "rejected";
   if (highestTrust === "needs_review") return "pending_review";
