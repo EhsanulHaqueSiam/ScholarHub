@@ -20,13 +20,13 @@ Students can discover every relevant international scholarship in one place, wit
 ### Active
 
 - [ ] Massive source discovery — find 1000+ scholarship sources (aggregators, official programs like DAAD/Erasmus/MEXT, university-specific scholarships, government programs, foundations)
-- [ ] Multi-source aggregation — combine data from first-party and third-party sources into unified scholarship entries
-- [ ] Deduplication — detect same scholarship across multiple sources, merge richest info from each
+- [x] Multi-source aggregation — combine data from first-party and third-party sources into unified scholarship entries (Validated in Phase 4: Data Aggregation)
+- [x] Deduplication — detect same scholarship across multiple sources, merge richest info from each (Validated in Phase 4: Data Aggregation)
 - [ ] Admin dashboard — review scraped data, fix/correct errors, add editorial notes, add missing info, approve/reject scholarships
 - [ ] Auto-post option — mark trusted sources for automatic publishing without manual review
 - [x] Public scholarship directory — filterable by country, degree level (bachelor, masters, PhD), and other filters (Validated in Phase 06.1: Public Directory with Prestige System)
 - [ ] Scholarship detail page — deadline, amount, country, eligibility, application link, admin-added tips
-- [ ] Deadline handling — archive/mark expired scholarships, auto-resurface for next cycle
+- [x] Deadline handling — archive/mark expired scholarships, auto-resurface for next cycle (Validated in Phase 4: Data Aggregation)
 - [ ] Two categories: international scholarships (v1 focus) and domestic scholarships (later)
 
 ### Out of Scope
@@ -74,6 +74,6 @@ Students can discover every relevant international scholarship in one place, wit
 ---
 ## Current State
 
-Phase 10 (Study Australia Scrapers) complete — new InertiaScraper class for Inertia.js (Laravel+Vue) sites, broken Study Australia config removed, scholarship (1,024 records) and provider (2,281 records) configs created using Inertia.js JSON API protocol, registered in SCRAPER_MAP and Convex schema. 177 tests passing, 7/7 requirements verified.
+Phase 4 (Data Aggregation) complete — aggregation pipeline runs inside Convex as internal mutations triggered after scrape runs. Composite matching (title + org + country + degree level overlap) deduplicates across sources, trust-weighted merge (government > official_program > foundation > aggregator) selects richest data, cycle detection links annual programs via previous_cycle_id, auto-archive handles expired scholarships with expected_reopen_month. 82 tests passing, 6/6 AGGR requirements verified.
 
-*Last updated: 2026-03-21 after Phase 10 completion*
+*Last updated: 2026-03-22 after Phase 4 completion*
