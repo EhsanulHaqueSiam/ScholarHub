@@ -21,6 +21,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { scholarshipSearchSchema } from "@/lib/filters";
+import { buildPageMeta } from "@/lib/seo/meta";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
@@ -67,18 +68,15 @@ export const Route = createFileRoute("/scholarships/")({
     parts.push("Scholarships");
     if (s.to) parts.push(`in ${formatCountries(s.to)}`);
     if (s.from) parts.push(`for ${formatNationalities(s.from)} Students`);
-    const title = parts.join(" ") + " -- ScholarHub";
-    const description = `Browse international scholarships${s.to ? ` in ${formatCountries(s.to)}` : ""}. Filter by degree, funding, and eligibility.`;
+    const title = parts.join(" ") + " | ScholarHub";
+    const description = `Browse 2,400+ international scholarships${s.to ? ` in ${formatCountries(s.to)}` : ""}. Filter by country, degree, funding type, and eligibility.`;
 
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "website" },
-      ],
-    };
+    const { meta, links } = buildPageMeta({
+      title,
+      description,
+      canonicalPath: "/scholarships",
+    });
+    return { meta, links };
   },
   component: ScholarshipsDirectory,
 });

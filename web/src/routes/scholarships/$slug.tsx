@@ -22,6 +22,8 @@ import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
+import { buildScholarshipJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildPageMeta } from "@/lib/seo/meta";
 import { formatFundingType } from "@/lib/shared";
 import { api } from "../../../convex/_generated/api";
 
@@ -42,17 +44,16 @@ const detailSearchSchema = z.object({
 
 export const Route = createFileRoute("/scholarships/$slug")({
   validateSearch: (search) => detailSearchSchema.parse(search),
-  head: ({ params }) => ({
-    meta: [
-      {
-        title: `${params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} | ScholarHub`,
-      },
-      {
-        name: "description",
-        content: `View scholarship details for ${params.slug.replace(/-/g, " ")} on ScholarHub -- eligibility, funding, deadlines, and how to apply.`,
-      },
-    ],
-  }),
+  head: ({ params }) => {
+    const title = `${params.slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} | ScholarHub`;
+    const description = `View scholarship details for ${params.slug.replace(/-/g, " ")} on ScholarHub -- eligibility, funding, deadlines, and how to apply.`;
+    const { meta, links } = buildPageMeta({
+      title,
+      description,
+      canonicalPath: `/scholarships/${params.slug}`,
+    });
+    return { meta, links };
+  },
   component: ScholarshipDetailPage,
 });
 
@@ -80,90 +81,10 @@ function buildMetaTitle(scholarship: {
   return `${scholarship.title} | ScholarHub`;
 }
 
-/**
- * Build Schema.org JSON-LD structured data for a scholarship.
- *
- * All data comes from the Convex database (trusted source, not user-generated content).
- * The JSON is stringified and embedded as a script tag for search engine consumption.
- */
-function buildScholarshipJsonLd(scholarship: {
-  title: string;
-  description?: string | null;
-  provider_organization: string;
-  host_country: string;
-  application_deadline?: number | null;
-  eligibility_nationalities?: string[] | null;
-  award_amount_max?: number | null;
-  award_currency?: string | null;
-  application_url?: string | null;
-  slug?: string | null;
-  _id: string;
-  degree_levels: string[];
-  fields_of_study?: string[] | null;
-  last_verified?: number | null;
-}) {
-  const jsonLd: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Scholarship",
-    name: scholarship.title,
-    provider: {
-      "@type": "Organization",
-      name: scholarship.provider_organization,
-    },
-    funder: {
-      "@type": "Organization",
-      name: scholarship.provider_organization,
-    },
-    url:
-      scholarship.application_url ??
-      `${typeof window !== "undefined" ? window.location.origin : ""}/scholarships/${scholarship.slug ?? scholarship._id}`,
-  };
-
-  if (scholarship.description) {
-    jsonLd.description = scholarship.description;
-  }
-
-  if (scholarship.application_deadline) {
-    jsonLd.applicationDeadline = new Date(scholarship.application_deadline).toISOString();
-  }
-
-  if (scholarship.eligibility_nationalities && scholarship.eligibility_nationalities.length > 0) {
-    jsonLd.eligibleRegion = scholarship.eligibility_nationalities.map((code) => ({
-      "@type": "Place",
-      name: getCountryName(code),
-    }));
-  }
-
-  if (scholarship.host_country) {
-    jsonLd.studyLocation = {
-      "@type": "Place",
-      name: getCountryName(scholarship.host_country),
-    };
-  }
-
-  if (scholarship.award_amount_max) {
-    jsonLd.amount = {
-      "@type": "MonetaryAmount",
-      value: scholarship.award_amount_max,
-      currency: scholarship.award_currency ?? "USD",
-    };
-  }
-
-  // Expanded fields per 07-UI-SPEC SEO contract
-  if (scholarship.degree_levels.length > 0) {
-    jsonLd.educationalLevel = scholarship.degree_levels;
-  }
-
-  if (scholarship.fields_of_study && scholarship.fields_of_study.length > 0) {
-    jsonLd.occupationalCategory = scholarship.fields_of_study;
-  }
-
-  if (scholarship.last_verified) {
-    jsonLd.dateModified = new Date(scholarship.last_verified).toISOString();
-  }
-
-  return jsonLd;
-}
+const SITE_URL =
+  typeof window !== "undefined"
+    ? window.location.origin
+    : (import.meta.env?.VITE_SITE_URL ?? "https://scholarhub.io");
 
 function ScholarshipDetailPage() {
   const { slug } = Route.useParams();
@@ -213,13 +134,19 @@ function ScholarshipDetailPage() {
   const isExpired = urgency === "closed";
   const scholarshipSlug = scholarship.slug ?? scholarship._id;
 
+  // Grant JSON-LD structured data (imported builder uses @type "Grant")
   const jsonLdString = JSON.stringify(buildScholarshipJsonLd(scholarship));
 
-  // Client-side meta title update
-  const metaTitle = buildMetaTitle(scholarship);
-  if (typeof document !== "undefined") {
-    document.title = metaTitle;
-  }
+  // BreadcrumbList JSON-LD: Home > Scholarships > Country > Scholarship Title
+  const countryName = getCountryName(scholarship.host_country);
+  const countrySlug = scholarship.host_country.toLowerCase();
+  const breadcrumbItems = [
+    { name: "Home", url: SITE_URL },
+    { name: "Scholarships", url: `${SITE_URL}/scholarships` },
+    { name: countryName, url: `${SITE_URL}/scholarships/country/${countrySlug}` },
+    { name: scholarship.title, url: `${SITE_URL}/scholarships/${scholarshipSlug}` },
+  ];
+  const breadcrumbJsonLdString = JSON.stringify(buildBreadcrumbJsonLd(breadcrumbItems));
 
   return (
     <div className="min-h-screen">
@@ -234,13 +161,11 @@ function ScholarshipDetailPage() {
         isExpired={isExpired}
       />
 
-      {/* Schema.org JSON-LD structured data
-          Source: Convex database (trusted, admin-curated content -- safe for inline script) */}
-      <script
-        type="application/ld+json"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: Trusted DB content for SEO structured data
-        dangerouslySetInnerHTML={{ __html: jsonLdString }}
-      />
+      {/* Schema.org Grant JSON-LD -- trusted DB content for SEO structured data */}
+      <script type="application/ld+json">{jsonLdString}</script>
+
+      {/* BreadcrumbList JSON-LD -- trusted breadcrumb data for SEO structured data */}
+      <script type="application/ld+json">{breadcrumbJsonLdString}</script>
 
       {/* Page content */}
       <div className="pt-20 pb-16 px-4 md:px-6">

@@ -13,30 +13,21 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { scholarshipSearchSchema } from "@/lib/filters";
+import { buildPageMeta } from "@/lib/seo/meta";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
 export const Route = createFileRoute("/scholarships/closing-soon")({
   validateSearch: scholarshipSearchSchema,
-  head: () => ({
-    meta: [
-      { title: "Closing Soon -- Scholarships with Upcoming Deadlines -- ScholarHub" },
-      {
-        name: "description",
-        content:
-          "Scholarships with upcoming deadlines. Apply before it's too late. Browse scholarships closing within the next 30 days.",
-      },
-      {
-        property: "og:title",
-        content: "Closing Soon -- Scholarships with Upcoming Deadlines -- ScholarHub",
-      },
-      {
-        property: "og:description",
-        content: "Scholarships with upcoming deadlines. Apply before it's too late.",
-      },
-      { property: "og:type", content: "website" },
-    ],
-  }),
+  head: () => {
+    const { meta, links } = buildPageMeta({
+      title: "Closing Soon -- Scholarships with Upcoming Deadlines | ScholarHub",
+      description:
+        "Scholarships with upcoming deadlines. Apply before it's too late. Browse scholarships closing within the next 30 days.",
+      canonicalPath: "/scholarships/closing-soon",
+    });
+    return { meta, links };
+  },
   component: ClosingSoonPage,
 });
 
