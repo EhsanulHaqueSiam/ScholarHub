@@ -103,12 +103,14 @@ Plans:
   3. Admin can configure source trust levels (auto-publish, needs-review, blocked) and scholarships from trusted sources publish automatically without manual review
   4. Admin can add rich-text editorial notes and tips to any scholarship
   5. No duplicate scholarships can be published -- dedup is enforced at the publish boundary
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [ ] 05-01-PLAN.md -- Schema evolution (scholarship_revisions), admin mutations (approve, reject, bulk ops, edit, trust), auto-publish in aggregation, tests
+- [ ] 05-02-PLAN.md -- TipTap install, destructive button variant, admin route layout, StatsBar/StatCard components
+- [ ] 05-03-PLAN.md -- ReviewQueue with status tabs, QueueRow expandable rows, BulkActionBar, DuplicateBadge, selection hook
+- [ ] 05-04-PLAN.md -- EditPanel slide-out sheet, EditForm with all fields, TipTap EditorialEditor, RevisionHistory, dual-format EditorialTips
+- [ ] 05-05-PLAN.md -- SourceTrustManager, EditPanel wiring, integration, visual verification checkpoint
 
 ### Phase 6: Public Directory -- ABSORBED INTO PHASE 06.1
 **Status**: Merged into Phase 06.1. All Phase 6 requirements (PDIR-01 through PDIR-11, UIDX-01 through UIDX-03) are now addressed by Phase 06.1.
@@ -192,7 +194,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 (absorbed) -> 06.1 -
 | 2. Source Discovery | 0/3 | Not started | - |
 | 3. Scraping Pipeline | 7/9 | In Progress (gap closure) |  |
 | 4. Data Aggregation | 0/2 | Not started | - |
-| 5. Admin Dashboard | 0/3 | Not started | - |
+| 5. Admin Dashboard | 0/5 | Not started | - |
 | 6. Public Directory | -- | Absorbed into 06.1 | - |
 | 06.1. Public Directory + Prestige | 7/7 | Complete    | 2026-03-20 |
 | 7. Scholarship Detail Page | 0/3 | Not started | - |
