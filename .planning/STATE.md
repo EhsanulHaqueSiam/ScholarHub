@@ -190,6 +190,7 @@ None yet.
 | 260321-i17 | Build Japan scholarship scrapers (studyinjapan.go.jp CSV + jpss.jp HTML) | 2026-03-21 | bf8b5dc | [260321-i17-build-japan-scholarship-scrapers-for-stu](./quick/260321-i17-build-japan-scholarship-scrapers-for-stu/) |
 | 260322-hcw | Demote published scholarships with missing important info to pending_review | 2026-03-22 | 36f6528 | [260322-hcw-demote-public-scholarships-with-missing-](./quick/260322-hcw-demote-public-scholarships-with-missing-/) |
 | 260322-hky | Fix desktop pagination to replace content instead of appending | 2026-03-22 | 8740ff2 | [260322-hky-fix-desktop-pagination-to-replace-conten](./quick/260322-hky-fix-desktop-pagination-to-replace-conten/) |
+| 260322-lih | Country detail pages with tuition, visa, intakes, post-study work + improved funding display | 2026-03-22 | cb725e0 | [260322-lih-add-country-detail-sections-cost-of-stud](./quick/260322-lih-add-country-detail-sections-cost-of-stud/) |
 
 ### Blockers/Concerns
 
@@ -199,7 +200,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T09:16:29.298Z
+Last session: 2026-03-22T09:40:09Z
 Last activity: 2026-03-22
-Stopped at: Completed 05-05-PLAN.md
+Stopped at: Completed quick task 260322-lih
 Resume file: None
