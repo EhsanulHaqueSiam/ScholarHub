@@ -111,7 +111,7 @@ Plans:
 - [x] 05-03-PLAN.md -- ReviewQueue with status tabs, QueueRow expandable rows, BulkActionBar, DuplicateBadge, selection hook
 - [x] 05-04-PLAN.md -- EditPanel slide-out sheet, EditForm with all fields, TipTap EditorialEditor, RevisionHistory, dual-format EditorialTips
 - [x] 05-05-PLAN.md -- SourceTrustManager, EditPanel wiring, integration, visual verification checkpoint
-- [ ] 05-06-PLAN.md -- Gap closure: wire countAffectedScholarships query into SourceTrustManager pre-confirm dialog
+- [x] 05-06-PLAN.md -- Gap closure: wire countAffectedScholarships query into SourceTrustManager pre-confirm dialog
 
 ### Phase 6: Public Directory -- ABSORBED INTO PHASE 06.1
 **Status**: Merged into Phase 06.1. All Phase 6 requirements (PDIR-01 through PDIR-11, UIDX-01 through UIDX-03) are now addressed by Phase 06.1.
