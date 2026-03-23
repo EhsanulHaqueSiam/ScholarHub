@@ -39,6 +39,7 @@ export function useScholarshipFilters() {
     field: parseCommaSeparated(search.field),
     funding: parseCommaSeparated(search.funding),
     tier: parseCommaSeparated(search.tier),
+    type: parseCommaSeparated(search.type),
     tags: parseCommaSeparated(search.tags),
     sort: search.sort ?? "deadline",
     view: search.view ?? "grid",
@@ -71,6 +72,20 @@ export function useScholarshipFilters() {
         filters.tier.length > 0
           ? (filters.tier as Array<"gold" | "silver" | "bronze" | "unranked">)
           : undefined,
+      scholarshipTypes:
+        filters.type.length > 0
+          ? (filters.type as Array<
+              | "merit"
+              | "need_based"
+              | "government"
+              | "university"
+              | "country_specific"
+              | "subject_specific"
+              | "research"
+              | "athletic"
+              | "general"
+            >)
+          : undefined,
       tags: filters.tags.length > 0 ? filters.tags : undefined,
       sort: filters.sort,
       showClosed: filters.showClosed || undefined,
@@ -85,6 +100,7 @@ export function useScholarshipFilters() {
       filters.field.join(),
       filters.funding.join(),
       filters.tier.join(),
+      filters.type.join(),
       filters.tags.join(),
       filters.sort,
       filters.showClosed,
@@ -124,6 +140,7 @@ export function useScholarshipFilters() {
     filters.field.length > 0,
     filters.funding.length > 0,
     filters.tier.length > 0,
+    filters.type.length > 0,
     filters.tags.length > 0,
     filters.q,
     filters.showClosed,

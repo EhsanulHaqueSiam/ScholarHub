@@ -55,3 +55,20 @@ export function formatFundingType(type: string): string {
   };
   return labels[type] ?? type;
 }
+
+/** Format scholarship type enum value for display */
+export function formatScholarshipType(type: string | undefined): string | null {
+  if (!type || type === "general") return null;
+  const labels: Record<string, string> = {
+    merit: "Merit-Based",
+    need_based: "Need-Based",
+    government: "Government",
+    university: "University",
+    country_specific: "Country-Specific",
+    subject_specific: "Subject-Specific",
+    research: "Research",
+    athletic: "Athletic",
+    general: "General",
+  };
+  return labels[type] ?? null;
+}

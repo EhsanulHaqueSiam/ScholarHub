@@ -47,6 +47,24 @@
   --tag-suggested-border: oklch(75% 0.12 85);
   --tag-suggested-bg: oklch(95% 0.04 85);
 
+  /* Scholarship type colors */
+  --type-government-badge: oklch(75% 0.12 240);
+  --type-government-border: oklch(50% 0.16 240);
+  --type-merit-badge: oklch(80% 0.14 85);
+  --type-merit-border: oklch(55% 0.18 85);
+  --type-need-based-badge: oklch(75% 0.14 155);
+  --type-need-based-border: oklch(50% 0.18 155);
+  --type-university-badge: oklch(75% 0.12 300);
+  --type-university-border: oklch(50% 0.16 300);
+  --type-research-badge: oklch(72% 0.14 275);
+  --type-research-border: oklch(48% 0.18 275);
+  --type-country-specific-badge: oklch(75% 0.10 195);
+  --type-country-specific-border: oklch(50% 0.14 195);
+  --type-athletic-badge: oklch(72% 0.16 25);
+  --type-athletic-border: oklch(48% 0.20 25);
+  --type-subject-specific-badge: oklch(78% 0.14 60);
+  --type-subject-specific-border: oklch(52% 0.18 60);
+
   /* Comparison difference highlight */
   --compare-diff-bg: oklch(92% 0.06 90);
 
@@ -88,6 +106,24 @@
   --tag-outline-border: oklch(45% 0.02 275);
   --tag-suggested-border: oklch(60% 0.10 85);
   --tag-suggested-bg: oklch(22% 0.04 85);
+
+  /* Scholarship type colors - dark mode */
+  --type-government-badge: oklch(55% 0.12 240);
+  --type-government-border: oklch(40% 0.14 240);
+  --type-merit-badge: oklch(60% 0.14 85);
+  --type-merit-border: oklch(42% 0.16 85);
+  --type-need-based-badge: oklch(55% 0.14 155);
+  --type-need-based-border: oklch(40% 0.16 155);
+  --type-university-badge: oklch(55% 0.12 300);
+  --type-university-border: oklch(40% 0.14 300);
+  --type-research-badge: oklch(52% 0.14 275);
+  --type-research-border: oklch(38% 0.16 275);
+  --type-country-specific-badge: oklch(55% 0.10 195);
+  --type-country-specific-border: oklch(40% 0.12 195);
+  --type-athletic-badge: oklch(52% 0.16 25);
+  --type-athletic-border: oklch(38% 0.18 25);
+  --type-subject-specific-badge: oklch(58% 0.14 60);
+  --type-subject-specific-border: oklch(42% 0.16 60);
 
   /* Comparison difference highlight - dark mode */
   --compare-diff-bg: oklch(25% 0.04 85);
@@ -133,6 +169,22 @@
   --color-urgency-warning: var(--urgency-warning);
   --color-urgency-open: var(--urgency-open);
   --color-urgency-closed: var(--urgency-closed);
+  --color-type-government-badge: var(--type-government-badge);
+  --color-type-government-border: var(--type-government-border);
+  --color-type-merit-badge: var(--type-merit-badge);
+  --color-type-merit-border: var(--type-merit-border);
+  --color-type-need-based-badge: var(--type-need-based-badge);
+  --color-type-need-based-border: var(--type-need-based-border);
+  --color-type-university-badge: var(--type-university-badge);
+  --color-type-university-border: var(--type-university-border);
+  --color-type-research-badge: var(--type-research-badge);
+  --color-type-research-border: var(--type-research-border);
+  --color-type-country-specific-badge: var(--type-country-specific-badge);
+  --color-type-country-specific-border: var(--type-country-specific-border);
+  --color-type-athletic-badge: var(--type-athletic-badge);
+  --color-type-athletic-border: var(--type-athletic-border);
+  --color-type-subject-specific-badge: var(--type-subject-specific-badge);
+  --color-type-subject-specific-border: var(--type-subject-specific-border);
   --color-destructive: var(--destructive);
 }
 

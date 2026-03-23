@@ -24,6 +24,19 @@ const badgeVariants = cva(
         tag: "bg-transparent text-foreground border-[1.5px] border-[var(--tag-outline-border)] dark:border-[var(--tag-outline-border)] hover:bg-secondary-background cursor-pointer",
         tagSuggested:
           "bg-[var(--tag-suggested-bg)] dark:bg-[var(--tag-suggested-bg)] text-foreground border-[1.5px] border-[var(--tag-suggested-border)] dark:border-[var(--tag-suggested-border)]",
+        typeGovernment:
+          "bg-type-government-badge text-white border-type-government-border font-heading",
+        typeMerit: "bg-type-merit-badge text-black border-type-merit-border font-heading",
+        typeNeedBased:
+          "bg-type-need-based-badge text-white border-type-need-based-border font-heading",
+        typeUniversity:
+          "bg-type-university-badge text-white border-type-university-border font-heading",
+        typeResearch: "bg-type-research-badge text-white border-type-research-border font-heading",
+        typeCountrySpecific:
+          "bg-type-country-specific-badge text-white border-type-country-specific-border font-heading",
+        typeAthletic: "bg-type-athletic-badge text-white border-type-athletic-border font-heading",
+        typeSubjectSpecific:
+          "bg-type-subject-specific-badge text-black border-type-subject-specific-border font-heading",
       },
     },
     defaultVariants: {
