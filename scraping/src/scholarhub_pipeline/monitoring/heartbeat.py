@@ -1,8 +1,6 @@
 """Pipeline heartbeat monitoring via Convex."""
 
 from __future__ import annotations
-
-import time
 from typing import TYPE_CHECKING
 
 import structlog
@@ -27,12 +25,13 @@ class HeartbeatMonitor:
         self.convex = convex_client
 
     def update(self) -> None:
-        """Record current timestamp as heartbeat."""
-        self.convex.mutation(
-            "scraping:updateHeartbeat",
-            {"timestamp": int(time.time() * 1000)},
-        )
-        logger.info("heartbeat_updated")
+        """No-op heartbeat update.
+
+        Pipeline heartbeat is derived from scrape_runs status/timestamps on the
+        Convex side (monitoring:getStaleHeartbeat), so no dedicated mutation is
+        required here.
+        """
+        logger.debug("heartbeat_update_noop")
 
     def is_stale(self) -> bool:
         """Check if heartbeat is older than threshold.

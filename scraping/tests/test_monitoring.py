@@ -1,7 +1,6 @@
 """Tests for monitoring: HealthTracker, RotDetector, HeartbeatMonitor, GitHubIssueManager."""
 
 import subprocess
-import time
 from unittest.mock import MagicMock, patch
 
 from scholarhub_pipeline.monitoring.github_issues import ISSUE_LABEL, GitHubIssueManager
@@ -156,22 +155,11 @@ class TestRotDetector:
 
 
 class TestHeartbeatMonitor:
-    def test_update_calls_convex_mutation(self):
+    def test_update_is_noop_and_does_not_call_convex(self):
         client = _make_mock_client()
         monitor = HeartbeatMonitor(client)
         monitor.update()
-        client.mutation.assert_called_once()
-        call_name = client.mutation.call_args[0][0]
-        assert call_name == "scraping:updateHeartbeat"
-
-    def test_update_sends_timestamp_in_milliseconds(self):
-        client = _make_mock_client()
-        monitor = HeartbeatMonitor(client)
-        before = int(time.time() * 1000)
-        monitor.update()
-        after = int(time.time() * 1000)
-        call_args = client.mutation.call_args[0][1]
-        assert before <= call_args["timestamp"] <= after
+        client.mutation.assert_not_called()
 
     def test_is_stale_returns_true_when_query_returns_true(self):
         client = _make_mock_client()
@@ -272,6 +260,36 @@ class TestGitHubIssueManager:
             )
             assert result is None
 
+    def test_create_rot_issue_returns_none_when_repo_missing(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            result = manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de",
+                error_type="blocked",
+                consecutive_failures=5,
+                last_success=None,
+                suggested_fix="Try StealthyFetcher.",
+            )
+            assert result is None
+            mock_run.assert_not_called()
+
+    def test_create_rot_issue_returns_none_when_gh_missing(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.side_effect = FileNotFoundError("gh")
+            result = manager.create_rot_issue(
+                source_name="DAAD",
+                source_url="https://daad.de",
+                error_type="blocked",
+                consecutive_failures=5,
+                last_success=None,
+                suggested_fix="Try StealthyFetcher.",
+            )
+            assert result is None
+
     def test_close_issue_calls_gh_cli(self):
         client = _make_mock_client()
         manager = GitHubIssueManager(client, repo="owner/ScholarHub")
@@ -291,6 +309,22 @@ class TestGitHubIssueManager:
         manager = GitHubIssueManager(client, repo="owner/ScholarHub")
         with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
             mock_run.side_effect = subprocess.CalledProcessError(1, "gh")
+            result = manager.close_issue(issue_number=42, source_name="DAAD")
+            assert result is False
+
+    def test_close_issue_returns_false_when_repo_missing(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            result = manager.close_issue(issue_number=42, source_name="DAAD")
+            assert result is False
+            mock_run.assert_not_called()
+
+    def test_close_issue_returns_false_when_gh_missing(self):
+        client = _make_mock_client()
+        manager = GitHubIssueManager(client, repo="owner/ScholarHub")
+        with patch("scholarhub_pipeline.monitoring.github_issues.subprocess.run") as mock_run:
+            mock_run.side_effect = FileNotFoundError("gh")
             result = manager.close_issue(issue_number=42, source_name="DAAD")
             assert result is False
 
