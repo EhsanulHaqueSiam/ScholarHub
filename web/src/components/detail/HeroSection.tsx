@@ -84,7 +84,7 @@ export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function
               {degreeLevels.map((level) => (
                 <span
                   key={level}
-                  className="inline-block rounded-base border border-border px-1.5 py-0.5 text-xs"
+                  className="inline-block rounded-base border-2 border-border px-1.5 py-0.5 text-xs"
                 >
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </span>

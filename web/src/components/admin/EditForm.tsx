@@ -361,7 +361,7 @@ export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProp
                   type="checkbox"
                   checked={formValues.degree_levels.includes(degree)}
                   onChange={() => toggleDegree(degree)}
-                  className="size-4 accent-main"
+                  className="size-4"
                 />
                 {degree}
               </label>
@@ -433,7 +433,7 @@ export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProp
                   type="checkbox"
                   checked={formValues[field]}
                   onChange={(e) => updateField(field, e.target.checked)}
-                  className="size-4 accent-main"
+                  className="size-4"
                 />
                 {label}
               </label>
@@ -871,7 +871,7 @@ function TagsSection({ scholarshipId }: { scholarshipId: Id<"scholarships"> }) {
                 <button
                   type="button"
                   onClick={() => acceptTagMut({ scholarshipId, tag: suggested.tag })}
-                  className="p-0.5 rounded-sm hover:bg-urgency-open/20 text-urgency-open transition-colors"
+                  className="p-0.5 rounded-base hover:bg-urgency-open/20 text-urgency-open transition-colors"
                   aria-label={`Accept tag ${getTagLabel(suggested.tag)}`}
                 >
                   <Check className="size-3" />
@@ -879,7 +879,7 @@ function TagsSection({ scholarshipId }: { scholarshipId: Id<"scholarships"> }) {
                 <button
                   type="button"
                   onClick={() => rejectTagMut({ scholarshipId, tag: suggested.tag })}
-                  className="p-0.5 rounded-sm hover:bg-destructive/20 text-destructive transition-colors"
+                  className="p-0.5 rounded-base hover:bg-destructive/20 text-destructive transition-colors"
                   aria-label={`Reject tag ${getTagLabel(suggested.tag)}`}
                 >
                   <X className="size-3" />

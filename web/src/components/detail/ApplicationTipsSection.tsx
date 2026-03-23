@@ -40,7 +40,7 @@ export function ApplicationTipsSection({
               <p className="text-sm leading-relaxed">{applicationTips}</p>
               {/* Show static tip as supplementary when custom tips exist */}
               {typeMeta && (
-                <div className="border-t border-border pt-3">
+                <div className="border-t-2 border-border pt-3">
                   <p className="text-xs text-foreground/60 mb-1 font-heading">
                     General tip for {typeMeta.label} scholarships:
                   </p>

@@ -99,7 +99,7 @@ export function FundingSection({
             const tip = getCoverageTip(scholarshipType);
             if (!tip) return null;
             return (
-              <div className="flex items-start gap-2 rounded-base border border-border bg-secondary-background p-3">
+              <div className="flex items-start gap-2 rounded-base border-2 border-border bg-secondary-background p-3">
                 <Lightbulb className="size-4 text-type-merit-badge shrink-0 mt-0.5" />
                 <p className="text-sm text-foreground/80">{tip}</p>
               </div>

@@ -102,7 +102,7 @@ export function SourceTrustManager() {
             type="checkbox"
             checked={showActiveOnly}
             onChange={(e) => setShowActiveOnly(e.target.checked)}
-            className="size-4 accent-main"
+            className="size-4"
           />
           <span className="font-base">Active only</span>
         </label>

@@ -83,7 +83,7 @@ export function CountrySelector({
               {selected.map((code) => (
                 <span
                   key={code}
-                  className="inline-flex items-center gap-1 bg-main/10 border border-border rounded-base px-2 py-0.5 text-xs"
+                  className="inline-flex items-center gap-1 bg-main/10 border-2 border-border rounded-base px-2 py-0.5 text-xs"
                 >
                   {getCountryFlag(code)} {getCountryName(code)}
                   <button
@@ -122,7 +122,7 @@ export function CountrySelector({
                 placeholder="Search countries..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full border border-border rounded-base bg-background ps-8 pe-3 py-1.5 text-sm focus:ring-1 focus:ring-ring focus:outline-none"
+                className="w-full border-2 border-border rounded-base bg-background ps-8 pe-3 py-1.5 text-sm focus:ring-1 focus:ring-ring focus:outline-none"
               />
             </div>
           </div>

@@ -282,7 +282,7 @@ export function TagsManager() {
                 ))}
 
                 {/* Inline new tag creation */}
-                <div className="pt-2 border-t border-border/50">
+                <div className="pt-2 border-t-2 border-border/50">
                   <input
                     type="text"
                     className="h-7 px-2 border-2 border-border rounded-base bg-background text-xs w-full focus:outline-none focus:ring-2 focus:ring-ring"
@@ -461,7 +461,7 @@ export function TagsManager() {
                   type="checkbox"
                   checked={selectedBulkTags.includes(tag.id)}
                   onChange={() => toggleBulkTag(tag.id)}
-                  className="size-3.5 accent-main"
+                  className="size-3.5"
                 />
                 <span className="text-xs">{tag.label}</span>
               </label>
@@ -483,7 +483,7 @@ export function TagsManager() {
               type="checkbox"
               checked={showUntaggedOnly}
               onChange={(e) => setShowUntaggedOnly(e.target.checked)}
-              className="size-4 accent-main"
+              className="size-4"
             />
             Show only untagged
           </label>
@@ -538,7 +538,7 @@ export function TagsManager() {
                         type="checkbox"
                         checked={selectedScholarshipIds.has(scholarship._id)}
                         onChange={() => toggleScholarshipSelect(scholarship._id)}
-                        className="size-3.5 accent-main"
+                        className="size-3.5"
                       />
                     </td>
                     <td className="p-2 truncate max-w-[300px]">{scholarship.title}</td>

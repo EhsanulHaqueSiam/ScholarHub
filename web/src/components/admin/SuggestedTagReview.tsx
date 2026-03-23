@@ -42,7 +42,7 @@ export function SuggestedTagReview({ scholarshipId, suggestedTags }: SuggestedTa
                 <button
                   type="button"
                   onClick={() => acceptTag({ scholarshipId, tag: suggested.tag })}
-                  className="p-0.5 rounded-sm hover:bg-urgency-open/20 text-urgency-open transition-colors"
+                  className="p-0.5 rounded-base hover:bg-urgency-open/20 text-urgency-open transition-colors"
                   aria-label={`Accept tag ${getTagLabel(suggested.tag)}`}
                 >
                   <Check className="size-3.5" />
@@ -50,7 +50,7 @@ export function SuggestedTagReview({ scholarshipId, suggestedTags }: SuggestedTa
                 <button
                   type="button"
                   onClick={() => rejectTag({ scholarshipId, tag: suggested.tag })}
-                  className="p-0.5 rounded-sm hover:bg-destructive/20 text-destructive transition-colors"
+                  className="p-0.5 rounded-base hover:bg-destructive/20 text-destructive transition-colors"
                   aria-label={`Reject tag ${getTagLabel(suggested.tag)}`}
                 >
                   <X className="size-3.5" />

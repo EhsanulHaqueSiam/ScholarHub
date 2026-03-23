@@ -35,7 +35,7 @@ export function IntakePeriodsSection({ data }: IntakePeriodsSectionProps) {
             ))}
           </div>
           {applicationTimeline && (
-            <p className="text-sm text-foreground/70 border-t border-border/50 pt-3">
+            <p className="text-sm text-foreground/70 border-t-2 border-border/50 pt-3">
               {applicationTimeline}
             </p>
           )}

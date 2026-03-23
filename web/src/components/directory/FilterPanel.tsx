@@ -53,7 +53,7 @@ export function MobileFilterTrigger() {
             <SlidersHorizontal className="size-5" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
-              <span className="bg-black text-white text-xs font-bold rounded-full size-5 flex items-center justify-center -mr-1">
+              <span className="bg-black text-white text-xs font-bold rounded-base size-5 flex items-center justify-center -mr-1">
                 {activeFilterCount}
               </span>
             )}
@@ -248,7 +248,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
               >
                 <span
                   className={cn(
-                    "size-5 rounded-sm border-2 me-2.5 flex items-center justify-center shrink-0 transition-colors",
+                    "size-5 rounded-base border-2 me-2.5 flex items-center justify-center shrink-0 transition-colors",
                     isActive
                       ? "bg-main border-border text-main-foreground"
                       : "bg-secondary-background border-border",
@@ -330,7 +330,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
         <label className="flex items-center gap-2.5 cursor-pointer text-sm text-foreground/80">
           <span
             className={cn(
-              "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+              "size-5 rounded-base border-2 border-border flex items-center justify-center shrink-0 transition-colors",
               filters.showClosed ? "bg-main" : "bg-secondary-background",
             )}
           >

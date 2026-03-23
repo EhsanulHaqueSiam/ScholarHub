@@ -71,7 +71,7 @@ export function RevisionHistory({ scholarshipId }: RevisionHistoryProps) {
                   className="relative pl-4 pb-3"
                 >
                   {/* Timeline dot */}
-                  <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-main" />
+                  <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-base bg-main" />
 
                   {/* Content */}
                   <div className="ml-0">

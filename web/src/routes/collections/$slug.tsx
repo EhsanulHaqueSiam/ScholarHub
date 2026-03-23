@@ -41,7 +41,7 @@ export const Route = createFileRoute("/collections/$slug")({
 function CollectionHeaderSkeleton() {
   return (
     <div className="flex flex-col items-center text-center gap-4 motion-safe:animate-pulse">
-      <div className="w-20 h-20 rounded-full bg-border/20" />
+      <div className="w-20 h-20 rounded-base bg-border/20" />
       <div className="h-7 bg-border/20 rounded-base w-48" />
       <div className="h-4 bg-border/20 rounded-base w-64" />
       <div className="h-5 bg-border/20 rounded-base w-24" />

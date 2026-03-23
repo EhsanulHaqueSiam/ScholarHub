@@ -332,7 +332,7 @@ export function CollectionEditForm({ collection, onSave, onCancel }: CollectionE
               type="checkbox"
               checked={form.is_featured}
               onChange={(e) => updateField("is_featured", e.target.checked)}
-              className="size-4 accent-main"
+              className="size-4"
             />
             <span className={labelClass + " !mb-0 !block"}>Featured on Directory</span>
           </label>
@@ -400,7 +400,7 @@ export function CollectionEditForm({ collection, onSave, onCancel }: CollectionE
                       type="checkbox"
                       checked={form.degree_levels.includes(d)}
                       onChange={() => toggleArrayField("degree_levels", d)}
-                      className="size-4 accent-main"
+                      className="size-4"
                     />
                     {d}
                   </label>
@@ -418,7 +418,7 @@ export function CollectionEditForm({ collection, onSave, onCancel }: CollectionE
                       type="checkbox"
                       checked={form.funding_types.includes(f)}
                       onChange={() => toggleArrayField("funding_types", f)}
-                      className="size-4 accent-main"
+                      className="size-4"
                     />
                     {f.replace("_", " ")}
                   </label>
@@ -436,7 +436,7 @@ export function CollectionEditForm({ collection, onSave, onCancel }: CollectionE
                       type="checkbox"
                       checked={form.prestige_tiers.includes(p)}
                       onChange={() => toggleArrayField("prestige_tiers", p)}
-                      className="size-4 accent-main"
+                      className="size-4"
                     />
                     {p}
                   </label>

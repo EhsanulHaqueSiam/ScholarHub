@@ -78,7 +78,7 @@ export const FeaturedRow = memo(function FeaturedRow({ nationalities }: Featured
             aria-label="Scroll left"
             className={cn(
               "absolute -left-5 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-[2px_2px_0px_0px_var(--border)]",
+              "bg-secondary-background border-2 border-border rounded-base p-2 shadow-[2px_2px_0px_0px_var(--border)]",
               "hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}
@@ -113,7 +113,7 @@ export const FeaturedRow = memo(function FeaturedRow({ nationalities }: Featured
             aria-label="Scroll right"
             className={cn(
               "absolute -right-5 top-1/2 -translate-y-1/2 z-10",
-              "bg-secondary-background border-2 border-border rounded-full p-2 shadow-[2px_2px_0px_0px_var(--border)]",
+              "bg-secondary-background border-2 border-border rounded-base p-2 shadow-[2px_2px_0px_0px_var(--border)]",
               "hover:shadow-none transition-all",
               "hidden md:flex items-center justify-center",
             )}

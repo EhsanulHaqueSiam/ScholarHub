@@ -45,7 +45,7 @@ export const CollectionCard = memo(function CollectionCard({
         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
           {/* Emoji with accent background circle */}
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-main/10 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-base bg-main/10 flex items-center justify-center">
               <span className="text-5xl" role="img" aria-hidden="true">
                 {collection.emoji}
               </span>

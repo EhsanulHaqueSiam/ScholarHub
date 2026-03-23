@@ -164,7 +164,7 @@ export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
                   }}
                   onChange={handleSelectAllToggle}
                   aria-label="Select all visible scholarships"
-                  className="size-4 accent-main"
+                  className="size-4"
                 />
                 <span className="font-base">Select all visible</span>
               </label>

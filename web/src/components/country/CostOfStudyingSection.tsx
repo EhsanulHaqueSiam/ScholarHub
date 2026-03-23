@@ -46,7 +46,7 @@ function TuitionRow({
       : `${formatCurrency(range.min, range.currency)} – ${formatCurrency(range.max, range.currency)}`;
 
   return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-border/50 last:border-b-0">
+    <div className="flex items-start justify-between gap-4 py-2 border-b-2 border-border/50 last:border-b-0">
       <span className="text-sm font-heading">{label}</span>
       <div className="text-end flex items-center gap-2">
         <span className={`text-sm ${covered ? "line-through text-foreground/40" : ""}`}>
@@ -135,7 +135,7 @@ export function CostOfStudyingSection({ data, countryName, coverage }: CostOfStu
                 {livingCost.breakdown.map((item) => (
                   <div
                     key={item.item}
-                    className="flex items-center justify-between text-sm py-1 border-b border-border/50 last:border-b-0"
+                    className="flex items-center justify-between text-sm py-1 border-b-2 border-border/50 last:border-b-0"
                   >
                     <span className="text-foreground/70">{item.item}</span>
                     <span>{item.range}</span>

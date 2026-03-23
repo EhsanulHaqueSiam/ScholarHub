@@ -48,7 +48,7 @@ export function AdmissionVisaSection({ data, countryName }: AdmissionVisaSection
                     </thead>
                     <tbody>
                       {languageRequirements.map((lang) => (
-                        <tr key={lang.test} className="border-t border-border/50">
+                        <tr key={lang.test} className="border-t-2 border-border/50">
                           <td className="px-3 py-1.5">{lang.test}</td>
                           <td className="px-3 py-1.5">{lang.minScore}</td>
                         </tr>
@@ -79,7 +79,7 @@ export function AdmissionVisaSection({ data, countryName }: AdmissionVisaSection
               ))}
             </ul>
             {visaNote && (
-              <p className="text-xs text-foreground/60 border-t border-border/50 pt-3 mt-3">
+              <p className="text-xs text-foreground/60 border-t-2 border-border/50 pt-3 mt-3">
                 {visaNote}
               </p>
             )}

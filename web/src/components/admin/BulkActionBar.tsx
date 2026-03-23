@@ -178,7 +178,7 @@ export function BulkActionBar({ selectedCount, selectedIds, onClear }: BulkActio
                       setSelectedTags([]);
                       setTagSearch("");
                     }}
-                    className="p-0.5 hover:bg-background/20 rounded-sm"
+                    className="p-0.5 hover:bg-background/20 rounded-base"
                     aria-label="Close tag dropdown"
                   >
                     <X className="size-3.5" />
@@ -197,13 +197,13 @@ export function BulkActionBar({ selectedCount, selectedIds, onClear }: BulkActio
                   {filteredBulkTags.map((tag) => (
                     <label
                       key={tag.id}
-                      className="flex items-center gap-2 cursor-pointer text-xs hover:bg-background/10 p-1 rounded-sm"
+                      className="flex items-center gap-2 cursor-pointer text-xs hover:bg-background/10 p-1 rounded-base"
                     >
                       <input
                         type="checkbox"
                         checked={selectedTags.includes(tag.id)}
                         onChange={() => toggleTag(tag.id)}
-                        className="size-3 accent-main"
+                        className="size-3"
                       />
                       {tag.label}
                     </label>

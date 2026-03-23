@@ -158,7 +158,7 @@ export function CollectionsManager() {
                       type="checkbox"
                       checked={selectedIds.has(collection._id)}
                       onChange={() => toggleSelect(collection._id)}
-                      className="size-4 accent-main"
+                      className="size-4"
                       aria-label={`Select ${collection.name}`}
                     />
                   </td>

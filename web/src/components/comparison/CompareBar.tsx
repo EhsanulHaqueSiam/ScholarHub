@@ -46,7 +46,7 @@ export function CompareBar() {
             {selected.map((item) => (
               <span
                 key={item.slug}
-                className="inline-flex items-center gap-1 rounded-base border border-border bg-background px-2 py-1 text-sm"
+                className="inline-flex items-center gap-1 rounded-base border-2 border-border bg-background px-2 py-1 text-sm"
               >
                 <span className="truncate max-w-[20ch]">
                   {truncate(item.title, 20)}
@@ -54,7 +54,7 @@ export function CompareBar() {
                 <button
                   type="button"
                   onClick={() => removeFromCompare(item.slug)}
-                  className="shrink-0 rounded-sm p-0.5 hover:bg-secondary-background transition-colors"
+                  className="shrink-0 rounded-base p-0.5 hover:bg-secondary-background transition-colors"
                   aria-label={`Remove ${item.title} from comparison`}
                 >
                   <X className="size-3" />

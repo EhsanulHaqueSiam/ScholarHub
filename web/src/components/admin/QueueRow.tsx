@@ -160,7 +160,7 @@ export function QueueRow({
             }}
             onClick={(e) => e.stopPropagation()}
             aria-label={`Select ${scholarship.title}`}
-            className="size-5 accent-main cursor-pointer"
+            className="size-5 cursor-pointer"
           />
         </div>
 

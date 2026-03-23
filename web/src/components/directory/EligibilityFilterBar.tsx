@@ -89,7 +89,7 @@ export function EligibilityFilterBar() {
           <label className="flex items-center gap-2.5 cursor-pointer text-xs text-foreground/70">
             <span
               className={cn(
-                "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+                "size-5 rounded-base border-2 border-border flex items-center justify-center shrink-0 transition-colors",
                 filters.showIneligible ? "bg-main" : "bg-secondary-background",
               )}
             >
@@ -165,7 +165,7 @@ export function EligibilityFilterBar() {
           <label className="flex items-center gap-2.5 cursor-pointer text-xs text-foreground/70">
             <span
               className={cn(
-                "size-5 rounded-sm border-2 border-border flex items-center justify-center shrink-0 transition-colors",
+                "size-5 rounded-base border-2 border-border flex items-center justify-center shrink-0 transition-colors",
                 filters.showIneligible ? "bg-main" : "bg-secondary-background",
               )}
             >

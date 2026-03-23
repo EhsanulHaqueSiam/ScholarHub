@@ -70,7 +70,7 @@ function CollectionCardSkeleton() {
   return (
     <div className="rounded-base border-2 border-border bg-secondary-background shadow-shadow p-6 flex flex-col items-center gap-4 motion-safe:animate-pulse">
       {/* Emoji circle */}
-      <div className="w-16 h-16 rounded-full bg-border/20" />
+      <div className="w-16 h-16 rounded-base bg-border/20" />
       {/* Title line */}
       <div className="h-5 bg-border/20 rounded-base w-3/4" />
       {/* Badge */}
