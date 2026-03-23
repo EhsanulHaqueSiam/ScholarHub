@@ -35,6 +35,17 @@ class SourceScheduler:
             convex_client: PipelineConvexClient (or mock) with a query() method.
         """
         self.convex = convex_client
+        self._supports_get_by_url: bool = True
+
+    def _query_source_by_url(self, url: str) -> dict[str, Any] | None:
+        if not self._supports_get_by_url or not self.convex:
+            return None
+        try:
+            return self.convex.query("sources:getByUrl", {"url": url})
+        except Exception as exc:  # noqa: BLE001 - Convex query errors vary by runtime
+            self._supports_get_by_url = False
+            logger.debug("sources_get_by_url_unavailable", error=str(exc))
+            return None
 
     def filter_due_sources(
         self,
@@ -59,7 +70,7 @@ class SourceScheduler:
             source = (
                 source_lookup.get(config.source_id)
                 if source_lookup is not None
-                else self.convex.query("sources:getByUrl", {"url": config.url})
+                else self._query_source_by_url(config.url)
             )
             if source is None and self.convex:
                 source = self.convex.query("sources:getByName", {"name": config.name})
@@ -132,7 +143,7 @@ class SourceScheduler:
             source = (
                 source_lookup.get(config.source_id)
                 if source_lookup is not None
-                else self.convex.query("sources:getByUrl", {"url": config.url})
+                else self._query_source_by_url(config.url)
             )
             if source is None and self.convex:
                 source = self.convex.query("sources:getByName", {"name": config.name})

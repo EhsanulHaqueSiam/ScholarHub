@@ -93,6 +93,7 @@ class PipelineRunner:
         self._source_cache: dict[str, dict[str, Any] | None] = {}
         self._source_id_cache: dict[str, dict[str, Any] | None] = {}
         self._source_url_cache: dict[str, dict[str, Any] | None] = {}
+        self._supports_get_by_url: bool = True
         self.stats: dict[str, int] = {
             "sources_targeted": 0,
             "sources_completed": 0,
@@ -101,6 +102,19 @@ class PipelineRunner:
             "records_updated": 0,
             "records_unchanged": 0,
         }
+
+    def _query_source_by_url(self, url: str) -> dict[str, Any] | None:
+        if not self.convex or not self._supports_get_by_url:
+            return None
+        try:
+            return self.convex.query(
+                "sources:getByUrl",
+                {"url": url},
+            )
+        except Exception as exc:  # noqa: BLE001 - Convex query errors vary by runtime
+            self._supports_get_by_url = False
+            logger.debug("sources_get_by_url_unavailable", error=str(exc))
+            return None
 
     @staticmethod
     def _truncate_text(value: Any, max_len: int) -> str | None:
@@ -278,10 +292,7 @@ class PipelineRunner:
 
         if source is None:
             if config.url not in self._source_url_cache:
-                self._source_url_cache[config.url] = self.convex.query(
-                    "sources:getByUrl",
-                    {"url": config.url},
-                )
+                self._source_url_cache[config.url] = self._query_source_by_url(config.url)
             source = self._source_url_cache.get(config.url)
         if source is None:
             if config.name not in self._source_cache:
@@ -306,10 +317,7 @@ class PipelineRunner:
         for config in configs:
             if config.source_id in self._source_id_cache:
                 continue
-            source = self.convex.query(
-                "sources:getByUrl",
-                {"url": config.url},
-            )
+            source = self._query_source_by_url(config.url)
             if source is None:
                 source = self.convex.query(
                     "sources:getByName",
