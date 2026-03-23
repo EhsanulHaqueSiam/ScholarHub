@@ -9,7 +9,9 @@ import { useCountdown } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import { SCHOLARSHIP_TYPE_META } from "@/lib/scholarship-types";
 import { formatFundingType, urgencyLabelMap, urgencyVariantMap } from "@/lib/shared";
+import type { ScholarshipType } from "../../../convex/schema";
 
 interface HeroSectionProps {
   title: string;
@@ -22,6 +24,7 @@ interface HeroSectionProps {
   applicationUrl?: string;
   tags?: string[];
   collections?: Array<{ name: string; slug: string; emoji: string }>;
+  scholarshipType?: ScholarshipType;
 }
 
 export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function HeroSection(
@@ -36,6 +39,7 @@ export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function
     applicationUrl,
     tags,
     collections,
+    scholarshipType,
   },
   ref,
 ) {
@@ -52,6 +56,11 @@ export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function
             {prestigeTier !== "unranked" && (
               <Badge variant={prestigeTier} title={getPrestigeTooltip(prestigeTier)}>
                 {getPrestigeLabel(prestigeTier)}
+              </Badge>
+            )}
+            {scholarshipType && scholarshipType !== "general" && (
+              <Badge variant={SCHOLARSHIP_TYPE_META[scholarshipType].badgeVariant as any}>
+                {SCHOLARSHIP_TYPE_META[scholarshipType].label}
               </Badge>
             )}
             <Badge variant="neutral" className="text-base">

@@ -6,6 +6,7 @@ import { AdmissionVisaSection } from "@/components/country/AdmissionVisaSection"
 import { CostOfStudyingSection } from "@/components/country/CostOfStudyingSection";
 import { IntakePeriodsSection } from "@/components/country/IntakePeriodsSection";
 import { PostStudyWorkSection } from "@/components/country/PostStudyWorkSection";
+import { ApplicationTipsSection } from "@/components/detail/ApplicationTipsSection";
 import { DetailBreadcrumb } from "@/components/detail/Breadcrumb";
 import { DetailSkeleton } from "@/components/detail/DetailSkeleton";
 import { EligibilitySection } from "@/components/detail/EligibilitySection";
@@ -23,10 +24,11 @@ import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
-import { buildScholarshipJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo/json-ld";
+import { buildBreadcrumbJsonLd, buildScholarshipJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
 import { formatFundingType } from "@/lib/shared";
 import { api } from "../../../convex/_generated/api";
+import type { ScholarshipType } from "../../../convex/schema";
 
 /**
  * Search params schema for breadcrumb filter context.
@@ -192,6 +194,9 @@ function ScholarshipDetailPage() {
             applicationUrl={scholarship.application_url ?? undefined}
             tags={scholarship.tags}
             collections={scholarshipCollections ?? undefined}
+            scholarshipType={
+              (scholarship.scholarship_type ?? undefined) as ScholarshipType | undefined
+            }
           />
 
           {/* Overview */}
@@ -211,9 +216,14 @@ function ScholarshipDetailPage() {
             fundingLiving={scholarship.funding_living ?? undefined}
             fundingTravel={scholarship.funding_travel ?? undefined}
             fundingInsurance={scholarship.funding_insurance ?? undefined}
+            fundingBooks={scholarship.funding_books ?? undefined}
+            fundingResearch={scholarship.funding_research ?? undefined}
             awardAmountMin={scholarship.award_amount_min ?? undefined}
             awardAmountMax={scholarship.award_amount_max ?? undefined}
             awardCurrency={scholarship.award_currency ?? undefined}
+            scholarshipType={
+              (scholarship.scholarship_type ?? undefined) as ScholarshipType | undefined
+            }
           />
 
           {/* Country Info -- per host country: cost, admission/visa, intakes, post-study work */}
@@ -297,6 +307,14 @@ function ScholarshipDetailPage() {
               </div>
             ));
           })()}
+
+          {/* Application Tips */}
+          <ApplicationTipsSection
+            scholarshipType={
+              (scholarship.scholarship_type ?? undefined) as ScholarshipType | undefined
+            }
+            applicationTips={scholarship.application_tips ?? undefined}
+          />
 
           {/* How to Apply */}
           <HowToApplySection
