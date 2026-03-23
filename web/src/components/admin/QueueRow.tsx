@@ -211,39 +211,54 @@ export function QueueRow({
           {formatDeadline(scholarship.application_deadline, scholarship.application_deadline_text)}
         </div>
 
-        {/* Status badge */}
-        <div className="w-25 shrink-0 px-1 hidden lg:block" onClick={onToggleExpand}>
+        {/* Status badge + expand chevron */}
+        <div className="shrink-0 px-2 hidden lg:flex items-center gap-3" onClick={onToggleExpand}>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+          <Tooltip.Provider delayDuration={200}>
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleExpand();
+                  }}
+                  aria-label={isExpanded ? "Collapse row" : "Expand row"}
+                  className="size-8 flex items-center justify-center shrink-0 border-2 border-border rounded-base hover:bg-main/10 transition-colors"
+                >
+                  <ChevronDown
+                    className={cn(
+                      "size-4 transition-transform duration-200",
+                      isExpanded && "rotate-180",
+                    )}
+                  />
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="rounded-base border-2 border-border bg-secondary-background px-3 py-1.5 text-xs shadow-shadow"
+                  sideOffset={8}
+                >
+                  {isExpanded ? "Collapse row" : "Expand row"}
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
 
-        {/* Expand chevron */}
-        <Tooltip.Provider delayDuration={200}>
-          <Tooltip.Root>
-            <Tooltip.Trigger asChild>
-              <button
-                type="button"
-                onClick={onToggleExpand}
-                aria-label={isExpanded ? "Collapse row" : "Expand row"}
-                className="w-8 h-8 flex items-center justify-center shrink-0 border-2 border-border rounded-base hover:bg-main/10 transition-colors"
-              >
-                <ChevronDown
-                  className={cn(
-                    "size-4 transition-transform duration-200",
-                    isExpanded && "rotate-180",
-                  )}
-                />
-              </button>
-            </Tooltip.Trigger>
-            <Tooltip.Portal>
-              <Tooltip.Content
-                className="rounded-base border-2 border-border bg-secondary-background px-3 py-1.5 text-xs shadow-shadow"
-                sideOffset={8}
-              >
-                {isExpanded ? "Collapse row" : "Expand row"}
-              </Tooltip.Content>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        </Tooltip.Provider>
+        {/* Mobile-only expand chevron (no badge) */}
+        <div className="lg:hidden shrink-0 px-2">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            aria-label={isExpanded ? "Collapse row" : "Expand row"}
+            className="size-8 flex items-center justify-center border-2 border-border rounded-base hover:bg-main/10 transition-colors"
+          >
+            <ChevronDown
+              className={cn("size-4 transition-transform duration-200", isExpanded && "rotate-180")}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Expanded content */}
