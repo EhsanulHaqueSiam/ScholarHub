@@ -22,7 +22,11 @@ import {
   mutation as rawMutation,
 } from "./_generated/server";
 import { determineStatus, hasRequiredFields, isAdmin } from "./adminHelpers";
-import { scholarshipStatusValidator, trustLevelValidator } from "./schema";
+import {
+  scholarshipStatusValidator,
+  scholarshipTypeValidator,
+  trustLevelValidator,
+} from "./schema";
 import { wrapDB } from "./triggers";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
@@ -374,6 +378,10 @@ export const updateScholarship = triggeredMutation({
       funding_living: v.optional(v.boolean()),
       funding_travel: v.optional(v.boolean()),
       funding_insurance: v.optional(v.boolean()),
+      funding_books: v.optional(v.boolean()),
+      funding_research: v.optional(v.boolean()),
+      scholarship_type: v.optional(scholarshipTypeValidator),
+      application_tips: v.optional(v.string()),
       award_amount_min: v.optional(v.number()),
       award_amount_max: v.optional(v.number()),
       award_currency: v.optional(v.string()),

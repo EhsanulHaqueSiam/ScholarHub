@@ -23,6 +23,7 @@ import {
   shouldArchive,
   toSlug,
 } from "./aggregationHelpers";
+import { classifyScholarshipType } from "./classification";
 import { wrapDB } from "./triggers";
 
 // Trigger-wrapped internalMutation so scholarship writes fire prestige/search_text triggers
@@ -173,7 +174,54 @@ export const backfillMatchKeys = triggeredInternalMutation({
   },
 });
 
-// ---------- Mutation 3: archiveExpired ----------
+// ---------- Mutation 3: backfillScholarshipTypes ----------
+
+export const backfillScholarshipTypes = triggeredInternalMutation({
+  args: {
+    cursor: v.union(v.string(), v.null()),
+    batchSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const batchSize = args.batchSize ?? 50;
+
+    const scholarships = await ctx.db
+      .query("scholarships")
+      .filter((q) =>
+        q.or(q.eq(q.field("scholarship_type"), undefined), q.eq(q.field("scholarship_type"), null)),
+      )
+      .take(batchSize);
+
+    for (const scholarship of scholarships) {
+      // Look up source category from first source
+      let sourceCategory: string | undefined;
+      if (scholarship.source_ids.length > 0) {
+        const source = await ctx.db.get(scholarship.source_ids[0]);
+        sourceCategory = source?.category;
+      }
+
+      const scholarshipType = classifyScholarshipType(
+        sourceCategory,
+        scholarship.tags ?? undefined,
+        scholarship.provider_organization,
+        scholarship.description,
+      );
+
+      await ctx.db.patch(scholarship._id, { scholarship_type: scholarshipType });
+    }
+
+    // Schedule next batch if we processed a full batch
+    if (scholarships.length === batchSize) {
+      await ctx.scheduler.runAfter(0, internal.aggregation.backfillScholarshipTypes, {
+        cursor: null,
+        batchSize,
+      });
+    }
+
+    return { processed: scholarships.length };
+  },
+});
+
+// ---------- Mutation 4: archiveExpired ----------
 
 export const archiveExpired = triggeredInternalMutation({
   args: {
@@ -318,6 +366,16 @@ async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
     linkedRecords.some((lr: any) => lr.funding_insurance) ||
     record.funding_insurance ||
     false;
+  const fundingBooks =
+    scholarship.funding_books ||
+    linkedRecords.some((lr: any) => lr.funding_books) ||
+    record.funding_books ||
+    false;
+  const fundingResearch =
+    scholarship.funding_research ||
+    linkedRecords.some((lr: any) => lr.funding_research) ||
+    record.funding_research ||
+    false;
 
   // Build updated source_ids
   const sourceIds = [...scholarship.source_ids];
@@ -348,6 +406,8 @@ async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
     funding_living: fundingLiving || undefined,
     funding_travel: fundingTravel || undefined,
     funding_insurance: fundingInsurance || undefined,
+    funding_books: fundingBooks || undefined,
+    funding_research: fundingResearch || undefined,
     source_ids: sourceIds,
     award_amount_min: resolvedAwardAmount ? scholarship.award_amount_min : undefined,
     application_deadline: resolvedDeadline ?? scholarship.application_deadline,
@@ -434,6 +494,16 @@ async function createScholarship(
     application_url: record.application_url || record.source_url,
   });
 
+  // Classify scholarship type from source category, tags, and provider name
+  const source = await ctx.db.get(record.source_id);
+  const sourceCategory = source?.category;
+  const scholarshipType = classifyScholarshipType(
+    sourceCategory,
+    undefined, // raw_records don't have tags; trigger will re-classify when tags are auto-generated
+    record.provider_organization || "Unknown",
+    record.description,
+  );
+
   const scholarshipId = await ctx.db.insert("scholarships", {
     title: record.title.trim(),
     slug,
@@ -448,6 +518,9 @@ async function createScholarship(
     funding_living: record.funding_living || undefined,
     funding_travel: record.funding_travel || undefined,
     funding_insurance: record.funding_insurance || undefined,
+    funding_books: record.funding_books || undefined,
+    funding_research: record.funding_research || undefined,
+    scholarship_type: scholarshipType,
     application_deadline: deadlineTimestamp,
     application_deadline_text: record.application_deadline || undefined,
     application_url: record.application_url || record.source_url,
