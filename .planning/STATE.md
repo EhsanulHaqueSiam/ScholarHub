@@ -64,6 +64,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-23
-Last activity: 2026-03-23 - Completed quick task 260323-oaz: Enhance IDP Education spider
-Stopped at: Completed quick-260323-oaz
+Last activity: 2026-03-23 - Added detail page nextdata extraction to ApiScraper + IDP config
+Stopped at: IDP spider fully enhanced with detail page support
 Resume file: None

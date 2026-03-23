@@ -458,6 +458,99 @@ async def test_api_scraper_max_records():
 
 
 @pytest.mark.asyncio
+async def test_api_scraper_nextdata_detail_pages():
+    """API scraper should fetch detail pages and merge extra fields for nextdata sources."""
+    config = BaseSourceConfig(
+        name="NextData Detail Test",
+        url="https://example.com/scholarships",
+        source_id="test-nextdata-detail",
+        primary_method="api",
+        selectors={
+            "format": "nextdata",
+            "items_path": "props.pageProps.results",
+            "detail_url_template": "https://example.com/scholarship/{url_slug.institution_name}/{slug:scholarship_name}/{scholarship_id}/",
+            "detail_items_path": "props.pageProps.apiData",
+            "detail_field_mappings": {
+                "eligibility_req": "eligibility_criteria",
+                "scholarship_award_website": "application_url",
+                "award_coverage": "award_coverage",
+                "category": "field_of_study",
+            },
+        },
+        field_mappings={
+            "scholarship_name": "title",
+            "scholarship_id": "external_id",
+            "institution_name.value": "provider_organization",
+        },
+        detail_page=True,
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    # Listing page HTML with __NEXT_DATA__
+    listing_json = json.dumps({
+        "props": {
+            "pageProps": {
+                "results": [
+                    {
+                        "scholarship_id": "12345",
+                        "scholarship_name": "Test Award",
+                        "institution_name": {"value": "Test University", "key": "Test University"},
+                        "url_slug": {"institution_name": "test-university"},
+                    },
+                ],
+            },
+        },
+    })
+    listing_html = f'<html><script id="__NEXT_DATA__" type="application/json">{listing_json}</script></html>'
+
+    # Detail page HTML with __NEXT_DATA__
+    detail_json = json.dumps({
+        "props": {
+            "pageProps": {
+                "apiData": {
+                    "eligibility_req": "<p>Must be international student</p>",
+                    "scholarship_award_website": "https://apply.test-university.com",
+                    "award_coverage": "Tuition fees",
+                    "category": {"1": "Engineering", "7": "Business"},
+                },
+            },
+        },
+    })
+    detail_html = f'<html><script id="__NEXT_DATA__" type="application/json">{detail_json}</script></html>'
+
+    call_count = 0
+
+    async def mock_get(url, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if "scholarship/" in url:
+            return HtmlFakeResponse(detail_html)
+        return HtmlFakeResponse(listing_html)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert records[0]["title"] == "Test Award"
+    assert records[0]["provider_organization"] == "Test University"
+    # Detail page fields merged
+    assert records[0]["application_url"] == "https://apply.test-university.com"
+    assert records[0]["award_coverage"] == "Tuition fees"
+    assert "Engineering" in records[0]["field_of_study"]
+    # HTML stripped from eligibility
+    assert "international student" in records[0].get("eligibility_criteria", "")
+    # Should have made 2 calls: listing + detail
+    assert call_count == 2
+
+
+@pytest.mark.asyncio
 async def test_api_scraper_csv_sets_host_country_default():
     """API scraper should set host_country from selectors.host_country_default for CSV."""
     config = BaseSourceConfig(
