@@ -228,6 +228,63 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='2' cy='2' r='2' fill='%23ffffff28'/%3E%3C/svg%3E") !important;
 }
 
+/* Neo-brutalism checkbox — replaces native look */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border);
+  background-color: var(--secondary-background);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--main);
+  border-color: var(--border);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid var(--main-foreground);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:hover:not(:disabled) {
+  box-shadow: 2px 2px 0px 0px var(--border);
+  transform: translate(-1px, -1px);
+}
+
+input[type="checkbox"]:indeterminate {
+  background-color: var(--main);
+  border-color: var(--border);
+}
+
+input[type="checkbox"]:indeterminate::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 7px;
+  width: 10px;
+  height: 2.5px;
+  background: var(--main-foreground);
+}
+
 .noise-texture::before {
   content: '';
   position: fixed;

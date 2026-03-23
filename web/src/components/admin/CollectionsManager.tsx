@@ -117,24 +117,34 @@ export function CollectionsManager() {
           No collections yet. Create your first collection to get started.
         </div>
       ) : (
-        <div className="border-2 border-border rounded-base overflow-hidden">
+        <div className="border-2 border-border rounded-base overflow-hidden shadow-shadow">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-secondary-background border-b-2 border-border">
+              <tr className="bg-main text-main-foreground border-b-2 border-border">
                 <th className="p-3 text-left w-10">
                   <input
                     type="checkbox"
                     checked={selectedIds.size === collections.length && collections.length > 0}
                     onChange={toggleSelectAll}
-                    className="size-4 accent-main"
+                    className="size-4"
                     aria-label="Select all collections"
                   />
                 </th>
-                <th className="p-3 text-left font-heading">Name</th>
-                <th className="p-3 text-left font-heading">Status</th>
-                <th className="p-3 text-right font-heading">Scholarships</th>
-                <th className="p-3 text-left font-heading w-24">Sort Order</th>
-                <th className="p-3 text-right font-heading">Actions</th>
+                <th className="p-3 text-left font-heading font-bold uppercase text-sm tracking-wide">
+                  Name
+                </th>
+                <th className="p-3 text-left font-heading font-bold uppercase text-sm tracking-wide">
+                  Status
+                </th>
+                <th className="p-3 text-right font-heading font-bold uppercase text-sm tracking-wide">
+                  Scholarships
+                </th>
+                <th className="p-3 text-left font-heading font-bold uppercase text-sm tracking-wide w-24">
+                  Sort Order
+                </th>
+                <th className="p-3 text-right font-heading font-bold uppercase text-sm tracking-wide">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>

@@ -777,8 +777,8 @@ export function EditForm({ scholarshipId, onSaved, onDirtyChange }: EditFormProp
         <TagsSection scholarshipId={scholarshipId} />
       </div>
 
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 bg-secondary-background border-t-2 border-border py-4 px-6 -mx-6 mt-6 flex justify-end gap-2">
+      {/* Sticky footer — flush to bottom with no gap */}
+      <div className="sticky bottom-0 z-10 bg-secondary-background border-t-2 border-border py-4 px-6 -mx-6 mt-6 flex justify-end gap-3">
         <Button variant="neutral" onClick={handleClose} disabled={saving}>
           Close Panel
         </Button>

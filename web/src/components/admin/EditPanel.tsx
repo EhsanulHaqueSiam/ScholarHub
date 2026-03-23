@@ -17,12 +17,7 @@ interface EditPanelProps {
  * Uses Radix Dialog as a Sheet pattern per D-10 and UI-SPEC.
  * Width: 40% viewport, min 480px, max 640px.
  */
-export function EditPanel({
-  open,
-  scholarshipId,
-  scholarshipTitle,
-  onClose,
-}: EditPanelProps) {
+export function EditPanel({ open, scholarshipId, scholarshipTitle, onClose }: EditPanelProps) {
   const isDirtyRef = useRef(false);
   const confirmingRef = useRef(false);
 
@@ -35,16 +30,14 @@ export function EditPanel({
       if (!isOpen) {
         if (isDirtyRef.current && !confirmingRef.current) {
           confirmingRef.current = true;
-          const discard = window.confirm(
-            "You have unsaved changes. Discard and close?"
-          );
+          const discard = window.confirm("You have unsaved changes. Discard and close?");
           confirmingRef.current = false;
           if (!discard) return;
         }
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   return (
@@ -57,9 +50,7 @@ export function EditPanel({
         >
           {/* Sticky header */}
           <div className="flex items-center justify-between p-6 border-b-2 border-border bg-secondary-background sticky top-0 z-10">
-            <Dialog.Title className="text-xl font-heading">
-              Edit Scholarship
-            </Dialog.Title>
+            <Dialog.Title className="text-xl font-heading">Edit Scholarship</Dialog.Title>
             <Dialog.Close asChild>
               <button
                 type="button"
@@ -72,7 +63,7 @@ export function EditPanel({
           </div>
 
           {/* Scrollable body */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 pb-0 relative">
             {scholarshipId && (
               <EditForm
                 scholarshipId={scholarshipId}
@@ -80,9 +71,7 @@ export function EditPanel({
                 onDirtyChange={handleDirtyChange}
               />
             )}
-            {scholarshipId && (
-              <RevisionHistory scholarshipId={scholarshipId} />
-            )}
+            {scholarshipId && <RevisionHistory scholarshipId={scholarshipId} />}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

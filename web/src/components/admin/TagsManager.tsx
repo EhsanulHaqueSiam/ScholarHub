@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TAG_CATEGORIES, ALL_TAGS, getTagLabel, getTagCategory } from "@/lib/tags";
+import { ALL_TAGS, getTagCategory, getTagLabel, TAG_CATEGORIES } from "@/lib/tags";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { SuggestedTagReview } from "./SuggestedTagReview";
@@ -22,20 +22,26 @@ export function TagsManager() {
   const bulkAddTags = useMutation(api.tags.bulkAddTags);
 
   // Section 1: Grouped tag list state
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["eligibility"]));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(["eligibility"]),
+  );
   const [renamingTag, setRenamingTag] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [deletingTag, setDeletingTag] = useState<string | null>(null);
   const [newTagInputs, setNewTagInputs] = useState<Record<string, string>>({});
 
   // Section 2: Suggested tags state
-  const [expandedScholarshipId, setExpandedScholarshipId] = useState<Id<"scholarships"> | null>(null);
+  const [expandedScholarshipId, setExpandedScholarshipId] = useState<Id<"scholarships"> | null>(
+    null,
+  );
 
   // Section 3: Filter-then-tag state
   const [searchQuery, setSearchQuery] = useState("");
   const [showUntaggedOnly, setShowUntaggedOnly] = useState(false);
   const [selectedBulkTags, setSelectedBulkTags] = useState<string[]>([]);
-  const [selectedScholarshipIds, setSelectedScholarshipIds] = useState<Set<Id<"scholarships">>>(new Set());
+  const [selectedScholarshipIds, setSelectedScholarshipIds] = useState<Set<Id<"scholarships">>>(
+    new Set(),
+  );
   const [bulkApplying, setBulkApplying] = useState(false);
 
   // Get scholarships with suggested tags for Section 2
@@ -180,7 +186,10 @@ export function TagsManager() {
         <h2 className="text-xl font-heading mb-4">Tag List</h2>
 
         {Object.entries(TAG_CATEGORIES).map(([categoryKey, category]) => (
-          <div key={categoryKey} className="border-2 border-border rounded-base mb-2 overflow-hidden">
+          <div
+            key={categoryKey}
+            className="border-2 border-border rounded-base mb-3 overflow-hidden shadow-shadow"
+          >
             <button
               type="button"
               className="w-full flex items-center justify-between p-3 hover:bg-secondary-background/50 transition-colors"
@@ -246,11 +255,14 @@ export function TagsManager() {
                               Delete tag &ldquo;{tagDef.label}&rdquo;?
                             </AlertDialog.Title>
                             <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
-                              This tag is used by {tagCountMap.get(tagDef.id) ?? 0} scholarships. It will be removed from all of them.
+                              This tag is used by {tagCountMap.get(tagDef.id) ?? 0} scholarships. It
+                              will be removed from all of them.
                             </AlertDialog.Description>
                             <div className="flex justify-end gap-2">
                               <AlertDialog.Cancel asChild>
-                                <Button variant="neutral" size="sm">Keep Tag</Button>
+                                <Button variant="neutral" size="sm">
+                                  Keep Tag
+                                </Button>
                               </AlertDialog.Cancel>
                               <AlertDialog.Action asChild>
                                 <Button
@@ -276,7 +288,9 @@ export function TagsManager() {
                     className="h-7 px-2 border-2 border-border rounded-base bg-background text-xs w-full focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="New tag + Enter"
                     value={newTagInputs[categoryKey] ?? ""}
-                    onChange={(e) => setNewTagInputs((prev) => ({ ...prev, [categoryKey]: e.target.value }))}
+                    onChange={(e) =>
+                      setNewTagInputs((prev) => ({ ...prev, [categoryKey]: e.target.value }))
+                    }
                     onKeyDown={(e) => handleNewTagKey(categoryKey, e)}
                   />
                 </div>
@@ -336,11 +350,14 @@ export function TagsManager() {
                               Delete tag &ldquo;{getTagLabel(t.tag)}&rdquo;?
                             </AlertDialog.Title>
                             <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
-                              This tag is used by {t.count} scholarships. It will be removed from all of them.
+                              This tag is used by {t.count} scholarships. It will be removed from
+                              all of them.
                             </AlertDialog.Description>
                             <div className="flex justify-end gap-2">
                               <AlertDialog.Cancel asChild>
-                                <Button variant="neutral" size="sm">Keep Tag</Button>
+                                <Button variant="neutral" size="sm">
+                                  Keep Tag
+                                </Button>
                               </AlertDialog.Cancel>
                               <AlertDialog.Action asChild>
                                 <Button
@@ -373,12 +390,16 @@ export function TagsManager() {
         {scholarshipsWithSuggestions.length === 0 ? (
           <p className="text-sm text-foreground/60">No pending suggested tags to review.</p>
         ) : (
-          <div className="border-2 border-border rounded-base overflow-hidden">
+          <div className="border-2 border-border rounded-base overflow-hidden shadow-shadow">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-secondary-background border-b-2 border-border">
-                  <th className="p-3 text-left font-heading">Scholarship</th>
-                  <th className="p-3 text-right font-heading">Suggested Tags</th>
+                <tr className="bg-main text-main-foreground border-b-2 border-border">
+                  <th className="p-3 text-left font-heading font-bold uppercase tracking-wide">
+                    Scholarship
+                  </th>
+                  <th className="p-3 text-right font-heading font-bold uppercase tracking-wide">
+                    Suggested Tags
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -430,13 +451,12 @@ export function TagsManager() {
 
         {/* Tag selection */}
         <div className="mb-4">
-          <span className="text-xs font-heading uppercase tracking-wide block mb-2">Tags to Apply</span>
+          <span className="text-xs font-heading uppercase tracking-wide block mb-2">
+            Tags to Apply
+          </span>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {ALL_TAGS.slice(0, 15).map((tag) => (
-              <label
-                key={tag.id}
-                className="flex items-center gap-1.5 cursor-pointer"
-              >
+              <label key={tag.id} className="flex items-center gap-1.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedBulkTags.includes(tag.id)}
@@ -470,32 +490,41 @@ export function TagsManager() {
         </div>
 
         {/* Results */}
-        <div className="border-2 border-border rounded-base overflow-hidden max-h-[400px] overflow-y-auto">
+        <div className="border-2 border-border rounded-base overflow-hidden max-h-[400px] overflow-y-auto shadow-shadow">
           {filteredScholarships.length === 0 ? (
             <div className="p-4 text-sm text-foreground/60 text-center">
               No scholarships match the current filter.
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-secondary-background">
-                <tr className="border-b-2 border-border">
+              <thead className="sticky top-0">
+                <tr className="bg-main text-main-foreground border-b-2 border-border">
                   <th className="p-2 text-left w-8">
                     <input
                       type="checkbox"
-                      checked={selectedScholarshipIds.size === filteredScholarships.length && filteredScholarships.length > 0}
+                      checked={
+                        selectedScholarshipIds.size === filteredScholarships.length &&
+                        filteredScholarships.length > 0
+                      }
                       onChange={() => {
                         if (selectedScholarshipIds.size === filteredScholarships.length) {
                           setSelectedScholarshipIds(new Set());
                         } else {
-                          setSelectedScholarshipIds(new Set(filteredScholarships.map((s: any) => s._id)));
+                          setSelectedScholarshipIds(
+                            new Set(filteredScholarships.map((s: any) => s._id)),
+                          );
                         }
                       }}
-                      className="size-3.5 accent-main"
+                      className="size-3.5"
                       aria-label="Select all"
                     />
                   </th>
-                  <th className="p-2 text-left font-heading">Scholarship</th>
-                  <th className="p-2 text-left font-heading">Tags</th>
+                  <th className="p-2 text-left font-heading font-bold uppercase tracking-wide">
+                    Scholarship
+                  </th>
+                  <th className="p-2 text-left font-heading font-bold uppercase tracking-wide">
+                    Tags
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -535,11 +564,7 @@ export function TagsManager() {
         {/* Apply button */}
         {selectedBulkTags.length > 0 && selectedScholarshipIds.size > 0 && (
           <div className="mt-3">
-            <Button
-              variant="default"
-              onClick={handleBulkApplyTags}
-              disabled={bulkApplying}
-            >
+            <Button variant="default" onClick={handleBulkApplyTags} disabled={bulkApplying}>
               {bulkApplying
                 ? "Applying..."
                 : `Apply ${selectedBulkTags.length} tag${selectedBulkTags.length > 1 ? "s" : ""} to ${selectedScholarshipIds.size} scholarship${selectedScholarshipIds.size > 1 ? "s" : ""}`}

@@ -109,21 +109,17 @@ export function SourceTrustManager() {
       </div>
 
       {/* Table */}
-      <div className="border-2 border-border rounded-base overflow-hidden">
+      <div className="border-2 border-border rounded-base overflow-hidden shadow-shadow">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-4 bg-secondary-background border-b-2 border-border">
-          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
+        <div className="grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-4 bg-main text-main-foreground border-b-2 border-border">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide">
             Source Name
           </span>
-          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
-            Category
-          </span>
-          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide">Category</span>
+          <span className="text-sm font-heading font-bold uppercase tracking-wide">
             Trust Level
           </span>
-          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
-            Actions
-          </span>
+          <span className="text-sm font-heading font-bold uppercase tracking-wide">Actions</span>
         </div>
 
         {/* Rows */}
