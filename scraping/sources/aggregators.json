@@ -973,5 +973,20 @@
     "estimated_volume": "~2000",
     "geographic_coverage": ["global"],
     "notes": "CF: no | Fields: title, detail_link, category, deadline, description | Volume: ~2000 | WP API blocked, card-based grid with JS-driven AJAX loading"
+  },
+  {
+    "name": "IDP Education Scholarships",
+    "url": "https://www.idp.com/find-a-scholarship/",
+    "category": "aggregator",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 168,
+    "wave": 2,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~6300",
+    "geographic_coverage": ["global", "australia", "uk", "usa", "canada", "new_zealand"],
+    "notes": "CF: no | Fields: title, institution, country, degree, funding_type, deadline, eligibility, application_url | Volume: ~6300 scholarships | Next.js SSR scholarship finder with detail pages"
   }
 ]
