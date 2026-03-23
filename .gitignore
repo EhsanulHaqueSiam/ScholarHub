@@ -37,3 +37,6 @@ scraping/sources/validation_report.json
 
 # Pipeline buffer (dry-run and offline output)
 scraping/.buffer/
+
+# Claude Code worktrees
+.claude/worktrees/
