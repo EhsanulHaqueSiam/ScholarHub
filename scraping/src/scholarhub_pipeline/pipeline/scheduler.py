@@ -42,9 +42,8 @@ class SourceScheduler:
             return None
         try:
             return self.convex.query("sources:getByUrl", {"url": url})
-        except Exception as exc:  # noqa: BLE001 - Convex query errors vary by runtime
+        except Exception:  # noqa: BLE001 - Convex query errors vary by runtime
             self._supports_get_by_url = False
-            logger.debug("sources_get_by_url_unavailable", error=str(exc))
             return None
 
     def filter_due_sources(
