@@ -51,3 +51,6 @@ class SourceConfig(Protocol):
 
     cutoff_months: int
     """Stop paginating after this many months expired (default 3)."""
+
+    max_records: int | None
+    """Optional per-source hard cap on emitted records per run."""

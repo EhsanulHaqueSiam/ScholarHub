@@ -21,7 +21,7 @@ class Config(BaseAggregatorConfig):
     primary_method: str = "scrapling"
     secondary_method: str | None = None
     selectors: dict[str, str] = field(default_factory=lambda: {
-        "listing": ".scholarship-result, .result-item, tr, .card, .listing-item",
+        "listing": ".scholarship-result, .result-item, .listing-item, .scholarship-item",
         "title": "h2 a::text, h3 a::text, .title::text, td a::text",
         "detail_link": "h2 a::attr(href), h3 a::attr(href), td a::attr(href)",
         "amount": ".amount::text, .award::text, td:nth-child(2)::text",
@@ -39,7 +39,7 @@ class Config(BaseAggregatorConfig):
     pagination: dict | None = field(default_factory=lambda: {
         "type": "page_num",
         "selector": ".pagination .next::attr(href), a.next::attr(href)",
-        "max_pages": 50,
+        "max_pages": 20,
     })
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {
@@ -47,7 +47,8 @@ class Config(BaseAggregatorConfig):
         "eligibility": ".eligibility::text, .requirements li::text",
         "application_url": "a.apply::attr(href), a[href*='apply']::attr(href)",
     })
-    rate_limit_delay: float = 3.0
+    rate_limit_delay: float = 1.5
+    max_records: int | None = 1200
 
 
 CONFIG = Config()

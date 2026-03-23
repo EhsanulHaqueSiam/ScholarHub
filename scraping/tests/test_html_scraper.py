@@ -86,11 +86,7 @@ async def test_html_scraper_extracts_records(html_config):
 
     response = _make_response(SAMPLE_HTML)
 
-    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher") as mock_fetcher_cls:
-        mock_fetcher = MagicMock()
-        mock_fetcher.get.return_value = response
-        mock_fetcher_cls.return_value = mock_fetcher
-
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
         records = await scraper.scrape()
 
     assert len(records) == 3
@@ -107,11 +103,7 @@ async def test_html_scraper_applies_field_mappings(html_config):
 
     response = _make_response(SAMPLE_HTML)
 
-    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher") as mock_fetcher_cls:
-        mock_fetcher = MagicMock()
-        mock_fetcher.get.return_value = response
-        mock_fetcher_cls.return_value = mock_fetcher
-
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
         records = await scraper.scrape()
 
     # field_mappings maps title->title, deadline->application_deadline, amount->award_amount
@@ -138,11 +130,7 @@ async def test_html_scraper_follows_pagination(html_config):
             return _make_response(html_with_next, url)
         return _make_response(SAMPLE_HTML_PAGE2, url)
 
-    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher") as mock_fetcher_cls:
-        mock_fetcher = MagicMock()
-        mock_fetcher.get.side_effect = mock_get
-        mock_fetcher_cls.return_value = mock_fetcher
-
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", side_effect=mock_get):
         records = await scraper.scrape()
 
     assert len(records) == 4  # 3 from page 1 + 1 from page 2
@@ -179,11 +167,7 @@ async def test_html_scraper_fuzzy_fallback():
     scraper = HtmlScraper(config)
     response = _make_response(html_with_articles)
 
-    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher") as mock_fetcher_cls:
-        mock_fetcher = MagicMock()
-        mock_fetcher.get.return_value = response
-        mock_fetcher_cls.return_value = mock_fetcher
-
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
         records = await scraper.scrape()
 
     # Fuzzy fallback should find "article" pattern (4 items >= 3 min)
@@ -226,12 +210,22 @@ async def test_html_scraper_stops_at_expired_cutoff():
     scraper = HtmlScraper(config)
     response = _make_response(html)
 
-    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher") as mock_fetcher_cls:
-        mock_fetcher = MagicMock()
-        mock_fetcher.get.return_value = response
-        mock_fetcher_cls.return_value = mock_fetcher
-
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
         records = await scraper.scrape()
 
     # Should stop at first expired item, return 0
     assert len(records) == 0
+
+
+@pytest.mark.asyncio
+async def test_html_scraper_respects_max_records(html_config):
+    """HTML scraper should stop once max_records is reached."""
+    html_config.max_records = 2
+    scraper = HtmlScraper(html_config)
+    response = _make_response(SAMPLE_HTML)
+
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
+        records = await scraper.scrape()
+
+    assert len(records) == 2
+    assert scraper.records_found == 2

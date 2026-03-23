@@ -12,6 +12,16 @@ export const getByName = query({
   },
 });
 
+export const getByUrl = query({
+  args: { url: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sources")
+      .withIndex("by_url", (q) => q.eq("url", args.url))
+      .first();
+  },
+});
+
 export const resetLastScraped = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {

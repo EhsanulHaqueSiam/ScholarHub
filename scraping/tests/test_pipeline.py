@@ -288,7 +288,8 @@ class TestPipelineRunner:
         mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
-        await runner.run()
+        with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}):
+            await runner.run()
 
         # Find the updateLastScraped call
         mutation_calls = [
@@ -297,6 +298,89 @@ class TestPipelineRunner:
         ]
         assert len(mutation_calls) == 1
         assert mutation_calls[0][0][1]["source_id"] == "test-source"
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_falls_back_to_source_url_lookup(self, mock_discover, mock_get_scraper):
+        """If source name lookup fails, runner should resolve Convex source by URL."""
+        config = _make_config(name="GKS Korea", source_id="gks-korea")
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.return_value = [{"title": "Test Scholarship"}]
+        mock_scraper.records_found = 1
+        mock_scraper.bytes_downloaded = 100
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def query_side_effect(name, args):
+            if name == "sources:getByName":
+                return None
+            if name == "sources:getByUrl":
+                return {"_id": "source-by-url", "name": "Different Name", "url": config.url}
+            return None
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:batchInsertRawRecords":
+                return {"inserted": 1, "updated": 0, "unchanged": 0}
+            if name == "scraping:updateSourceHealth":
+                return {"consecutive_failures": 0}
+            return None
+
+        mock_convex.query.side_effect = query_side_effect
+        mock_convex.mutation.side_effect = mutation_side_effect
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        update_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:updateLastScraped"
+        ]
+        assert len(update_calls) == 1
+        assert update_calls[0][0][1]["source_id"] == "source-by-url"
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_does_not_fail_on_success_telemetry_error(
+        self,
+        mock_discover,
+        mock_get_scraper,
+    ):
+        """Source should remain completed even if post-success telemetry mutation fails."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.return_value = [{"title": "Test Scholarship"}]
+        mock_scraper.records_found = 1
+        mock_scraper.bytes_downloaded = 100
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:batchInsertRawRecords":
+                return {"inserted": 1, "updated": 0, "unchanged": 0}
+            if name == "scraping:updateSourceHealth":
+                raise RuntimeError("telemetry failed")
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        stats = await runner.run()
+
+        assert stats["sources_completed"] == 1
+        assert stats["sources_failed"] == 0
 
     @pytest.mark.asyncio
     @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
@@ -341,7 +425,8 @@ class TestPipelineRunner:
         mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
-        await runner.run()
+        with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}):
+            await runner.run()
 
         deactivate_calls = [
             call for call in mock_convex.mutation.call_args_list
@@ -384,7 +469,8 @@ class TestPipelineRunner:
         mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
-        await runner.run()
+        with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}):
+            await runner.run()
 
         store_calls = [
             call for call in mock_convex.mutation.call_args_list
@@ -470,7 +556,8 @@ class TestPipelineRunner:
         mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
 
         runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
-        await runner.run()
+        with patch.dict("os.environ", {"GITHUB_REPOSITORY": "owner/repo"}):
+            await runner.run()
 
         # close_issue should have been called via subprocess
         mock_subprocess.assert_called_once()

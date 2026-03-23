@@ -37,12 +37,13 @@ class HtmlScraper(BaseScraper):
             List of normalized raw record dicts.
         """
         records: list[dict] = []
-        fetcher = Fetcher(auto_match=True)
+        seen_keys: set[str] = set()
+        detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
 
         while url:
-            response = fetcher.get(url)
+            response = Fetcher.get(url)
             body = response.body if hasattr(response, "body") else b""
             self.bytes_downloaded += len(body) if isinstance(body, bytes) else len(str(body))
 
@@ -100,7 +101,7 @@ class HtmlScraper(BaseScraper):
                 if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):
                     return records
 
-                # Follow detail page if configured
+                detail_url_full: str | None = None
                 if self.config.detail_page:
                     detail_link_selector = self.config.selectors.get(
                         "detail_link",
@@ -110,14 +111,37 @@ class HtmlScraper(BaseScraper):
                     if detail_result:
                         detail_url = detail_result.get()
                         if detail_url:
-                            full_url = response.urljoin(detail_url) if hasattr(response, "urljoin") else detail_url
-                            detail_data = await self._scrape_detail(fetcher, full_url)
-                            mapped.update(detail_data)
+                            detail_url_full = (
+                                response.urljoin(detail_url)
+                                if hasattr(response, "urljoin")
+                                else detail_url
+                            )
+                            mapped["source_url"] = mapped.get("source_url", detail_url_full)
+
+                dedup_key = (
+                    str(mapped.get("source_url") or "").strip().lower()
+                    or str(mapped.get("title") or "").strip().lower()
+                )
+                if dedup_key:
+                    if dedup_key in seen_keys:
+                        continue
+                    seen_keys.add(dedup_key)
+
+                # Follow detail page if configured
+                if self.config.detail_page and detail_url_full:
+                    if detail_url_full in detail_cache:
+                        detail_data = detail_cache[detail_url_full]
+                    else:
+                        detail_data = await self._scrape_detail(detail_url_full)
+                        detail_cache[detail_url_full] = detail_data
+                    mapped.update(detail_data)
 
                 mapped["source_url"] = mapped.get("source_url", url)
                 record = self.process_record(mapped)
                 records.append(record)
                 self.records_found += 1
+                if self.config.max_records and self.records_found >= self.config.max_records:
+                    return records
 
             # Pagination
             page += 1
@@ -154,18 +178,17 @@ class HtmlScraper(BaseScraper):
 
         return records
 
-    async def _scrape_detail(self, fetcher: Fetcher, url: str) -> dict:
+    async def _scrape_detail(self, url: str) -> dict:
         """Fetch and extract fields from a detail page.
 
         Args:
-            fetcher: Scrapling Fetcher instance.
             url: URL of the detail page.
 
         Returns:
             Dict of extracted fields from the detail page.
         """
         try:
-            response = fetcher.get(url)
+            response = Fetcher.get(url)
             extracted: dict = {}
             if self.config.detail_selectors:
                 for field_name, selector in self.config.detail_selectors.items():

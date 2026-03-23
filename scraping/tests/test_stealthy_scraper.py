@@ -73,11 +73,10 @@ async def test_stealthy_scraper_extracts_records(stealthy_config):
     scraper = StealthyScraper(stealthy_config)
     response = _make_response(STEALTHY_HTML)
 
-    with patch("scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher") as mock_cls:
-        mock_instance = MagicMock()
-        mock_instance.fetch.return_value = response
-        mock_cls.return_value = mock_instance
-
+    with patch(
+        "scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher.fetch",
+        return_value=response,
+    ):
         records = await scraper.scrape()
 
     assert len(records) == 2
@@ -104,11 +103,10 @@ async def test_stealthy_scraper_handles_pagination(stealthy_config):
             return _make_response(html_with_next, url)
         return _make_response(STEALTHY_HTML_PAGE2, url)
 
-    with patch("scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher") as mock_cls:
-        mock_instance = MagicMock()
-        mock_instance.fetch.side_effect = mock_fetch
-        mock_cls.return_value = mock_instance
-
+    with patch(
+        "scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher.fetch",
+        side_effect=mock_fetch,
+    ):
         records = await scraper.scrape()
 
     assert len(records) == 3
@@ -158,13 +156,29 @@ async def test_stealthy_scraper_follows_detail_pages():
             return _make_response(detail_html, url)
         return _make_response(listing_html, url)
 
-    with patch("scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher") as mock_cls:
-        mock_instance = MagicMock()
-        mock_instance.fetch.side_effect = mock_fetch
-        mock_cls.return_value = mock_instance
-
+    with patch(
+        "scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher.fetch",
+        side_effect=mock_fetch,
+    ):
         records = await scraper.scrape()
 
     assert len(records) == 1
     assert records[0]["title"] == "Scholarship With Detail"
     assert "description" in records[0]
+
+
+@pytest.mark.asyncio
+async def test_stealthy_scraper_respects_max_records(stealthy_config):
+    """Stealthy scraper should stop once max_records is reached."""
+    stealthy_config.max_records = 1
+    scraper = StealthyScraper(stealthy_config)
+    response = _make_response(STEALTHY_HTML)
+
+    with patch(
+        "scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher.fetch",
+        return_value=response,
+    ):
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert scraper.records_found == 1

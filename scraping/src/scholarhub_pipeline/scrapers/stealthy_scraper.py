@@ -28,7 +28,7 @@ class StealthyScraper(BaseScraper):
     @staticmethod
     def _fetch_sync(url: str) -> object:
         """Run StealthyFetcher.fetch in a thread (sync Playwright can't run in asyncio loop)."""
-        return StealthyFetcher().fetch(url, headless=True, network_idle=True)
+        return StealthyFetcher.fetch(url, headless=True, network_idle=True)
 
     async def scrape(self) -> list[dict]:
         """Scrape protected pages and return normalized records.
@@ -37,6 +37,8 @@ class StealthyScraper(BaseScraper):
             List of normalized raw record dicts.
         """
         records: list[dict] = []
+        seen_keys: set[str] = set()
+        detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
 
@@ -82,6 +84,7 @@ class StealthyScraper(BaseScraper):
                 if self.is_expired_beyond_cutoff(mapped.get("application_deadline")):
                     return records
 
+                detail_url_full: str | None = None
                 if self.config.detail_page:
                     detail_link_selector = self.config.selectors.get(
                         "detail_link",
@@ -91,18 +94,36 @@ class StealthyScraper(BaseScraper):
                     if detail_result:
                         detail_url = detail_result.get()
                         if detail_url:
-                            full_url = (
+                            detail_url_full = (
                                 response.urljoin(detail_url)
                                 if hasattr(response, "urljoin")
                                 else detail_url
                             )
-                            detail_data = await self._scrape_detail(full_url)
-                            mapped.update(detail_data)
+                            mapped["source_url"] = mapped.get("source_url", detail_url_full)
+
+                dedup_key = (
+                    str(mapped.get("source_url") or "").strip().lower()
+                    or str(mapped.get("title") or "").strip().lower()
+                )
+                if dedup_key:
+                    if dedup_key in seen_keys:
+                        continue
+                    seen_keys.add(dedup_key)
+
+                if self.config.detail_page and detail_url_full:
+                    if detail_url_full in detail_cache:
+                        detail_data = detail_cache[detail_url_full]
+                    else:
+                        detail_data = await self._scrape_detail(detail_url_full)
+                        detail_cache[detail_url_full] = detail_data
+                    mapped.update(detail_data)
 
                 mapped["source_url"] = mapped.get("source_url", url)
                 record = self.process_record(mapped)
                 records.append(record)
                 self.records_found += 1
+                if self.config.max_records and self.records_found >= self.config.max_records:
+                    return records
 
             # Pagination
             page += 1

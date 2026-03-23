@@ -26,6 +26,7 @@ class BaseSourceConfig:
     auth_config: dict | None = None
     rate_limit_delay: float = 2.0
     cutoff_months: int = 3
+    max_records: int | None = None
 
 
 @dataclass
