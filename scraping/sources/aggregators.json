@@ -11,7 +11,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, country, degree | Volume: ~5000 scholarships | Largest EU aggregator"
   },
   {
@@ -26,7 +29,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, description | Volume: ~2000 | WordPress REST API | Well-curated international scholarships"
   },
   {
@@ -41,7 +46,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, detail_link | Volume: ~3500 | Yii framework single-request grid | International Education Financial Aid"
   },
   {
@@ -56,7 +63,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~8000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, country, degree, university | Volume: ~8000 | StudyPortals scholarship search engine"
   },
   {
@@ -71,7 +81,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, amount, university, deadline, subject | Volume: ~3000 | Masters-level funding"
   },
   {
@@ -86,7 +99,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, amount, university, deadline, subject | Volume: ~5000 | PhD-level funding and studentships"
   },
   {
@@ -101,7 +117,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, country, deadline, degree | Volume: ~1500 | QS Top Universities scholarship listings"
   },
   {
@@ -116,7 +134,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~4000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, amount, degree | Volume: ~4000 | Global scholarship database"
   },
   {
@@ -131,7 +151,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~10000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~10000 | Auth: free registration required | Largest US scholarship aggregator"
   },
   {
@@ -146,7 +168,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~8000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility, category | Volume: ~8000 | Auth: free registration | Major US aggregator"
   },
   {
@@ -161,7 +185,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["global", "africa"],
+    "geographic_coverage": [
+      "global",
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, country, description | Volume: ~3000 | Scholarships, fellowships, and grants"
   },
   {
@@ -176,7 +203,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["africa", "global"],
+    "geographic_coverage": [
+      "africa",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, country, eligibility | Volume: ~2000 | Focus on African students"
   },
   {
@@ -191,7 +221,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["africa", "global"],
+    "geographic_coverage": [
+      "africa",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, country, degree | Volume: ~1500 | African scholarship opportunities"
   },
   {
@@ -206,7 +239,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, country, degree, description | Volume: ~3000 | Blog-style scholarship listings"
   },
   {
@@ -221,7 +256,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~800",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, amount | Volume: ~800 | Study abroad specific funding"
   },
   {
@@ -236,7 +273,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, country, degree | Volume: ~2500 | Development-focused scholarships"
   },
   {
@@ -251,7 +290,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, degree | Volume: ~1000 | International scholarship listings"
   },
   {
@@ -266,7 +307,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~15000",
-    "geographic_coverage": ["asia", "global"],
+    "geographic_coverage": [
+      "asia",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~15000 | HTML scraping with .bgwms2 selectors | India-based, global coverage"
   },
   {
@@ -281,7 +325,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, program_type | Volume: ~500 | Study abroad focused"
   },
   {
@@ -296,7 +342,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, amount, university, deadline | Volume: ~2000 | Auth: school account required | Platform for college counselors"
   },
   {
@@ -311,7 +359,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount | Volume: ~500 | University matching platform"
   },
   {
@@ -326,7 +377,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount, deadline | Volume: ~3000 | StudyPortals sister site for Masters"
   },
   {
@@ -341,7 +395,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount, deadline | Volume: ~2000 | StudyPortals sister site for PhDs"
   },
   {
@@ -356,7 +413,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount | Volume: ~1500 | Keystone Education Group bachelor scholarships"
   },
   {
@@ -371,7 +430,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2200",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes (Cloudflare) | Fields: title, provider, country, amount, deadline | Volume: ~2200 | StudyPortals network, JS-rendered React SPA, detail pages have JSON-LD MonetaryGrant schema"
   },
   {
@@ -386,7 +447,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1200",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount | Volume: ~1200 | Keystone Education Group master scholarships"
   },
   {
@@ -401,7 +464,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~5000 | Auth: free registration | US-focused auto-apply platform"
   },
   {
@@ -416,7 +481,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~10000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~10000 | Auth: free registration | US college review platform"
   },
   {
@@ -431,12 +498,14 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~3000 | Auth: free registration | US scholarship marketplace"
   },
   {
     "name": "GrantFairy",
-    "url": "https://www.grantfairy.com",
+    "url": "https://scholarship-positions.com/",
     "category": "aggregator",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -446,7 +515,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, amount, degree | Volume: ~1000 | EU-focused funding search"
   },
   {
@@ -461,12 +532,14 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | API: REST API available | Fields: title, country, deadline, type, organization | Volume: ~2000 | EU researcher mobility portal"
   },
   {
     "name": "FundingForStudy",
-    "url": "https://www.fundingforstudy.com",
+    "url": "https://www.studyabroadfunding.org/",
     "category": "aggregator",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -476,7 +549,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~600",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, amount, deadline | Volume: ~600 | Curated scholarship listings"
   },
   {
@@ -491,7 +566,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility | Volume: ~2000 | US-focused, editorially curated"
   },
   {
@@ -506,7 +583,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, amount | Volume: ~1500 | International students focus"
   },
   {
@@ -521,7 +600,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~800",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, amount | Volume: ~800 | West Africa focused"
   },
   {
@@ -536,7 +617,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility, country | Volume: ~5000 | India-focused scholarship portal"
   },
   {
@@ -551,7 +634,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility | Volume: ~2000 | Indian education portal"
   },
   {
@@ -566,7 +651,10 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, type | Volume: ~1500 | Auth: free registration | Opportunities for students"
   },
   {
@@ -581,7 +669,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~400",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, country, degree, deadline | Volume: ~400 | EU study portal"
   },
   {
@@ -596,7 +686,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, university, country, amount | Volume: ~500 | PhD funding opportunities"
   },
   {
@@ -611,7 +704,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~600",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, degree | Volume: ~600 | Study abroad scholarships"
   },
   {
@@ -626,7 +721,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility | Volume: ~1000 | Auth: paid subscription for full access | US grant and scholarship aggregator"
   },
   {
@@ -641,7 +738,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~5000 | Auth: free registration | Established US education platform"
   },
   {
@@ -656,7 +755,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~4000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility | Volume: ~4000 | US scholarship search"
   },
   {
@@ -671,7 +772,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~6000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, eligibility | Volume: ~6000 | Auth: free registration | College Board BigFuture platform"
   },
   {
@@ -686,7 +789,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1500",
-    "geographic_coverage": ["americas", "global"],
+    "geographic_coverage": [
+      "americas",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, field | Volume: ~1500 | Fellowship and scholarship directory"
   },
   {
@@ -701,7 +807,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~800",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, degree | Volume: ~800 | Curated international scholarships"
   },
   {
@@ -716,7 +824,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3231",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~3231 | Next.js SSR with URL-based pagination"
   },
   {
@@ -731,7 +841,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~400",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, country, deadline, amount | Volume: ~400 | Study abroad funding guides"
   },
   {
@@ -746,7 +858,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline, degree | Volume: ~500 | WordPress/Salient theme with AJAX transitions"
   },
   {
@@ -761,7 +875,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1700",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, country | Volume: ~1700 | Yii framework with PJAX, #award-grid table, ?page=N&per-page=40"
   },
   {
@@ -776,7 +892,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, country, deadline | Volume: ~1000 | WordPress Avada/Fusion theme, country-wise listings"
   },
   {
@@ -791,7 +909,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, detail_link | Volume: ~2000 | Server-rendered, plain HTML, /scholarship/[ID]/[slug] URLs"
   },
   {
@@ -806,7 +926,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~7500",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, eligibility | Volume: ~7500 | Server-rendered, h4 > a titles, ?page=N pagination, ~769 pages"
   },
   {
@@ -821,7 +943,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, province | Volume: ~3000 | Canadian scholarships, 403 on plain fetch"
   },
   {
@@ -836,7 +960,11 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["asia", "europe", "oceania"],
+    "geographic_coverage": [
+      "asia",
+      "europe",
+      "oceania"
+    ],
     "notes": "CF: no | Fields: title, funder, amount, detail_link | Volume: ~500 | Next.js with JSON-LD MonetaryGrant schema, Asia/UK/AU/EU focus"
   },
   {
@@ -851,7 +979,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~300",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, organization, amount, deadline, categories | Volume: ~300 | Swiper carousel cards, .sch1/.schname selectors, ?extended=true"
   },
   {
@@ -866,7 +996,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~9500",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: yes | Fields: title, amount, deadline, description | Volume: ~9500 | 403 on direct access | US DOL-sponsored scholarship finder"
   },
   {
@@ -881,7 +1013,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~0",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "DEFUNCT: Acquired by Earnest, redirects to earnest.com closing FAQs. No longer provides scholarship listings."
   },
   {
@@ -896,7 +1030,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~500",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~500 | 405 on some paths | Financial aid for international students in USA"
   },
   {
@@ -911,7 +1047,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~200",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~200 | WordPress JS-rendered | Institute of International Education manages Fulbright, Gilman, etc."
   },
   {
@@ -926,7 +1064,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~300",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description, country | Volume: ~300 | Redirects from beglobalii.com, React dynamic app | Study abroad scholarships"
   },
   {
@@ -941,7 +1081,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, deadline, description | Volume: ~5000 | Redirects from myscholly.com to Sallie Mae | Filter-based scholarship search"
   },
   {
@@ -956,7 +1098,9 @@
     "auth_required": true,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, amount, description | Volume: ~1000 | Auth: sign-up required for matching | App-based micro-scholarship platform, limited public listings"
   },
   {
@@ -971,7 +1115,11 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["africa", "asia", "global"],
+    "geographic_coverage": [
+      "africa",
+      "asia",
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, detail_link, deadline, country, description | Volume: ~1000 | 403 on direct access | Scholarships for African and Asian students"
   },
   {
@@ -986,7 +1134,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, detail_link, category, deadline, description | Volume: ~2000 | WP API blocked, card-based grid with JS-driven AJAX loading"
   },
   {
@@ -1001,7 +1151,14 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~6300",
-    "geographic_coverage": ["global", "australia", "uk", "usa", "canada", "new_zealand"],
+    "geographic_coverage": [
+      "global",
+      "australia",
+      "uk",
+      "usa",
+      "canada",
+      "new_zealand"
+    ],
     "notes": "CF: no | Fields: title, institution, country, degree, funding_type, deadline, eligibility, application_url | Volume: ~6300 scholarships | Next.js SSR scholarship finder with detail pages"
   }
 ]

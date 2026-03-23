@@ -170,6 +170,7 @@ export default defineSchema({
   })
     .index("by_source", ["source_id"])
     .index("by_canonical", ["canonical_id"])
+    .index("by_match_status", ["match_status"])
     .index("by_canonical_match", ["canonical_id", "match_status"])
     .index("by_source_external", ["source_id", "external_id"])
     .index("by_scrape_run", ["scrape_run_id"]),

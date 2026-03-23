@@ -223,7 +223,9 @@ class PipelineRunner:
         if scheduler and not self.dry_run:
             self._prime_source_cache(configs)
             configs = scheduler.filter_active(configs, source_lookup=self._source_id_cache)
-            configs = scheduler.filter_due_sources(configs, source_lookup=self._source_id_cache)
+            # Manual single-source runs should execute immediately even if not yet due.
+            if not self.source_filter:
+                configs = scheduler.filter_due_sources(configs, source_lookup=self._source_id_cache)
 
         self.stats["sources_targeted"] = len(configs)
         logger.info(
@@ -291,16 +293,16 @@ class PipelineRunner:
         source = self._source_id_cache.get(config.source_id)
 
         if source is None:
-            if config.url not in self._source_url_cache:
-                self._source_url_cache[config.url] = self._query_source_by_url(config.url)
-            source = self._source_url_cache.get(config.url)
-        if source is None:
             if config.name not in self._source_cache:
                 self._source_cache[config.name] = self.convex.query(
                     "sources:getByName",
                     {"name": config.name},
                 )
             source = self._source_cache.get(config.name)
+        if source is None:
+            if config.url not in self._source_url_cache:
+                self._source_url_cache[config.url] = self._query_source_by_url(config.url)
+            source = self._source_url_cache.get(config.url)
 
         if source:
             self._source_id_cache[config.source_id] = source
@@ -317,12 +319,12 @@ class PipelineRunner:
         for config in configs:
             if config.source_id in self._source_id_cache:
                 continue
-            source = self._query_source_by_url(config.url)
+            source = self.convex.query(
+                "sources:getByName",
+                {"name": config.name},
+            )
             if source is None:
-                source = self.convex.query(
-                    "sources:getByName",
-                    {"name": config.name},
-                )
+                source = self._query_source_by_url(config.url)
             self._source_id_cache[config.source_id] = source
             self._source_cache[config.name] = source
             if source and config.url not in self._source_url_cache:

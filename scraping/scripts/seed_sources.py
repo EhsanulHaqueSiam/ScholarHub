@@ -13,6 +13,23 @@ from scholarhub_pipeline.ingestion.convex_client import PipelineConvexClient
 SKIP_FILES = {"schema.json", "validation_report.json"}
 
 
+def build_config_lookup() -> dict[str, dict]:
+    """Build a map of source name -> canonical config fields.
+
+    This keeps the source catalog aligned with the runtime scraper configs,
+    preventing stale URLs/methods from being re-seeded into Convex.
+    """
+    from scholarhub_pipeline.configs import discover_configs
+
+    lookup: dict[str, dict] = {}
+    for cfg in discover_configs():
+        lookup[cfg.name] = {
+            "url": cfg.url,
+            "scrape_method": cfg.primary_method,
+        }
+    return lookup
+
+
 def load_and_validate(source_dir: Path) -> tuple[list[dict], int]:
     """Load all JSON files from source_dir and validate against schema.
 
@@ -50,7 +67,7 @@ def load_and_validate(source_dir: Path) -> tuple[list[dict], int]:
     return sources, file_count
 
 
-def prepare_for_convex(entry: dict) -> dict:
+def prepare_for_convex(entry: dict, config_lookup: dict[str, dict] | None = None) -> dict:
     """Prepare a source entry dict for the Convex upsertSource mutation.
 
     Removes internal keys (like ``_file``), strips None values for
@@ -67,6 +84,11 @@ def prepare_for_convex(entry: dict) -> dict:
 
     cleaned = {k: v for k, v in entry.items() if k not in exclude_keys and v is not None}
 
+    if config_lookup and cleaned.get("name") in config_lookup:
+        cfg = config_lookup[cleaned["name"]]
+        cleaned["url"] = cfg["url"]
+        cleaned["scrape_method"] = cfg["scrape_method"]
+
     # Default trust_level if not present
     if "trust_level" not in cleaned:
         cleaned["trust_level"] = "needs_review"
@@ -82,6 +104,7 @@ def seed_sources(source_dir: Path, *, dry_run: bool = False) -> None:
         dry_run: If True, print what would be seeded without calling Convex.
     """
     sources, file_count = load_and_validate(source_dir)
+    config_lookup = build_config_lookup()
 
     if not sources:
         print("No source entries found.")
@@ -90,14 +113,14 @@ def seed_sources(source_dir: Path, *, dry_run: bool = False) -> None:
     if dry_run:
         print(f"[DRY RUN] Would seed {len(sources)} sources from {file_count} files")
         for entry in sources:
-            prepared = prepare_for_convex(entry)
+            prepared = prepare_for_convex(entry, config_lookup=config_lookup)
             print(f"  - {prepared['name']}: {prepared['url']}")
         return
 
     client = PipelineConvexClient()
     seeded = 0
     for entry in sources:
-        prepared = prepare_for_convex(entry)
+        prepared = prepare_for_convex(entry, config_lookup=config_lookup)
         client.mutation("sources:upsertSource", prepared)
         seeded += 1
 

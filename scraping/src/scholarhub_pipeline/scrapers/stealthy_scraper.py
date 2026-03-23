@@ -41,10 +41,14 @@ class StealthyScraper(BaseScraper):
                 StealthyFetcher.configure()
         cls._fetcher_configured = True
 
-    @staticmethod
-    def _fetch_sync(url: str) -> object:
+    def _fetch_sync(self, url: str) -> object:
         """Run StealthyFetcher.fetch in a thread (sync Playwright can't run in asyncio loop)."""
-        return StealthyFetcher.fetch(url, headless=True, network_idle=True)
+        kwargs: dict = {"headless": True, "network_idle": True}
+        auth_cfg = getattr(self.config, "auth_config", None) or {}
+        if auth_cfg.get("verify_ssl") is False:
+            # Chromium flag for sites with broken certificate chains.
+            kwargs["extra_flags"] = ["--ignore-certificate-errors"]
+        return StealthyFetcher.fetch(url, **kwargs)
 
     @staticmethod
     def _extract_from_node(node: object, selectors: dict[str, str]) -> dict:

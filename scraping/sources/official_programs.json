@@ -412,7 +412,7 @@
   },
   {
     "name": "Italian Government Scholarships",
-    "url": "https://studyinitaly.esteri.it/en/call-for-procedures",
+    "url": "https://www.esteri.it/en/opportunita/borse-di-studio/",
     "category": "official_program",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -668,7 +668,7 @@
   },
   {
     "name": "Thailand International Postgraduate Programme (TIPP)",
-    "url": "https://www.tica.thaigov.net/main/en/other/7929",
+    "url": "https://tica-scholarships.com/tipp/",
     "category": "official_program",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -685,7 +685,7 @@
   },
   {
     "name": "Indian Government ICCR Scholarships",
-    "url": "https://www.iccr.gov.in/scholarship",
+    "url": "https://a2ascholarships.iccr.gov.in/",
     "category": "official_program",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -1318,9 +1318,9 @@
   },
   {
     "name": "Korean Government Arts Scholarship (KOFICE)",
-    "url": "https://eng.kofice.or.kr",
+    "url": "https://www.kofice.or.kr/eng/",
     "category": "official_program",
-    "scrape_method": "scrape",
+    "scrape_method": "scrapling",
     "trust_level": "needs_review",
     "scrape_frequency_hours": 720,
     "wave": 6,

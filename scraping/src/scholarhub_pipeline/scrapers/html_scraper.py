@@ -126,6 +126,16 @@ class HtmlScraper(BaseScraper):
             return None
         return self.process_record(mapped)
 
+    def _fetcher_kwargs(self) -> dict:
+        """Build per-source Fetcher kwargs (timeouts, SSL handling)."""
+        kwargs: dict = {}
+        timeout = float(getattr(self.config, "method_timeout_seconds", 20.0) or 20.0)
+        kwargs["timeout"] = max(5.0, timeout)
+        auth_cfg = getattr(self.config, "auth_config", None) or {}
+        if auth_cfg.get("verify_ssl") is False:
+            kwargs["verify"] = False
+        return kwargs
+
     async def scrape(self) -> list[dict]:
         """Scrape HTML pages and return normalized records.
 
@@ -154,7 +164,7 @@ class HtmlScraper(BaseScraper):
                 break
             seen_page_urls.add(current_url_norm)
 
-            response = await asyncio.to_thread(Fetcher.get, url)
+            response = await asyncio.to_thread(Fetcher.get, url, **self._fetcher_kwargs())
             body = response.body if hasattr(response, "body") else b""
             self.bytes_downloaded += len(body) if isinstance(body, bytes) else len(str(body))
 
@@ -314,7 +324,7 @@ class HtmlScraper(BaseScraper):
             Dict of extracted fields from the detail page.
         """
         try:
-            response = await asyncio.to_thread(Fetcher.get, url)
+            response = await asyncio.to_thread(Fetcher.get, url, **self._fetcher_kwargs())
             extracted: dict = {}
             if self.config.detail_selectors:
                 for field_name, selector in self.config.detail_selectors.items():

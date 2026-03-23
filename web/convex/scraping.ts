@@ -374,6 +374,49 @@ export const deactivateSource = internalMutation({
 });
 
 /**
+ * Reactivate a source after fixing URL/config issues.
+ * Public mutation used by CLI/tools to bring deactivated sources back online.
+ */
+export const reactivateSource = mutation({
+  args: {
+    source_id: v.id("sources"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.source_id, {
+      is_active: true,
+      consecutive_failures: 0,
+    });
+
+    const existing = await ctx.db
+      .query("source_health")
+      .withIndex("by_source", (q) => q.eq("source_id", args.source_id))
+      .first();
+
+    const now = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        status: "healthy",
+        consecutive_failures: 0,
+        deactivation_reason: undefined,
+        last_failure: undefined,
+        last_error_type: undefined,
+        last_error_message: undefined,
+        last_success: existing.last_success ?? now,
+      });
+    } else {
+      await ctx.db.insert("source_health", {
+        source_id: args.source_id,
+        status: "healthy",
+        consecutive_failures: 0,
+        last_success: now,
+      });
+    }
+
+    return { reactivated: true };
+  },
+});
+
+/**
  * Store the GitHub Issue number on a source's health record.
  * Used after creating a rot-detection issue to prevent duplicates.
  */

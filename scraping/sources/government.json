@@ -361,7 +361,7 @@
   },
   {
     "name": "Egyptian Government Scholarships (MOHESR)",
-    "url": "https://www.mohesr.gov.eg/en/pages/international-scholarships.aspx",
+    "url": "https://mohesr.gov.eg/en/",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -532,7 +532,7 @@
   },
   {
     "name": "Bangladesh Government Scholarships (UGC)",
-    "url": "https://www.ugc.gov.bd",
+    "url": "https://shed.gov.bd/pages/moedu-scholarships",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -549,7 +549,7 @@
   },
   {
     "name": "Pakistan HEC Scholarships",
-    "url": "https://www.hec.gov.pk/english/scholarshipsgrants/Pages/default.aspx",
+    "url": "https://www.eduvision.edu.pk/scholarships/",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -617,7 +617,7 @@
   },
   {
     "name": "Colombia Government Scholarships (ICETEX)",
-    "url": "https://portal.icetex.gov.co/Portal/Home/HomeEstudiante/becas-para-estudiar-en-el-exterior",
+    "url": "https://www.icetex.gov.co/",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -685,7 +685,7 @@
   },
   {
     "name": "Oman Government Scholarships",
-    "url": "https://www.mohe.gov.om/en/scholarships",
+    "url": "https://www.moe.gov.om/",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -736,7 +736,7 @@
   },
   {
     "name": "Study in Hungary Portal",
-    "url": "https://study.gov.hu/scholarships",
+    "url": "https://stipendiumhungaricum.hu/about/",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -805,7 +805,7 @@
   },
   {
     "name": "Tanzania Government Scholarships (TCU)",
-    "url": "https://www.tcu.go.tz",
+    "url": "https://tcu.go.tz",
     "category": "government",
     "scrape_method": "scrape",
     "trust_level": "needs_review",
@@ -1216,7 +1216,7 @@
   },
   {
     "name": "NZ Government Scholarships",
-    "url": "https://scholarships.govt.nz",
+    "url": "https://www.nzscholarships.govt.nz/",
     "category": "government",
     "scrape_method": "scrapling",
     "trust_level": "needs_review",

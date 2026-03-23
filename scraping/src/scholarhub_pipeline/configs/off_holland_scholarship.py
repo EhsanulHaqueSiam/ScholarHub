@@ -19,6 +19,8 @@ class Config(BaseOfficialConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    auth_config: dict | None = field(default_factory=lambda: {"verify_ssl": False})
+    method_timeout_seconds: float = 30.0
 
 
 CONFIG = Config()

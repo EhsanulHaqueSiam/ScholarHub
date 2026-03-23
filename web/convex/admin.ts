@@ -36,6 +36,7 @@ const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 300;
 const ADMIN_STATUS_FALLBACK_SCAN_CAP = 10000;
 const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 5000;
 const ADMIN_PENDING_SOURCE_SCAN_CAP = 5000;
+const ADMIN_POSSIBLE_DUP_SCAN_CAP = 6000;
 const ADMIN_DASHBOARD_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
 type AdminDashboardStatus = (typeof ADMIN_DASHBOARD_STATUSES)[number];
 
@@ -196,23 +197,31 @@ export const getReviewQueue = query({
       }),
     );
 
-    const pendingIdsForDupCheck =
+    const pendingIdsForDupCheck = new Set(
       includePossibleDuplicate
-        ? scholarships.filter((s) => s.status === "pending_review").map((s) => s._id)
-        : [];
+        ? scholarships.filter((s) => s.status === "pending_review").map((s) => String(s._id))
+        : [],
+    );
 
     const possibleDuplicateIds = new Set<string>();
-    await Promise.all(
-      pendingIdsForDupCheck.map(async (scholarshipId) => {
-        const matches = await ctx.db
-          .query("raw_records")
-          .withIndex("by_canonical_match", (q) =>
-            q.eq("canonical_id", scholarshipId).eq("match_status", "possible_duplicate"),
-          )
-          .take(1);
-        if (matches.length > 0) possibleDuplicateIds.add(String(scholarshipId));
-      }),
-    );
+    if (includePossibleDuplicate && pendingIdsForDupCheck.size > 0) {
+      // Single bounded scan avoids N+1 canonical-id lookups for large admin queues.
+      const dupRows = await ctx.db
+        .query("raw_records")
+        .withIndex("by_match_status", (q) => q.eq("match_status", "possible_duplicate"))
+        .take(ADMIN_POSSIBLE_DUP_SCAN_CAP);
+
+      for (const row of dupRows) {
+        if (!row.canonical_id) continue;
+        const canonicalId = String(row.canonical_id);
+        if (pendingIdsForDupCheck.has(canonicalId)) {
+          possibleDuplicateIds.add(canonicalId);
+          if (possibleDuplicateIds.size >= pendingIdsForDupCheck.size) {
+            break;
+          }
+        }
+      }
+    }
 
     const enriched = scholarships.map((scholarship) => {
       const resolved_sources = scholarship.source_ids

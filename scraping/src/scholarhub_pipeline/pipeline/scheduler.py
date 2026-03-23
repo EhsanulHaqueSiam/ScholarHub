@@ -46,6 +46,36 @@ class SourceScheduler:
             self._supports_get_by_url = False
             return None
 
+    @staticmethod
+    def _requires_auth(config: SourceConfig) -> bool:
+        """Return True only when auth_config indicates real credentials/login flow.
+
+        Some sources now use auth_config for transport options (for example
+        ``{"verify_ssl": False}``) which should not exclude them from runs.
+        """
+        auth_config = getattr(config, "auth_config", None)
+        if not auth_config:
+            return False
+        if not isinstance(auth_config, dict):
+            return True
+
+        credential_keys = (
+            "username",
+            "password",
+            "token",
+            "api_key",
+            "bearer_token",
+            "client_id",
+            "client_secret",
+            "cookie",
+            "cookies",
+            "session",
+            "auth_url",
+        )
+        if any(auth_config.get(key) for key in credential_keys):
+            return True
+        return bool(auth_config.get("requires_login"))
+
     def filter_due_sources(
         self,
         configs: list[SourceConfig],
@@ -136,7 +166,7 @@ class SourceScheduler:
         """
         active: list[SourceConfig] = []
         for config in configs:
-            if getattr(config, "auth_config", None):
+            if self._requires_auth(config):
                 continue
 
             source = (

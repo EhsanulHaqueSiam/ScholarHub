@@ -32,9 +32,10 @@ const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(
 // Valid degree levels and funding types for validation
 const VALID_DEGREES = new Set(["bachelor", "master", "phd", "postdoc"]);
 const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
-const DEFAULT_AGGREGATION_BATCH_SIZE = 10;
-const MAX_CANDIDATES_PER_MATCH_KEY = 25;
-const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 20;
+// Tuned for free-tier read limits: smaller units reduce read-byte spikes and retries.
+const DEFAULT_AGGREGATION_BATCH_SIZE = 6;
+const MAX_CANDIDATES_PER_MATCH_KEY = 12;
+const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 12;
 const AGGREGATION_LOCK_NAME = "aggregation.aggregateBatch";
 const AGGREGATION_LOCK_LEASE_MS = 2 * 60 * 1000;
 const AGGREGATION_RETRY_DELAY_MS = 3 * 1000;
