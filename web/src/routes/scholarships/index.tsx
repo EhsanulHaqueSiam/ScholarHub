@@ -124,7 +124,7 @@ function ScholarshipsDirectory() {
     status,
     loadMore,
     isLoading,
-  } = usePaginatedQuery(api.directory.listScholarships, queryArgs, { initialNumItems: PAGE_SIZE * 2 });
+  } = usePaginatedQuery(api.directory.listScholarships, queryArgs, { initialNumItems: PAGE_SIZE });
 
   // Client-side pagination — desktop replaces content per-page, mobile accumulates
   const results = useMemo(() => {
@@ -174,6 +174,18 @@ function ScholarshipsDirectory() {
     [filters.from.join()],
   );
 
+  const showHomepageHighlights =
+    !filters.q &&
+    filters.to.length === 0 &&
+    filters.degree.length === 0 &&
+    filters.field.length === 0 &&
+    filters.funding.length === 0 &&
+    filters.tier.length === 0 &&
+    filters.type.length === 0 &&
+    filters.tags.length === 0 &&
+    !filters.showClosed &&
+    !filters.closingSoon;
+
   const isGridView = filters.view === "grid";
   const hasResults = results && results.length > 0;
   const isInitialLoading = isLoading && !results?.length;
@@ -219,15 +231,17 @@ function ScholarshipsDirectory() {
 
       {/* Directory Section */}
       <div className="max-w-[1280px] mx-auto px-4 pb-16">
-        {/* Featured Row */}
-        <div className="mb-8">
-          <FeaturedRow nationalities={featuredNationalities} />
-        </div>
-
-        {/* Featured Collections Row */}
-        <div className="mb-8">
-          <FeaturedCollectionsRow />
-        </div>
+        {/* Homepage highlights (kept off filtered/search states to reduce read pressure). */}
+        {showHomepageHighlights && (
+          <>
+            <div className="mb-8">
+              <FeaturedRow nationalities={featuredNationalities} />
+            </div>
+            <div className="mb-8">
+              <FeaturedCollectionsRow />
+            </div>
+          </>
+        )}
 
         {/* Quick Filters */}
         <div className="mb-4">

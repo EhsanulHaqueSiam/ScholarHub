@@ -69,6 +69,7 @@ export const completeRun = mutation({
     // Refresh SEO caches after successful scrape runs with any data movement.
     if (args.status === "completed" && args.records_inserted + args.records_updated > 0) {
       await runAfterSafe(ctx, 15 * 1000, internal.seo.refreshSeoCaches, {});
+      await runAfterSafe(ctx, 20 * 1000, internal.directory.refreshHomepageCache, {});
     }
   },
 });

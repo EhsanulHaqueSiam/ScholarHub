@@ -29,6 +29,9 @@ crons.daily(
   {},
 );
 
+// Hourly refresh of homepage featured cache to keep top rows cheap and fresh.
+crons.hourly("refresh homepage cache", { minuteUTC: 20 }, internal.directory.refreshHomepageCache, {});
+
 // Daily refresh of SEO landing caches to avoid expensive per-request full scans.
 crons.daily("refresh seo caches", { hourUTC: 2, minuteUTC: 15 }, internal.seo.refreshSeoCaches, {});
 

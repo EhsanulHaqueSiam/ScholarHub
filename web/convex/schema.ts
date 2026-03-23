@@ -269,6 +269,13 @@ export default defineSchema({
     updated_at: v.number(),
   }).index("by_status", ["status"]),
 
+  // Small homepage-oriented cache blobs to avoid repeated broad scans.
+  homepage_cache: defineTable({
+    key: v.string(),
+    scholarship_ids: v.array(v.id("scholarships")),
+    updated_at: v.number(),
+  }).index("by_key", ["key"]),
+
   // Cached SEO landing taxonomies and stats for low-cost landing queries.
   seo_taxonomy_cache: defineTable({
     key: v.string(),

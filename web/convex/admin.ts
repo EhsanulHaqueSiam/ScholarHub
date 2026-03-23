@@ -31,6 +31,74 @@ import { wrapDB } from "./triggers";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(wrapDB));
+const ADMIN_COUNT_PAGE_SIZE = 256;
+const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 300;
+const ADMIN_STATUS_FALLBACK_SCAN_CAP = 10000;
+const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 5000;
+const ADMIN_PENDING_SOURCE_SCAN_CAP = 5000;
+const ADMIN_DASHBOARD_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
+type AdminDashboardStatus = (typeof ADMIN_DASHBOARD_STATUSES)[number];
+
+async function getCachedStatusCounts(
+  ctx: { db: any },
+): Promise<Record<AdminDashboardStatus, number | null>> {
+  const counts: Record<AdminDashboardStatus, number | null> = {
+    pending_review: null,
+    published: null,
+    rejected: null,
+    archived: null,
+  };
+
+  const rows = await ctx.db.query("scholarship_counts").collect();
+  for (const row of rows) {
+    if ((ADMIN_DASHBOARD_STATUSES as readonly string[]).includes(row.status)) {
+      counts[row.status as AdminDashboardStatus] = row.count;
+    }
+  }
+
+  return counts;
+}
+
+async function countStatusFallback(ctx: { db: any }, status: AdminDashboardStatus): Promise<number> {
+  const rows = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", status))
+    .take(ADMIN_STATUS_FALLBACK_SCAN_CAP);
+  return rows.length;
+}
+
+async function countPublishedSince(ctx: { db: any }, sinceTs: number): Promise<number> {
+  const rows = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", "published"))
+    .order("desc")
+    .take(ADMIN_PUBLISHED_RECENT_SCAN_CAP);
+
+  let total = 0;
+  for (const scholarship of rows) {
+    if (scholarship._creationTime > sinceTs) {
+      total += 1;
+    } else {
+      break;
+    }
+  }
+  return total;
+}
+
+async function countPendingScholarshipsForSource(ctx: { db: any }, sourceId: any): Promise<number> {
+  const rows = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", "pending_review"))
+    .take(ADMIN_PENDING_SOURCE_SCAN_CAP);
+
+  let total = 0;
+  for (const scholarship of rows) {
+    if (scholarship.source_ids.includes(sourceId)) {
+      total += 1;
+    }
+  }
+  return total;
+}
 
 // ---------- Queries ----------
 
@@ -41,47 +109,53 @@ const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(
 export const getAdminStats = query({
   args: {},
   handler: async (ctx) => {
-    // Count scholarships by status
-    const pending = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-      .take(10000);
-
-    const published = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(10000);
-
-    const rejected = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "rejected"))
-      .take(10000);
-
-    const archived = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "archived"))
-      .take(10000);
-
-    const total = pending.length + published.length + rejected.length + archived.length;
-
-    // Count published today
     const oneDayAgo = Date.now() - 86400000;
-    const publishedToday = published.filter((s) => s._creationTime > oneDayAgo).length;
+    const cachedCounts = await getCachedStatusCounts(ctx);
+    const [pending, published, rejected, archived, publishedToday] = await Promise.all([
+      cachedCounts.pending_review ?? countStatusFallback(ctx, "pending_review"),
+      cachedCounts.published ?? countStatusFallback(ctx, "published"),
+      cachedCounts.rejected ?? countStatusFallback(ctx, "rejected"),
+      cachedCounts.archived ?? countStatusFallback(ctx, "archived"),
+      countPublishedSince(ctx, oneDayAgo),
+    ]);
 
-    // Source health counts
+    const total = pending + published + rejected + archived;
+
     const healthRecords = await ctx.db.query("source_health").collect();
+    let healthy = 0;
+    let degraded = 0;
+    let failing = 0;
+    let deactivated = 0;
+    for (const health of healthRecords) {
+      switch (health.status) {
+        case "healthy":
+          healthy += 1;
+          break;
+        case "degraded":
+          degraded += 1;
+          break;
+        case "failing":
+          failing += 1;
+          break;
+        case "deactivated":
+          deactivated += 1;
+          break;
+        default:
+          break;
+      }
+    }
+
     const sourceHealth = {
-      healthy: healthRecords.filter((h) => h.status === "healthy").length,
-      degraded: healthRecords.filter((h) => h.status === "degraded").length,
-      failing: healthRecords.filter((h) => h.status === "failing" || h.status === "deactivated")
-        .length,
+      healthy,
+      degraded,
+      failing: failing + deactivated,
     };
 
     return {
       total,
-      pending: pending.length,
-      published: published.length,
-      rejected: rejected.length,
+      pending,
+      published,
+      rejected,
       publishedToday,
       sourceHealth,
     };
@@ -96,9 +170,11 @@ export const getReviewQueue = query({
   args: {
     status: v.optional(scholarshipStatusValidator),
     limit: v.optional(v.number()),
+    includePossibleDuplicate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 200;
+    const limit = Math.max(1, Math.min(args.limit ?? 200, ADMIN_REVIEW_QUEUE_MAX_LIMIT));
+    const includePossibleDuplicate = args.includePossibleDuplicate ?? true;
 
     let scholarships;
     if (args.status) {
@@ -107,44 +183,62 @@ export const getReviewQueue = query({
         .withIndex("by_status", (q) => q.eq("status", args.status))
         .take(limit);
     } else {
-      // No status filter = return all scholarships
-      scholarships = await ctx.db.query("scholarships").take(limit);
+      // No status filter = newest first, bounded.
+      scholarships = await ctx.db.query("scholarships").order("desc").take(limit);
     }
 
-    // Enrich each scholarship with source info and duplicate flags
-    const enriched = await Promise.all(
-      scholarships.map(async (scholarship) => {
-        // Resolve source details
-        const resolved_sources = await Promise.all(
-          scholarship.source_ids.map(async (sourceId) => {
-            const source = await ctx.db.get(sourceId);
-            if (!source) return null;
-            return {
-              _id: source._id,
-              name: source.name,
-              category: source.category,
-              trust_level: source.trust_level,
-            };
-          }),
-        );
-
-        // Check for possible duplicate raw_records
-        const linkedRecords = await ctx.db
-          .query("raw_records")
-          .withIndex("by_canonical", (q) => q.eq("canonical_id", scholarship._id))
-          .collect();
-
-        const has_possible_duplicate = linkedRecords.some(
-          (r) => r.match_status === "possible_duplicate",
-        );
-
-        return {
-          ...scholarship,
-          resolved_sources: resolved_sources.filter(Boolean),
-          has_possible_duplicate,
-        };
+    const uniqueSourceIds = [...new Set(scholarships.flatMap((s) => s.source_ids.map(String)))];
+    const sourceMap = new Map<string, any>();
+    await Promise.all(
+      uniqueSourceIds.map(async (sourceId) => {
+        const source = await ctx.db.get(sourceId);
+        if (source) sourceMap.set(sourceId, source);
       }),
     );
+
+    const pendingIdsForDupCheck =
+      includePossibleDuplicate
+        ? scholarships.filter((s) => s.status === "pending_review").map((s) => s._id)
+        : [];
+
+    const possibleDuplicateIds = new Set<string>();
+    await Promise.all(
+      pendingIdsForDupCheck.map(async (scholarshipId) => {
+        const matches = await ctx.db
+          .query("raw_records")
+          .withIndex("by_canonical_match", (q) =>
+            q.eq("canonical_id", scholarshipId).eq("match_status", "possible_duplicate"),
+          )
+          .take(1);
+        if (matches.length > 0) possibleDuplicateIds.add(String(scholarshipId));
+      }),
+    );
+
+    const enriched = scholarships.map((scholarship) => {
+      const resolved_sources = scholarship.source_ids
+        .map((sourceId) => {
+          const source = sourceMap.get(String(sourceId));
+          if (!source) return null;
+          return {
+            _id: source._id,
+            name: source.name,
+            category: source.category,
+            trust_level: source.trust_level,
+          };
+        })
+        .filter((s): s is NonNullable<typeof s> => s !== null);
+
+      const has_possible_duplicate =
+        includePossibleDuplicate &&
+        scholarship.status === "pending_review" &&
+        possibleDuplicateIds.has(String(scholarship._id));
+
+      return {
+        ...scholarship,
+        resolved_sources,
+        has_possible_duplicate,
+      };
+    });
 
     return enriched;
   },
@@ -158,13 +252,11 @@ export const getRevisionHistory = query({
     scholarshipId: v.id("scholarships"),
   },
   handler: async (ctx, args) => {
-    const revisions = await ctx.db
+    return await ctx.db
       .query("scholarship_revisions")
       .withIndex("by_scholarship", (q) => q.eq("scholarship_id", args.scholarshipId))
-      .collect();
-
-    // Sort by changed_at descending (most recent first)
-    return revisions.sort((a, b) => b.changed_at - a.changed_at);
+      .order("desc")
+      .take(200);
   },
 });
 
@@ -196,12 +288,7 @@ export const getAllSources = query({
 export const countAffectedScholarships = query({
   args: { sourceId: v.id("sources") },
   handler: async (ctx, args) => {
-    const pendingScholarships = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-      .take(10000);
-
-    return pendingScholarships.filter((s) => s.source_ids.includes(args.sourceId)).length;
+    return await countPendingScholarshipsForSource(ctx, args.sourceId);
   },
 });
 
@@ -229,7 +316,7 @@ export const approveScholarship = triggeredMutation({
       const existing = await ctx.db
         .query("scholarships")
         .withIndex("by_match_key", (q) => q.eq("match_key", scholarship.match_key))
-        .collect();
+        .take(25);
 
       const publishedDuplicate = existing.find(
         (s) => s._id !== args.scholarshipId && s.status === "published",
@@ -291,7 +378,7 @@ export const bulkApprove = triggeredMutation({
         const existing = await ctx.db
           .query("scholarships")
           .withIndex("by_match_key", (q) => q.eq("match_key", scholarship.match_key))
-          .collect();
+          .take(25);
 
         const publishedDuplicate = existing.find(
           (s) => s._id !== scholarshipId && s.status === "published",
@@ -465,20 +552,17 @@ export const updateSourceTrust = mutation({
     // Update the source trust level
     await ctx.db.patch(args.sourceId, { trust_level: args.trustLevel });
 
-    // Count pending_review scholarships that include this source
-    const pendingScholarships = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-      .take(10000);
-
-    const affected = pendingScholarships.filter((s) => s.source_ids.includes(args.sourceId));
+    const affectedCount = await countPendingScholarshipsForSource(ctx, args.sourceId);
 
     // Schedule retroactive re-evaluation
     await ctx.scheduler.runAfter(0, internal.admin.reevaluateSourceScholarships, {
       sourceId: args.sourceId,
+      batchSize: 50,
+      cursor: undefined,
+      processed: 0,
     });
 
-    return { updated: true, affectedCount: affected.length };
+    return { updated: true, affectedCount };
   },
 });
 
@@ -490,16 +574,30 @@ export const reevaluateSourceScholarships = triggeredInternalMutation({
   args: {
     sourceId: v.id("sources"),
     batchSize: v.optional(v.number()),
+    cursor: v.optional(v.string()),
+    processed: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const batchSize = args.batchSize ?? 50;
+    const batchSize = Math.max(1, Math.min(args.batchSize ?? 50, 100));
     let promoted = 0;
 
-    // Get pending_review scholarships
-    const pendingScholarships = await ctx.db
+    const page = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-      .take(batchSize);
+      .paginate({
+        cursor: args.cursor ?? null,
+        numItems: batchSize,
+      });
+
+    const pendingScholarships = page.page;
+    if (pendingScholarships.length === 0) {
+      return {
+        promoted: 0,
+        processed: args.processed ?? 0,
+        complete: true,
+        nextCursor: null,
+      };
+    }
 
     for (const scholarship of pendingScholarships) {
       // Only re-evaluate scholarships that include this source
@@ -518,14 +616,21 @@ export const reevaluateSourceScholarships = triggeredInternalMutation({
       }
     }
 
-    // If batch was full, schedule next batch
-    if (pendingScholarships.length === batchSize) {
+    const processed = (args.processed ?? 0) + pendingScholarships.length;
+    if (!page.isDone) {
       await ctx.scheduler.runAfter(0, internal.admin.reevaluateSourceScholarships, {
         sourceId: args.sourceId,
         batchSize,
+        cursor: page.continueCursor,
+        processed,
       });
     }
 
-    return { promoted };
+    return {
+      promoted,
+      processed,
+      complete: page.isDone,
+      nextCursor: page.isDone ? null : page.continueCursor,
+    };
   },
 });

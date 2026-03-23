@@ -38,6 +38,7 @@ const SEO_CACHE_KEY = "global";
 const SEO_CACHE_HARD_TTL_MS = 36 * 60 * 60 * 1000;
 const SEO_REFRESH_LOCK_NAME = "seo.refreshSeoCaches";
 const SEO_REFRESH_LOCK_LEASE_MS = 3 * 60 * 1000;
+const SEO_PUBLISHED_SCAN_CAP = 12000;
 
 function isCacheUsable(updatedAt: number | undefined): boolean {
   if (!updatedAt) return false;
@@ -45,21 +46,11 @@ function isCacheUsable(updatedAt: number | undefined): boolean {
 }
 
 async function getPublishedScholarships(ctx: { db: any }): Promise<LandingScholarship[]> {
-  const scholarships: LandingScholarship[] = [];
-  let cursor: string | null = null;
-
-  while (true) {
-    const page = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q: any) => q.eq("status", "published"))
-      .paginate({ cursor, numItems: 256 });
-
-    scholarships.push(...(page.page as LandingScholarship[]));
-    if (page.isDone) break;
-    cursor = page.continueCursor;
-  }
-
-  return scholarships;
+  const rows = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", "published"))
+    .take(SEO_PUBLISHED_SCAN_CAP);
+  return rows as LandingScholarship[];
 }
 
 async function getCountryScholarships(

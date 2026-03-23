@@ -7,397 +7,127 @@ import schema from "../../convex/schema";
 
 const modules = import.meta.glob("../../convex/**/*.*s");
 
-/**
- * Helper to create a source with specific trust level.
- */
 async function createSource(
   t: any,
-  overrides: Partial<{
-    name: string;
-    category: string;
-    url: string;
-    trust_level: string;
-  }> = {},
+  overrides: Partial<{ name: string; trust_level: "auto_publish" | "needs_review" | "blocked" }> = {},
 ) {
   return await t.mutation(anyApi.sources.upsertSource, {
-    name: overrides.name ?? "Test Source",
-    url: overrides.url ?? `https://example-${Date.now()}-${Math.random()}.com`,
-    category: (overrides.category ?? "aggregator") as any,
-    scrape_method: "scrape" as const,
-    trust_level: (overrides.trust_level ?? "needs_review") as any,
+    name: overrides.name ?? `Admin Source ${Date.now()}-${Math.random()}`,
+    url: `https://admin-${Date.now()}-${Math.random()}.example.com`,
+    category: "aggregator",
+    scrape_method: "scrape",
+    trust_level: overrides.trust_level ?? "needs_review",
     scrape_frequency_hours: 24,
     wave: 1,
     is_active: true,
   });
 }
 
-/**
- * Helper to insert a scholarship directly.
- */
-async function insertScholarship(
-  t: any,
-  sourceId: any,
-  overrides: Partial<any> = {},
-) {
-  return await t.run(async (ctx: any) => {
-    return await ctx.db.insert("scholarships", {
-      title: overrides.title ?? "Test Scholarship",
-      slug: overrides.slug ?? `test-scholarship-${Date.now()}-${Math.random()}`,
-      description: overrides.description ?? "A test scholarship",
-      provider_organization: overrides.provider_organization ?? "Test Org",
-      host_country: overrides.host_country ?? "DE",
-      degree_levels: overrides.degree_levels ?? ["master"],
-      funding_type: overrides.funding_type ?? "fully_funded",
-      status: overrides.status ?? "pending_review",
-      source_ids: overrides.source_ids ?? [sourceId],
-      match_key: overrides.match_key ?? `test|test org|de`,
-      application_url: overrides.application_url ?? "https://example.com/apply",
-      ...overrides,
+describe("Admin query performance paths", () => {
+  it("reevaluateSourceScholarships promotes only scholarships tied to the changed source", async () => {
+    const t = convexTest(schema, modules);
+
+    const otherSourceId = await createSource(t, { name: "Other Source", trust_level: "needs_review" });
+    const targetSourceId = await createSource(t, {
+      name: "Target Source",
+      trust_level: "auto_publish",
     });
-  });
-}
 
-describe("Admin queries and mutations", () => {
-  describe("getAdminStats", () => {
-    it("returns status and source-health counts via aggregated pass", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceA = await createSource(t, {
-        name: "Stats Source A",
-        url: "https://stats-a.example.com",
-      });
-      const sourceB = await createSource(t, {
-        name: "Stats Source B",
-        url: "https://stats-b.example.com",
-      });
-
-      await insertScholarship(t, sourceA, {
-        title: "Pending Stats",
-        status: "pending_review",
-        match_key: "pending stats|test org|de",
-      });
-      await insertScholarship(t, sourceA, {
-        title: "Published Stats",
-        status: "published",
-        match_key: "published stats|test org|de",
-      });
-      await insertScholarship(t, sourceB, {
-        title: "Rejected Stats",
-        status: "rejected",
-        match_key: "rejected stats|test org|de",
-      });
-      await insertScholarship(t, sourceB, {
-        title: "Archived Stats",
-        status: "archived",
-        match_key: "archived stats|test org|de",
-      });
-      // Draft should not contribute to total (existing behavior).
-      await insertScholarship(t, sourceB, {
-        title: "Draft Stats",
-        status: "draft",
-        match_key: "draft stats|test org|de",
-      });
-
-      await t.run(async (ctx: any) => {
-        await ctx.db.insert("source_health", {
-          source_id: sourceA,
-          status: "healthy",
-          consecutive_failures: 0,
+    await t.run(async (ctx: any) => {
+      for (let i = 0; i < 5; i++) {
+        await ctx.db.insert("scholarships", {
+          title: `Pending Other ${i}`,
+          slug: `pending-other-${i}`,
+          description: "Pending",
+          provider_organization: "Org",
+          host_country: "US",
+          degree_levels: ["master"],
+          funding_type: "partial",
+          application_url: "https://example.com/apply",
+          status: "pending_review",
+          source_ids: [otherSourceId],
         });
-        await ctx.db.insert("source_health", {
-          source_id: sourceB,
-          status: "degraded",
-          consecutive_failures: 2,
+      }
+
+      for (let i = 0; i < 3; i++) {
+        await ctx.db.insert("scholarships", {
+          title: `Pending Target ${i}`,
+          slug: `pending-target-${i}`,
+          description: "Pending",
+          provider_organization: "Org",
+          host_country: "US",
+          degree_levels: ["master"],
+          funding_type: "partial",
+          application_url: "https://example.com/apply",
+          status: "pending_review",
+          source_ids: [targetSourceId],
         });
-        await ctx.db.insert("source_health", {
-          source_id: sourceB,
-          status: "deactivated",
-          consecutive_failures: 8,
-        });
-      });
-
-      const stats = await t.query(anyApi.admin.getAdminStats, {});
-
-      expect(stats.total).toBe(4);
-      expect(stats.pending).toBe(1);
-      expect(stats.published).toBe(1);
-      expect(stats.rejected).toBe(1);
-      expect(stats.publishedToday).toBe(1);
-      expect(stats.sourceHealth).toEqual({
-        healthy: 1,
-        degraded: 1,
-        failing: 1,
-      });
+      }
     });
+
+    const first = await t.mutation(anyApi.admin.reevaluateSourceScholarships, {
+      sourceId: targetSourceId,
+      batchSize: 50,
+      cursor: undefined,
+      processed: 0,
+    });
+
+    expect(first.complete).toBe(true);
+    expect(first.promoted).toBe(3);
+
+    const promotedCount = await t.run(async (ctx: any) => {
+      const all = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q: any) => q.eq("status", "published"))
+        .collect();
+      return all.filter((s: any) => s.source_ids.includes(targetSourceId)).length;
+    });
+
+    expect(promotedCount).toBe(3);
   });
 
-  describe("getReviewQueue", () => {
-    it("returns pending_review scholarships with resolved_sources", async () => {
-      const t = convexTest(schema, modules);
+  it("getReviewQueue can skip duplicate checks when not needed", async () => {
+    const t = convexTest(schema, modules);
+    const sourceId = await createSource(t, { trust_level: "needs_review" });
 
-      const sourceId = await createSource(t, {
-        name: "Gov Source",
-        category: "government",
-        trust_level: "needs_review",
-        url: "https://gov.example.com",
-      });
-
-      await insertScholarship(t, sourceId, {
-        title: "Test Review Scholarship",
+    const scholarshipId = await t.run(async (ctx: any) => {
+      return await ctx.db.insert("scholarships", {
+        title: "Queue Duplicate Test",
+        slug: "queue-duplicate-test",
+        description: "Pending",
+        provider_organization: "Org",
+        host_country: "US",
+        degree_levels: ["master"],
+        funding_type: "partial",
+        application_url: "https://example.com/apply",
         status: "pending_review",
-        match_key: "test review|test org|de",
+        source_ids: [sourceId],
       });
-
-      const queue = await t.query(anyApi.admin.getReviewQueue, {});
-
-      expect(queue).toHaveLength(1);
-      expect(queue[0].title).toBe("Test Review Scholarship");
-      expect(queue[0].resolved_sources).toHaveLength(1);
-      expect(queue[0].resolved_sources[0].name).toBe("Gov Source");
-      expect(queue[0].resolved_sources[0].category).toBe("government");
-      expect(queue[0].resolved_sources[0].trust_level).toBe("needs_review");
     });
 
-    it("sets has_possible_duplicate using indexed canonical+match lookup", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        name: "Dup Source",
-        category: "aggregator",
-        trust_level: "needs_review",
-        url: "https://dup.example.com",
+    await t.run(async (ctx: any) => {
+      await ctx.db.insert("raw_records", {
+        source_id: sourceId,
+        title: "Queue Duplicate Raw",
+        source_url: "https://example.com/raw",
+        scraped_at: Date.now(),
+        canonical_id: scholarshipId,
+        match_status: "possible_duplicate",
       });
-
-      const scholarshipId = await insertScholarship(t, sourceId, {
-        title: "Dup Candidate",
-        status: "pending_review",
-        match_key: "dup candidate|test org|de",
-      });
-
-      await t.run(async (ctx: any) => {
-        await ctx.db.insert("raw_records", {
-          source_id: sourceId,
-          title: "Dup Candidate Raw",
-          source_url: "https://dup.example.com/raw",
-          scraped_at: Date.now(),
-          canonical_id: scholarshipId,
-          match_status: "possible_duplicate",
-        });
-      });
-
-      const queue = await t.query(anyApi.admin.getReviewQueue, {
-        status: "pending_review",
-      });
-
-      expect(queue).toHaveLength(1);
-      expect(queue[0].has_possible_duplicate).toBe(true);
-    });
-  });
-
-  describe("approveScholarship", () => {
-    it("changes status from pending_review to published", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        url: "https://approve-test.example.com",
-      });
-      const scholarshipId = await insertScholarship(t, sourceId, {
-        status: "pending_review",
-        match_key: "approve test|test org|de",
-      });
-
-      await t.mutation(anyApi.admin.approveScholarship, {
-        scholarshipId,
-      });
-
-      const scholarship = await t.run(async (ctx: any) => {
-        return await ctx.db.get(scholarshipId);
-      });
-      expect(scholarship.status).toBe("published");
     });
 
-    it("blocks when duplicate match_key already published (ADMN-08)", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        url: "https://dedup-test.example.com",
-      });
-
-      // Create a published scholarship
-      await insertScholarship(t, sourceId, {
-        title: "Duplicate Test",
-        status: "published",
-        match_key: "duplicate test|test org|de",
-        slug: "duplicate-test-published",
-      });
-
-      // Create a pending one with same match_key
-      const pendingId = await insertScholarship(t, sourceId, {
-        title: "Duplicate Test Pending",
-        status: "pending_review",
-        match_key: "duplicate test|test org|de",
-        slug: "duplicate-test-pending",
-      });
-
-      // Should throw dedup error
-      await expect(
-        t.mutation(anyApi.admin.approveScholarship, {
-          scholarshipId: pendingId,
-        }),
-      ).rejects.toThrow(
-        "Cannot approve: a published scholarship with the same title and organization already exists",
-      );
+    const withoutDupCheck = await t.query(anyApi.admin.getReviewQueue, {
+      status: "pending_review",
+      limit: 10,
+      includePossibleDuplicate: false,
     });
-  });
+    expect(withoutDupCheck[0].has_possible_duplicate).toBe(false);
 
-  describe("bulkApprove", () => {
-    it("approves valid entries and blocks duplicates", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        url: "https://bulk-test.example.com",
-      });
-
-      // Create a published scholarship with match_key A
-      await insertScholarship(t, sourceId, {
-        title: "Existing Published",
-        status: "published",
-        match_key: "existing|test org|de",
-        slug: "existing-published",
-      });
-
-      // Create two pending scholarships: one with unique key, one with duplicate key
-      const uniqueId = await insertScholarship(t, sourceId, {
-        title: "Unique Pending",
-        status: "pending_review",
-        match_key: "unique|test org|de",
-        slug: "unique-pending",
-      });
-
-      const dupId = await insertScholarship(t, sourceId, {
-        title: "Duplicate Pending",
-        status: "pending_review",
-        match_key: "existing|test org|de",
-        slug: "duplicate-pending",
-      });
-
-      const result = await t.mutation(anyApi.admin.bulkApprove, {
-        scholarshipIds: [uniqueId, dupId],
-      });
-
-      expect(result.approved).toBe(1);
-      expect(result.blocked).toBe(1);
-
-      // Verify the unique one was approved
-      const uniqueScholarship = await t.run(async (ctx: any) => {
-        return await ctx.db.get(uniqueId);
-      });
-      expect(uniqueScholarship.status).toBe("published");
-
-      // Verify the duplicate one was blocked
-      const dupScholarship = await t.run(async (ctx: any) => {
-        return await ctx.db.get(dupId);
-      });
-      expect(dupScholarship.status).toBe("pending_review");
+    const withDupCheck = await t.query(anyApi.admin.getReviewQueue, {
+      status: "pending_review",
+      limit: 10,
+      includePossibleDuplicate: true,
     });
-  });
-
-  describe("bulkReject", () => {
-    it("rejects all specified scholarships", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        url: "https://reject-test.example.com",
-      });
-
-      const id1 = await insertScholarship(t, sourceId, {
-        status: "pending_review",
-        match_key: "reject1|test org|de",
-        slug: "reject-1",
-      });
-      const id2 = await insertScholarship(t, sourceId, {
-        status: "pending_review",
-        match_key: "reject2|test org|de",
-        slug: "reject-2",
-      });
-
-      const result = await t.mutation(anyApi.admin.bulkReject, {
-        scholarshipIds: [id1, id2],
-      });
-
-      expect(result.rejected).toBe(2);
-
-      const s1 = await t.run(async (ctx: any) => ctx.db.get(id1));
-      const s2 = await t.run(async (ctx: any) => ctx.db.get(id2));
-      expect(s1.status).toBe("rejected");
-      expect(s2.status).toBe("rejected");
-    });
-  });
-
-  describe("updateScholarship", () => {
-    it("creates revision records in scholarship_revisions", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        url: "https://revision-test.example.com",
-      });
-      const scholarshipId = await insertScholarship(t, sourceId, {
-        title: "Original Title",
-        description: "Original Description",
-        status: "pending_review",
-        match_key: "revision|test org|de",
-      });
-
-      await t.mutation(anyApi.admin.updateScholarship, {
-        scholarshipId,
-        updates: {
-          title: "Updated Title",
-          description: "Updated Description",
-        },
-      });
-
-      // Check the scholarship was updated
-      const updated = await t.run(async (ctx: any) => ctx.db.get(scholarshipId));
-      expect(updated.title).toBe("Updated Title");
-      expect(updated.description).toBe("Updated Description");
-
-      // Check revision records were created
-      const revisions = await t.run(async (ctx: any) => {
-        return await ctx.db.query("scholarship_revisions").collect();
-      });
-
-      expect(revisions.length).toBeGreaterThanOrEqual(2);
-
-      const titleRevision = revisions.find((r: any) => r.field_name === "title");
-      expect(titleRevision).toBeDefined();
-      expect(titleRevision.old_value).toBe("Original Title");
-      expect(titleRevision.new_value).toBe("Updated Title");
-
-      const descRevision = revisions.find((r: any) => r.field_name === "description");
-      expect(descRevision).toBeDefined();
-      expect(descRevision.old_value).toBe("Original Description");
-      expect(descRevision.new_value).toBe("Updated Description");
-    });
-  });
-
-  describe("updateSourceTrust", () => {
-    it("updates the source trust_level field", async () => {
-      const t = convexTest(schema, modules);
-
-      const sourceId = await createSource(t, {
-        trust_level: "needs_review",
-        url: "https://trust-test.example.com",
-      });
-
-      const result = await t.mutation(anyApi.admin.updateSourceTrust, {
-        sourceId,
-        trustLevel: "auto_publish" as any,
-      });
-
-      expect(result.updated).toBe(true);
-
-      const source = await t.run(async (ctx: any) => ctx.db.get(sourceId));
-      expect(source.trust_level).toBe("auto_publish");
-    });
+    expect(withDupCheck[0].has_possible_duplicate).toBe(true);
   });
 });

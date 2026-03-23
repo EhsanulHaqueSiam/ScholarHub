@@ -25,6 +25,9 @@ import {
 } from "./schema";
 import { toScholarshipSummary } from "./scholarshipSummary";
 
+const COLLECTION_SCAN_CAP = 12000;
+const COLLECTION_PAGE_SCAN_CAP = 6000;
+
 // ---- Helper: Check if a scholarship matches a collection's filter criteria ----
 
 interface CollectionFilters {
@@ -128,28 +131,17 @@ async function countMatchingScholarships(
   ctx: { db: any },
   filters: CollectionFilters,
 ): Promise<number> {
+  const published = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", "published"))
+    .take(COLLECTION_SCAN_CAP);
+
   let count = 0;
-  let cursor: string | null = null;
-
-  while (true) {
-    const page = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q: any) => q.eq("status", "published"))
-      .paginate({ cursor, numItems: 256 });
-
-    for (const scholarship of page.page) {
-      if (matchesCollectionFilters(scholarship as any, filters)) {
-        count += 1;
-      }
+  for (const scholarship of published) {
+    if (matchesCollectionFilters(scholarship as any, filters)) {
+      count += 1;
     }
-
-    if (page.isDone) {
-      break;
-    }
-
-    cursor = page.continueCursor;
   }
-
   return count;
 }
 
@@ -222,50 +214,18 @@ export const getCollectionScholarships = query({
     }
 
     const now = Date.now();
-    const pageFetchSize = Math.min(120, Math.max(limit * 2, 40));
-    const maxScannedDocs = Math.min(6000, Math.max(offset + limit + 240, 1200));
-    const scholarshipsForPage: any[] = [];
-    let totalMatched = 0;
-    let scanned = 0;
-    let exhausted = false;
-    let cursor: string | null = null;
+    const scanLimit = Math.min(COLLECTION_PAGE_SCAN_CAP, Math.max(offset + limit + 240, 800));
+    const scanned = await baseQuery.take(scanLimit);
 
-    while (scanned < maxScannedDocs) {
-      const page = await baseQuery.paginate({ cursor, numItems: pageFetchSize });
-      if (page.page.length === 0) {
-        exhausted = true;
-        break;
-      }
+    const filtered = scanned.filter((scholarship) => {
+      if (scholarship.application_deadline && scholarship.application_deadline < now) return false;
+      return matchesCollectionFilters(scholarship as any, collection);
+    });
 
-      scanned += page.page.length;
-      for (const scholarship of page.page) {
-        // Exclude expired unless showing closed
-        if (scholarship.application_deadline && scholarship.application_deadline < now) continue;
-        if (!matchesCollectionFilters(scholarship, collection)) continue;
-
-        totalMatched += 1;
-        if (totalMatched > offset && scholarshipsForPage.length < limit) {
-          scholarshipsForPage.push(scholarship);
-        }
-      }
-
-      if (page.isDone) {
-        exhausted = true;
-        break;
-      }
-
-      cursor = page.continueCursor;
-
-      // Once we have enough items for the requested page, stop early to keep reads bounded.
-      if (scholarshipsForPage.length >= limit && scanned >= Math.max(offset + limit + 120, 200)) {
-        break;
-      }
-    }
-
-    const total = exhausted
-      ? totalMatched
-      : Math.max(collection.scholarship_count ?? 0, offset + scholarshipsForPage.length);
-    const scholarships = scholarshipsForPage.map((doc) => toScholarshipSummary(doc));
+    const total = filtered.length;
+    const scholarships = filtered
+      .slice(offset, offset + limit)
+      .map((doc) => toScholarshipSummary(doc));
 
     return { scholarships, total };
   },
@@ -512,39 +472,30 @@ export const getCollectionPreview = query({
       prestige_tier?: string | null;
     }> = [];
     let count = 0;
-    let cursor: string | null = null;
 
-    while (true) {
-      const page = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", "published"))
-        .paginate({ cursor, numItems: 256 });
+    const published = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .take(COLLECTION_SCAN_CAP);
 
-      for (const scholarship of page.page) {
-        if (scholarship.application_deadline && scholarship.application_deadline < now) {
-          continue;
-        }
-        if (!matchesCollectionFilters(scholarship as any, args)) {
-          continue;
-        }
-
-        count += 1;
-        if (preview.length < 5) {
-          preview.push({
-            _id: scholarship._id,
-            title: scholarship.title,
-            host_country: scholarship.host_country,
-            funding_type: scholarship.funding_type,
-            prestige_tier: scholarship.prestige_tier,
-          });
-        }
+    for (const scholarship of published) {
+      if (scholarship.application_deadline && scholarship.application_deadline < now) {
+        continue;
+      }
+      if (!matchesCollectionFilters(scholarship as any, args)) {
+        continue;
       }
 
-      if (page.isDone) {
-        break;
+      count += 1;
+      if (preview.length < 5) {
+        preview.push({
+          _id: scholarship._id,
+          title: scholarship.title,
+          host_country: scholarship.host_country,
+          funding_type: scholarship.funding_type,
+          prestige_tier: scholarship.prestige_tier,
+        });
       }
-
-      cursor = page.continueCursor;
     }
 
     return {

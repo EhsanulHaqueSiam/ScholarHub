@@ -23,6 +23,7 @@ import { wrapDB } from "./triggers";
 import { ALL_TAGS } from "../src/lib/tags";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
+const TAG_USAGE_SCAN_CAP = 12000;
 
 // ---- Queries ----
 
@@ -36,24 +37,15 @@ export const getAllTags = query({
     // Count tag usage
     const tagCounts = new Map<string, number>();
 
-    let cursor: string | null = null;
-    while (true) {
-      const page = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", "published"))
-        .paginate({ cursor, numItems: 256 });
+    const published = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", "published"))
+      .take(TAG_USAGE_SCAN_CAP);
 
-      for (const scholarship of page.page) {
-        for (const tag of scholarship.tags ?? []) {
-          tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
-        }
+    for (const scholarship of published) {
+      for (const tag of scholarship.tags ?? []) {
+        tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       }
-
-      if (page.isDone) {
-        break;
-      }
-
-      cursor = page.continueCursor;
     }
 
     // Ensure predefined tags are always included

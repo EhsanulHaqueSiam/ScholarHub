@@ -16,24 +16,19 @@ const CACHED_COUNT_STATUSES = [
   "rejected",
   "archived",
 ] as const;
+const HOMEPAGE_FEATURED_CACHE_KEY = "featured_scholarships";
+const HOMEPAGE_FEATURED_CACHE_TTL_MS = 60 * 60 * 1000;
+const STATUS_COUNT_SCAN_CAP = 12000;
+const BATCH_QUERY_SCAN_CAP = 600;
 
 type CachedCountStatus = (typeof CACHED_COUNT_STATUSES)[number];
 
 async function countScholarshipsByStatus(ctx: { db: any }, status: CachedCountStatus): Promise<number> {
-  let total = 0;
-  let cursor: string | null = null;
-
-  while (true) {
-    const page = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q: any) => q.eq("status", status))
-      .paginate({ cursor, numItems: 256 });
-    total += page.page.length;
-    if (page.isDone) break;
-    cursor = page.continueCursor;
-  }
-
-  return total;
+  const rows = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status", (q: any) => q.eq("status", status))
+    .take(STATUS_COUNT_SCAN_CAP);
+  return rows.length;
 }
 
 async function refreshCountCache(
@@ -60,6 +55,67 @@ async function refreshCountCache(
   }
 
   return { status, count };
+}
+
+async function computeFeaturedScholarshipsDocs(
+  ctx: { db: any },
+  args: { nationalities?: string[]; limit: number },
+) {
+  const limit = Math.max(1, Math.min(args.limit, 20));
+
+  // Query gold-tier scholarships first — cap at 50 to avoid unbounded reads
+  const goldResults = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status_prestige_deadline", (q: any) =>
+      q.eq("status", "published").eq("prestige_tier", "gold"),
+    )
+    .take(50);
+
+  // If not enough gold, get silver too — cap at 50
+  let silverResults: typeof goldResults = [];
+  if (goldResults.length < limit) {
+    silverResults = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status_prestige_deadline", (q: any) =>
+        q.eq("status", "published").eq("prestige_tier", "silver"),
+      )
+      .take(50);
+  }
+
+  let combined = [...goldResults, ...silverResults];
+
+  // Filter out expired scholarships
+  const now = Date.now();
+  combined = combined.filter((s) => !s.application_deadline || s.application_deadline > now);
+
+  // Prioritize nationality-eligible scholarships
+  if (args.nationalities && args.nationalities.length > 0) {
+    const eligible = combined.filter((s) => {
+      if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
+        return true; // open to all
+      }
+      return args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
+    });
+    const ineligible = combined.filter((s) => {
+      if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
+        return false; // already in eligible
+      }
+      return !args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
+    });
+    combined = [...eligible, ...ineligible];
+  }
+
+  // Sort by deadline ascending (soonest first) within each group
+  combined.sort((a, b) => {
+    if (a.application_deadline && !b.application_deadline) return -1;
+    if (!a.application_deadline && b.application_deadline) return 1;
+    if (a.application_deadline && b.application_deadline) {
+      return a.application_deadline - b.application_deadline;
+    }
+    return 0;
+  });
+
+  return combined;
 }
 
 /**
@@ -281,62 +337,68 @@ export const getFeaturedScholarships = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 6;
+    const limit = Math.max(1, Math.min(args.limit ?? 6, 20));
+    const isPersonalized = !!(args.nationalities && args.nationalities.length > 0);
 
-    // Query gold-tier scholarships first — cap at 50 to avoid unbounded reads
-    const goldResults = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status_prestige_deadline", (q) =>
-        q.eq("status", "published").eq("prestige_tier", "gold"),
-      )
-      .take(50);
+    // Hot path for homepage: use cached non-personalized featured IDs.
+    if (!isPersonalized) {
+      const cached = await ctx.db
+        .query("homepage_cache")
+        .withIndex("by_key", (q: any) => q.eq("key", HOMEPAGE_FEATURED_CACHE_KEY))
+        .first();
 
-    // If not enough gold, get silver too — cap at 50
-    let silverResults: typeof goldResults = [];
-    if (goldResults.length < limit) {
-      silverResults = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status_prestige_deadline", (q) =>
-          q.eq("status", "published").eq("prestige_tier", "silver"),
-        )
-        .take(50);
-    }
+      if (cached && Date.now() - cached.updated_at <= HOMEPAGE_FEATURED_CACHE_TTL_MS) {
+        const hydrated = (
+          await Promise.all(cached.scholarship_ids.slice(0, limit + 8).map((id: any) => ctx.db.get(id)))
+        ).filter(
+          (doc): doc is NonNullable<typeof doc> =>
+            !!doc &&
+            doc.status === "published" &&
+            (!doc.application_deadline || doc.application_deadline > Date.now()),
+        );
 
-    let combined = [...goldResults, ...silverResults];
-
-    // Filter out expired scholarships
-    const now = Date.now();
-    combined = combined.filter((s) => !s.application_deadline || s.application_deadline > now);
-
-    // Prioritize nationality-eligible scholarships
-    if (args.nationalities && args.nationalities.length > 0) {
-      const eligible = combined.filter((s) => {
-        if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
-          return true; // open to all
+        if (hydrated.length >= limit) {
+          return hydrated.slice(0, limit).map((doc) => toScholarshipSummary(doc));
         }
-        return args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
-      });
-      const ineligible = combined.filter((s) => {
-        if (!s.eligibility_nationalities || s.eligibility_nationalities.length === 0) {
-          return false; // already in eligible
-        }
-        return !args.nationalities!.some((n) => s.eligibility_nationalities!.includes(n));
-      });
-      combined = [...eligible, ...ineligible];
-    }
-
-    // Sort by deadline ascending (soonest first) within each group
-    combined.sort((a, b) => {
-      // Scholarships with deadlines come before those without
-      if (a.application_deadline && !b.application_deadline) return -1;
-      if (!a.application_deadline && b.application_deadline) return 1;
-      if (a.application_deadline && b.application_deadline) {
-        return a.application_deadline - b.application_deadline;
       }
-      return 0;
-    });
+    }
 
+    const combined = await computeFeaturedScholarshipsDocs(ctx, {
+      nationalities: args.nationalities,
+      limit,
+    });
     return combined.slice(0, limit).map((doc) => toScholarshipSummary(doc));
+  },
+});
+
+/**
+ * Refresh homepage featured scholarship cache.
+ * Called by cron and scrape-complete hooks.
+ */
+export const refreshHomepageCache = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const docs = await computeFeaturedScholarshipsDocs(ctx, { limit: 12 });
+    const scholarship_ids = docs.slice(0, 12).map((doc) => doc._id);
+    const existing = await ctx.db
+      .query("homepage_cache")
+      .withIndex("by_key", (q: any) => q.eq("key", HOMEPAGE_FEATURED_CACHE_KEY))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        scholarship_ids,
+        updated_at: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("homepage_cache", {
+        key: HOMEPAGE_FEATURED_CACHE_KEY,
+        scholarship_ids,
+        updated_at: Date.now(),
+      });
+    }
+
+    return { refreshed: true, featuredCount: scholarship_ids.length };
   },
 });
 
@@ -536,52 +598,33 @@ export const listScholarshipsBatch = query({
       return q.and(...conditions);
     });
 
-    // Progressive fetch: keep scanning until we fill the requested batch
-    // after post-filters, avoiding sparse/empty responses for valid filters.
-    const numItemsPerPage = Math.min(120, Math.max(maxResults * 2, 40));
-    const maxScannedDocs = Math.max(400, maxResults * 12);
-    const collected: any[] = [];
-    let cursor: string | null = null;
-    let scannedDocs = 0;
+    const scanLimit = Math.min(BATCH_QUERY_SCAN_CAP, Math.max(maxResults * 6, 80));
+    const baseResults = await filtered.take(scanLimit);
 
-    while (collected.length < maxResults && scannedDocs < maxScannedDocs) {
-      const page = await filtered.paginate({ cursor, numItems: numItemsPerPage });
-      if (page.page.length === 0) break;
-      scannedDocs += page.page.length;
+    let postFiltered = applyPostFilters(baseResults, {
+      // Already pushed into db-level filter above.
+      hostCountries: undefined,
+      fundingTypes: undefined,
+      prestigeTiers: undefined,
+      scholarshipTypes: undefined,
+      nationalities: args.nationalities,
+      showIneligible: args.showIneligible,
+      degreeLevels: args.degreeLevels,
+      fieldsOfStudy: args.fieldsOfStudy,
+      showClosed,
+      closingSoon: args.closingSoon,
+      now,
+      thirtyDays,
+    });
 
-      let pageResults = applyPostFilters(page.page, {
-        // Already pushed into db-level filter above.
-        hostCountries: undefined,
-        fundingTypes: undefined,
-        prestigeTiers: undefined,
-        scholarshipTypes: undefined,
-        nationalities: args.nationalities,
-        showIneligible: args.showIneligible,
-        degreeLevels: args.degreeLevels,
-        fieldsOfStudy: args.fieldsOfStudy,
-        showClosed,
-        closingSoon: args.closingSoon,
-        now,
-        thirtyDays,
+    if (args.tags && args.tags.length > 0) {
+      postFiltered = postFiltered.filter((doc) => {
+        if (!doc.tags || doc.tags.length === 0) return false;
+        return args.tags!.some((t) => doc.tags!.includes(t));
       });
-
-      if (args.tags && args.tags.length > 0) {
-        pageResults = pageResults.filter((doc) => {
-          if (!doc.tags || doc.tags.length === 0) return false;
-          return args.tags!.some((t) => doc.tags!.includes(t));
-        });
-      }
-
-      for (const doc of pageResults) {
-        if (collected.length >= maxResults) break;
-        collected.push(doc);
-      }
-
-      if (page.isDone) break;
-      cursor = page.continueCursor;
     }
 
-    return collected.map((doc) => toScholarshipSummary(doc));
+    return postFiltered.slice(0, maxResults).map((doc) => toScholarshipSummary(doc));
   },
 });
 

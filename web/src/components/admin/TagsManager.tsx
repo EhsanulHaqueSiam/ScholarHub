@@ -39,7 +39,11 @@ export function TagsManager() {
   const [bulkApplying, setBulkApplying] = useState(false);
 
   // Get scholarships with suggested tags for Section 2
-  const reviewQueue = useQuery(api.admin.getReviewQueue, { status: "published" as any, limit: 200 });
+  const reviewQueue = useQuery(api.admin.getReviewQueue, {
+    status: "published" as any,
+    limit: 200,
+    includePossibleDuplicate: false,
+  });
 
   // Build tag count map
   const tagCountMap = useMemo(() => {
