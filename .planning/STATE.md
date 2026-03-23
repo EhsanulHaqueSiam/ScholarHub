@@ -52,6 +52,7 @@ None.
 | 260322-hcw | Demote published scholarships with missing important info to pending_review | 2026-03-22 | 36f6528 | [260322-hcw-demote-public-scholarships-with-missing-](./quick/260322-hcw-demote-public-scholarships-with-missing-/) |
 | 260322-hky | Fix desktop pagination to replace content instead of appending | 2026-03-22 | 8740ff2 | [260322-hky-fix-desktop-pagination-to-replace-conten](./quick/260322-hky-fix-desktop-pagination-to-replace-conten/) |
 | 260322-lih | Country detail pages with tuition, visa, intakes, post-study work + improved funding display | 2026-03-22 | cb725e0 | [260322-lih-add-country-detail-sections-cost-of-stud](./quick/260322-lih-add-country-detail-sections-cost-of-stud/) |
+| 260323-ne9 | IDP Education scholarship finder config (~6300 scholarships, detail pages, wave 2) | 2026-03-23 | 4c4b108 | [260323-ne9-build-idp-education-spider-with-blog-pos](./quick/260323-ne9-build-idp-education-spider-with-blog-pos/) |
 
 ### Blockers/Concerns
 
@@ -63,5 +64,5 @@ None.
 
 Last session: 2026-03-23
 Last activity: 2026-03-23
-Stopped at: Milestone v1.0 archived
+Stopped at: Completed quick-260323-ne9 (IDP Education spider)
 Resume file: None
