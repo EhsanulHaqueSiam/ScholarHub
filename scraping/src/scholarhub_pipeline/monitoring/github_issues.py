@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from typing import TYPE_CHECKING
 
@@ -27,7 +28,11 @@ class GitHubIssueManager:
             repo: GitHub repo in owner/name format. Falls back to GITHUB_REPOSITORY env var.
         """
         self.convex = convex_client
-        self.repo = repo or os.environ.get("GITHUB_REPOSITORY", "")
+        # `repo=""` is an explicit opt-out in tests/local runs; only fallback to env
+        # when repo is omitted (None).
+        self.repo = os.environ.get("GITHUB_REPOSITORY", "") if repo is None else repo
+        token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+        self._gh_env = {**os.environ, "GH_TOKEN": token} if token else None
 
     def create_rot_issue(
         self,
@@ -51,6 +56,10 @@ class GitHubIssueManager:
         Returns:
             Issue number if created, None on failure.
         """
+        if not self.repo:
+            logger.warning("rot_issue_creation_skipped", source=source_name, reason="missing_repo")
+            return None
+
         title = f"[Scraper Rot] {source_name} - {error_type}"
         body = (
             "## Scraper Rot Detected\n\n"
@@ -78,13 +87,27 @@ class GitHubIssueManager:
                 text=True,
                 check=True,
                 timeout=30,
+                env=self._gh_env,
             )
-            # Parse issue number from output (format: "https://github.com/owner/repo/issues/123")
-            issue_url = result.stdout.strip()
-            issue_number = int(issue_url.split("/")[-1])
+            issue_output = result.stdout.strip()
+            match = re.search(r"/issues/(\d+)", issue_output)
+            if not match:
+                logger.error(
+                    "rot_issue_creation_failed",
+                    source=source_name,
+                    error="could_not_parse_issue_number",
+                    output=issue_output,
+                )
+                return None
+            issue_number = int(match.group(1))
             logger.info("rot_issue_created", source=source_name, issue=issue_number)
             return issue_number
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, ValueError) as e:
+        except (
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            ValueError,
+        ) as e:
             logger.error("rot_issue_creation_failed", source=source_name, error=str(e))
             return None
 
@@ -98,6 +121,10 @@ class GitHubIssueManager:
         Returns:
             True if closed successfully, False on failure.
         """
+        if not self.repo:
+            logger.warning("rot_issue_close_skipped", issue=issue_number, reason="missing_repo")
+            return False
+
         try:
             comment = f"Source **{source_name}** has recovered. Closing automatically."
             subprocess.run(  # noqa: S603
@@ -110,10 +137,11 @@ class GitHubIssueManager:
                 text=True,
                 check=True,
                 timeout=30,
+                env=self._gh_env,
             )
             logger.info("rot_issue_closed", source=source_name, issue=issue_number)
             return True
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             logger.error("rot_issue_close_failed", issue=issue_number, error=str(e))
             return False
 
