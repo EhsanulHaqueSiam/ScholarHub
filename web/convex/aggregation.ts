@@ -32,6 +32,9 @@ const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(
 // Valid degree levels and funding types for validation
 const VALID_DEGREES = new Set(["bachelor", "master", "phd", "postdoc"]);
 const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
+const DEFAULT_AGGREGATION_BATCH_SIZE = 20;
+const MAX_CANDIDATES_PER_MATCH_KEY = 25;
+const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 60;
 
 // ---------- Mutation 1: aggregateBatch ----------
 
@@ -42,17 +45,13 @@ export const aggregateBatch = triggeredInternalMutation({
     runId: v.optional(v.id("scrape_runs")),
   },
   handler: async (ctx, args) => {
-    const batchSize = args.batchSize ?? 50;
+    const batchSize = Math.max(1, Math.min(args.batchSize ?? DEFAULT_AGGREGATION_BATCH_SIZE, 100));
     const counts = { new: 0, updated: 0, duplicate: 0 };
 
-    // Query unpromoted raw_records (canonical_id is undefined/null).
-    // We use .take() instead of .paginate() because we set canonical_id on each
-    // record as we process it, so the next batch query naturally skips processed records.
+    // Query unpromoted raw_records (canonical_id is undefined) via index to avoid full scans.
     const unpromoted = await ctx.db
       .query("raw_records")
-      .filter((q) =>
-        q.or(q.eq(q.field("canonical_id"), undefined), q.eq(q.field("canonical_id"), null)),
-      )
+      .withIndex("by_canonical", (q) => q.eq("canonical_id", undefined))
       .take(batchSize);
 
     for (const record of unpromoted) {
@@ -70,7 +69,7 @@ export const aggregateBatch = triggeredInternalMutation({
       const candidates = await ctx.db
         .query("scholarships")
         .withIndex("by_match_key", (q) => q.eq("match_key", matchKey))
-        .collect();
+        .take(MAX_CANDIDATES_PER_MATCH_KEY);
 
       const recordDegrees = (record.degree_levels as string[]) ?? [];
 
@@ -264,56 +263,60 @@ export const archiveExpired = triggeredInternalMutation({
 // ---------- Helper: Merge raw_record into existing scholarship ----------
 
 async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
-  // Load the source document for this raw_record
-  const recordSource = await ctx.db.get(record.source_id);
-  const recordCategory = recordSource?.category ?? "aggregator";
-
-  // Load all existing raw_records linked to this scholarship
+  // Load recent linked raw_records for this scholarship.
+  // Keeping this bounded prevents read-limit spikes on long-lived scholarships.
   const linkedRecords = await ctx.db
     .query("raw_records")
     .withIndex("by_canonical", (q) => q.eq("canonical_id", scholarship._id))
-    .collect();
+    .order("desc")
+    .take(MAX_LINKED_RAW_RECORDS_FOR_MERGE);
 
-  // Build candidates arrays for field resolution
+  // Resolve source categories once per unique source id.
+  const sourceCategoryById = new Map<string, string>();
+  const linkedSourceIds = [...new Set(linkedRecords.map((lr: any) => String(lr.source_id)))];
+  await Promise.all(
+    linkedSourceIds.map(async (sourceId) => {
+      const source = await ctx.db.get(sourceId);
+      sourceCategoryById.set(sourceId, source?.category ?? "aggregator");
+    }),
+  );
+  const recordSource = await ctx.db.get(record.source_id);
+  sourceCategoryById.set(String(record.source_id), recordSource?.category ?? "aggregator");
+
+  // Build candidates arrays for trust-weighted field resolution
   type Candidate<T> = {
     value: T | undefined | null;
     category: string;
     scrapedAt: number;
   };
 
-  const buildCandidates = async <T>(fieldName: string): Promise<Candidate<T>[]> => {
-    const candidates: Candidate<T>[] = [];
+  const titleCandidates: Candidate<string>[] = [];
+  const descCandidates: Candidate<string>[] = [];
+  const orgCandidates: Candidate<string>[] = [];
+  const countryCandidates: Candidate<string>[] = [];
+  const appUrlCandidates: Candidate<string>[] = [];
+  const awardAmountCandidates: Candidate<string>[] = [];
+  const fundingTypeCandidates: Candidate<string>[] = [];
+  const deadlineCandidates: Candidate<string>[] = [];
 
-    // Add existing linked raw_records
-    for (const lr of linkedRecords) {
-      const lrSource = await ctx.db.get(lr.source_id);
-      candidates.push({
-        value: (lr as any)[fieldName],
-        category: lrSource?.category ?? "aggregator",
-        scrapedAt: lr.scraped_at,
-      });
-    }
-
-    // Add the new record
-    candidates.push({
-      value: (record as any)[fieldName],
-      category: recordCategory,
-      scrapedAt: record.scraped_at,
-    });
-
-    return candidates;
+  const pushCandidates = (raw: any, category: string) => {
+    const scrapedAt = raw.scraped_at;
+    titleCandidates.push({ value: raw.title, category, scrapedAt });
+    descCandidates.push({ value: raw.description, category, scrapedAt });
+    orgCandidates.push({ value: raw.provider_organization, category, scrapedAt });
+    countryCandidates.push({ value: raw.host_country, category, scrapedAt });
+    appUrlCandidates.push({ value: raw.application_url, category, scrapedAt });
+    awardAmountCandidates.push({ value: raw.award_amount, category, scrapedAt });
+    fundingTypeCandidates.push({ value: raw.funding_type, category, scrapedAt });
+    deadlineCandidates.push({ value: raw.application_deadline, category, scrapedAt });
   };
 
-  // Resolve scalar fields using trust hierarchy
-  const titleCandidates = await buildCandidates<string>("title");
-  const descCandidates = await buildCandidates<string>("description");
-  const orgCandidates = await buildCandidates<string>("provider_organization");
-  const countryCandidates = await buildCandidates<string>("host_country");
-  const appUrlCandidates = await buildCandidates<string>("application_url");
-  const awardAmountCandidates = await buildCandidates<string>("award_amount");
-  const fundingTypeCandidates = await buildCandidates<string>("funding_type");
-  const deadlineCandidates = await buildCandidates<string>("application_deadline");
+  for (const lr of linkedRecords) {
+    pushCandidates(lr, sourceCategoryById.get(String(lr.source_id)) ?? "aggregator");
+  }
+  pushCandidates(record, sourceCategoryById.get(String(record.source_id)) ?? "aggregator");
 
+  // Resolve scalar fields using trust hierarchy
   const resolvedTitle = resolveField(titleCandidates) ?? scholarship.title;
   const resolvedDescription = resolveField(descCandidates) ?? scholarship.description;
   const resolvedOrg = resolveField(orgCandidates) ?? scholarship.provider_organization;
@@ -323,59 +326,36 @@ async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
   const resolvedFundingType = resolveField(fundingTypeCandidates) ?? scholarship.funding_type;
   const resolvedDeadlineStr = resolveField(deadlineCandidates);
 
-  // Union merge for array fields: degree_levels, eligibility_nationalities, fields_of_study
+  // Merge arrays and booleans in one pass to minimize work/read amplification.
   const allDegrees = new Set<string>(scholarship.degree_levels ?? []);
-  for (const lr of linkedRecords) {
-    for (const d of (lr.degree_levels as string[]) ?? []) allDegrees.add(d);
-  }
-  for (const d of (record.degree_levels as string[]) ?? []) allDegrees.add(d);
+  const allNationalities = new Set<string>(scholarship.eligibility_nationalities ?? []);
+  const allFields = new Set<string>(scholarship.fields_of_study ?? []);
+  let fundingTuition = Boolean(scholarship.funding_tuition);
+  let fundingLiving = Boolean(scholarship.funding_living);
+  let fundingTravel = Boolean(scholarship.funding_travel);
+  let fundingInsurance = Boolean(scholarship.funding_insurance);
+  let fundingBooks = Boolean(scholarship.funding_books);
+  let fundingResearch = Boolean(scholarship.funding_research);
+
+  const absorbRawRecord = (raw: any) => {
+    for (const d of (raw.degree_levels as string[]) ?? []) allDegrees.add(d);
+    for (const n of raw.eligibility_nationalities ?? []) allNationalities.add(n);
+    for (const f of raw.fields_of_study ?? []) allFields.add(f);
+
+    fundingTuition = fundingTuition || Boolean(raw.funding_tuition);
+    fundingLiving = fundingLiving || Boolean(raw.funding_living);
+    fundingTravel = fundingTravel || Boolean(raw.funding_travel);
+    fundingInsurance = fundingInsurance || Boolean(raw.funding_insurance);
+    fundingBooks = fundingBooks || Boolean(raw.funding_books);
+    fundingResearch = fundingResearch || Boolean(raw.funding_research);
+  };
+
+  for (const lr of linkedRecords) absorbRawRecord(lr);
+  absorbRawRecord(record);
+
   const mergedDegrees = [...allDegrees].filter((d) => VALID_DEGREES.has(d)) as Array<
     "bachelor" | "master" | "phd" | "postdoc"
   >;
-
-  const allNationalities = new Set<string>(scholarship.eligibility_nationalities ?? []);
-  for (const lr of linkedRecords) {
-    for (const n of lr.eligibility_nationalities ?? []) allNationalities.add(n);
-  }
-  for (const n of record.eligibility_nationalities ?? []) allNationalities.add(n);
-
-  const allFields = new Set<string>(scholarship.fields_of_study ?? []);
-  for (const lr of linkedRecords) {
-    for (const f of lr.fields_of_study ?? []) allFields.add(f);
-  }
-  for (const f of record.fields_of_study ?? []) allFields.add(f);
-
-  // OR merge for funding booleans
-  const fundingTuition =
-    scholarship.funding_tuition ||
-    linkedRecords.some((lr: any) => lr.funding_tuition) ||
-    record.funding_tuition ||
-    false;
-  const fundingLiving =
-    scholarship.funding_living ||
-    linkedRecords.some((lr: any) => lr.funding_living) ||
-    record.funding_living ||
-    false;
-  const fundingTravel =
-    scholarship.funding_travel ||
-    linkedRecords.some((lr: any) => lr.funding_travel) ||
-    record.funding_travel ||
-    false;
-  const fundingInsurance =
-    scholarship.funding_insurance ||
-    linkedRecords.some((lr: any) => lr.funding_insurance) ||
-    record.funding_insurance ||
-    false;
-  const fundingBooks =
-    scholarship.funding_books ||
-    linkedRecords.some((lr: any) => lr.funding_books) ||
-    record.funding_books ||
-    false;
-  const fundingResearch =
-    scholarship.funding_research ||
-    linkedRecords.some((lr: any) => lr.funding_research) ||
-    record.funding_research ||
-    false;
 
   // Build updated source_ids
   const sourceIds = [...scholarship.source_ids];
@@ -558,7 +538,7 @@ async function handleCycleDetection(ctx: any, scholarshipId: any, record: any, m
   const sameKeyScholarships = await ctx.db
     .query("scholarships")
     .withIndex("by_match_key", (q: any) => q.eq("match_key", matchKey))
-    .collect();
+    .take(MAX_CANDIDATES_PER_MATCH_KEY);
 
   for (const other of sameKeyScholarships) {
     if (other._id === scholarshipId) continue;
