@@ -1,0 +1,121 @@
+[
+  {
+    "name": "University of Auckland Scholarships",
+    "url": "https://www.auckland.ac.nz/en/study/scholarships-and-awards/find-a-scholarship.html",
+    "category": "university",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~100",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, detail_link, description, amount, deadline | Volume: ~100 | Server-rendered HTML scholarship listing with detail pages"
+  },
+  {
+    "name": "Lincoln University Scholarships",
+    "url": "https://www.lincoln.ac.nz/study/scholarships/search-scholarships/",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~50",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: yes (Cloudflare challenge) | Fields: title, detail_link, description | Volume: ~50 | Silverstripe CMS with Cloudflare protection"
+  },
+  {
+    "name": "Massey University Scholarships",
+    "url": "https://www.massey.ac.nz/study/scholarships-and-awards/",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~50",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~50 | JS-based filtering system with embedded JSON config"
+  },
+  {
+    "name": "University of Otago Scholarships",
+    "url": "https://www.otago.ac.nz/study/scholarships/database/",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~100",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: yes (Cloudflare managed challenge) | Fields: title, detail_link, description | Volume: ~100 | Scholarship database with bot protection"
+  },
+  {
+    "name": "University of Waikato Scholarships",
+    "url": "https://www.waikato.ac.nz/scholarships/find-a-scholarship/",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~50",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~50 | JS filtering with URL-encoded JSON params"
+  },
+  {
+    "name": "Victoria University of Wellington Scholarships",
+    "url": "https://www.wgtn.ac.nz/scholarships/find-scholarships",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~50",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~50 | Fully JS-rendered, requires JavaScript for all content"
+  },
+  {
+    "name": "AUT University Scholarships",
+    "url": "https://www.aut.ac.nz/scholarships",
+    "category": "university",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 336,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~50",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, detail_link, description | Volume: ~50 | LOW confidence -- hub page only, actual data may be in external GivME database"
+  }
+]

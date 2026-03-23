@@ -11,7 +11,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~30",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~30 programs | UK Government collections page"
   },
   {
@@ -26,7 +28,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, programme_type | Volume: ~20 programs | US Bureau of Educational and Cultural Affairs"
   },
   {
@@ -41,7 +45,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~1024",
-    "geographic_coverage": ["oceania"],
+    "geographic_coverage": [
+      "oceania"
+    ],
     "notes": "CF: no | Fields: name, description, eligibility, closing_date, amount_annual, organisations, level_of_studies, field_of_studies | Volume: 1024 scholarships | Inertia.js API on ACIR search portal"
   },
   {
@@ -56,7 +62,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~2281",
-    "geographic_coverage": ["oceania"],
+    "geographic_coverage": [
+      "oceania"
+    ],
     "notes": "CF: no | Fields: name, description, web_address, cricos_code, sites | Volume: 2281 providers | Inertia.js API on ACIR search portal"
   },
   {
@@ -71,7 +79,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~30",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, level | Volume: ~30 programs | EduCanada scholarship portal"
   },
   {
@@ -86,7 +96,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia", "global"],
+    "geographic_coverage": [
+      "asia",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, field | Volume: ~20 programs | Japan International Cooperation Agency"
   },
   {
@@ -101,7 +114,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | German development cooperation scholarships"
   },
   {
@@ -116,7 +132,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia", "global"],
+    "geographic_coverage": [
+      "asia",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Korea International Cooperation Agency"
   },
   {
@@ -131,7 +150,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~100",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, provider, amount | Volume: ~100 listings | DAAD-run portal with aggregated German scholarships"
   },
   {
@@ -146,7 +167,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~50",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, provider, level | Volume: ~50 listings | French Government study portal"
   },
   {
@@ -161,7 +184,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~682",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: school_name, program_name, scholarship, tuition_reduction, settling_in_allowance | Volume: 682 scholarships | CSV download endpoint"
   },
   {
@@ -176,7 +201,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~140",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: org_name, stipend, duration, academic_level, nationality, application_period | Volume: 140 scholarships | jQuery-based HTML with detail pages"
   },
   {
@@ -191,7 +218,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~15",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~15 programs | Japan Student Services Organization"
   },
   {
@@ -206,7 +235,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, university | Volume: ~20 programs | China Scholarship Council official portal"
   },
   {
@@ -221,7 +252,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~15",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, level | Volume: ~15 programs | National Institute for International Education"
   },
   {
@@ -236,7 +269,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~30",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, amount, deadline | Volume: ~30 listings | Swedish Institute portal"
   },
   {
@@ -251,7 +286,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~50",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, amount, deadline | Volume: ~50 listings | Nuffic scholarship search"
   },
   {
@@ -266,7 +303,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~10 listings | Norwegian Directorate for Higher Education"
   },
   {
@@ -281,7 +320,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~20 listings | Flanders Knowledge Area portal"
   },
   {
@@ -296,7 +337,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline, university | Volume: ~20 listings | Italian Government study portal"
   },
   {
@@ -311,7 +354,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~10 programs | Taiwan Ministry of Education scholarships"
   },
   {
@@ -326,7 +371,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["africa", "middle_east"],
+    "geographic_coverage": [
+      "africa",
+      "middle_east"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Egyptian Ministry of Higher Education"
   },
   {
@@ -341,7 +389,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Moroccan Agency for International Cooperation"
   },
   {
@@ -356,7 +406,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | SA Department of Higher Education and Training"
   },
   {
@@ -371,7 +423,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Petroleum Technology Development Fund"
   },
   {
@@ -386,7 +440,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Kenya Universities and Colleges Central Placement Service"
   },
   {
@@ -401,7 +457,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Ghana Education Trust Fund"
   },
   {
@@ -416,7 +474,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Ethiopian Ministry of Education"
   },
   {
@@ -431,7 +491,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, amount | Volume: ~5 programs | Indonesia Endowment Fund for Education"
   },
   {
@@ -446,7 +508,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Vietnam International Education Development"
   },
   {
@@ -461,7 +525,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | Commission on Higher Education Philippines"
   },
   {
@@ -476,7 +542,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | University Grants Commission of Bangladesh"
   },
   {
@@ -491,7 +559,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, amount | Volume: ~20 programs | Pakistan Higher Education Commission"
   },
   {
@@ -506,7 +576,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Sri Lanka University Grants Commission"
   },
   {
@@ -521,7 +593,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Nepal Ministry of Education Science and Technology"
   },
   {
@@ -536,7 +610,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Argentine Government scholarship programs"
   },
   {
@@ -551,7 +627,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | Colombian Institute for Educational Credit"
   },
   {
@@ -566,7 +644,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | Peru National Scholarship and Educational Credit Program"
   },
   {
@@ -581,7 +661,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["middle_east"],
+    "geographic_coverage": [
+      "middle_east"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | UAE Ministry of Human Resources"
   },
   {
@@ -596,7 +678,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["middle_east"],
+    "geographic_coverage": [
+      "middle_east"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Jordan Ministry of Higher Education"
   },
   {
@@ -611,7 +695,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["middle_east"],
+    "geographic_coverage": [
+      "middle_east"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Oman Ministry of Higher Education"
   },
   {
@@ -626,7 +712,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["middle_east"],
+    "geographic_coverage": [
+      "middle_east"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Kuwait Ministry of Higher Education"
   },
   {
@@ -641,7 +729,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~15",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~15 listings | Polish Government study portal"
   },
   {
@@ -656,7 +746,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~10 listings | Tempus Public Foundation portal"
   },
   {
@@ -671,7 +763,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~10 listings | Czech Government study portal"
   },
   {
@@ -686,7 +780,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, provider, deadline | Volume: ~10 listings | Romanian Government study portal"
   },
   {
@@ -701,7 +797,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe", "asia"],
+    "geographic_coverage": [
+      "europe",
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~10 programs | Russian Government scholarship portal"
   },
   {
@@ -716,7 +815,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Tanzania Commission for Universities"
   },
   {
@@ -731,7 +832,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Uganda Ministry of Education and Sports"
   },
   {
@@ -746,7 +849,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Rwanda Ministry of Education"
   },
   {
@@ -761,7 +866,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~164",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, description, eligibility, benefits, deadline | Volume: ~164 scholarships | DAAD scholarship database with AJAX pagination"
   },
   {
@@ -776,7 +883,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, eligibility, benefits, deadline | Volume: ~3 scholarship types (Standard, SIDS, ASEAN) | UK Government fully-funded master's programme"
   },
   {
@@ -791,7 +901,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, eligibility, benefits, level | Volume: ~10 programme tracks | Turkey Government scholarship programme (undergraduate, graduate, research)"
   },
   {
@@ -806,7 +919,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, description, eligibility, benefits, level | Volume: ~5 GKS tracks | Global Korea Scholarship (undergraduate, graduate)"
   },
   {
@@ -821,7 +936,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1100",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, university, degree_level, language, duration | Volume: ~1100 programmes | DreamApply platform with paginated course listings"
   },
   {
@@ -836,7 +953,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: yes (HTTP 412) | Fields: title, description, eligibility, benefits, deadline | Volume: ~20 scholarship types | Campus China portal with anti-bot protection"
   },
   {
@@ -851,7 +970,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1565",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, detail_link | Volume: ~1565 | Yii framework single-request grid table"
   },
   {
@@ -866,7 +987,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~1000",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, source_url | Volume: ~1000 | WordPress REST API scholarship database"
   },
   {
@@ -881,7 +1004,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~2500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, source_url | Volume: ~2500 | WordPress REST API scholarship database"
   },
   {
@@ -896,7 +1021,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~500",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, description, source_url | Volume: ~500 | WordPress REST API scholarship database"
   },
   {
@@ -911,7 +1038,9 @@
     "auth_required": false,
     "has_api": true,
     "estimated_volume": "~100",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: program, organization, citizenship | Volume: ~100 | Direct JSON API, program field contains HTML"
   },
   {
@@ -926,7 +1055,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~271",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~271 | Drupal HTML with page_num pagination"
   },
   {
@@ -941,7 +1072,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~211",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~211 | EACEA Drupal site with page_num pagination"
   },
   {
@@ -956,7 +1089,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~10 | WordPress single page"
   },
   {
@@ -971,7 +1107,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title | Volume: ~20 | Definition list layout, single page"
   },
   {
@@ -986,7 +1124,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~2",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~2 | WordPress single page"
   },
   {
@@ -1001,7 +1141,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~60",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, detail_link | Volume: ~60 | Bangladesh govt table layout"
   },
   {
@@ -1016,7 +1158,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~20 | SSL cert issues, scrapling with verify=False | Bangladesh ERD foreign scholarship listings"
   },
   {
@@ -1031,7 +1175,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["oceania"],
+    "geographic_coverage": [
+      "oceania"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~10 | Timeout issues, scrapling required | DFAT Australia Awards programme pages"
   },
   {
@@ -1046,7 +1192,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~100",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: yes | Fields: title, detail_link, description, university | Volume: ~100 | 403 on direct access | UK GREAT Scholarships for international students"
   },
   {
@@ -1061,7 +1209,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~10 | Dynamic gov.ie platform | Government of Ireland International Education Scholarships"
   },
   {
@@ -1076,7 +1226,128 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~50",
-    "geographic_coverage": ["oceania"],
+    "geographic_coverage": [
+      "oceania"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~50 | ECONNREFUSED, scrapling required | New Zealand government scholarship portal"
+  },
+  {
+    "name": "John Allwright Fellowship (ACIAR)",
+    "url": "https://www.aciar.gov.au/scholarships/john-allwright-fellowship",
+    "category": "government",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: no | Fields: title, description, eligibility | Volume: ~1 program | ACIAR Australian government fellowship for developing country scientists"
+  },
+  {
+    "name": "Australia Research Training Program",
+    "url": "https://www.education.gov.au/research-block-grants/research-training-program",
+    "category": "government",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: yes (connection timeout) | Fields: title, description | Volume: ~1 program | Australian government research training stipends"
+  },
+  {
+    "name": "Canadian Commonwealth Scholarship Plan",
+    "url": "https://www.educanada.ca/scholarships-bourses/index.aspx?lang=eng",
+    "category": "government",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "americas"
+    ],
+    "notes": "CF: no | Fields: title, description | Volume: ~1 program | LOW confidence URL -- no dedicated CCSP page, using EduCanada hub"
+  },
+  {
+    "name": "National Research Council Canada",
+    "url": "https://nrc.canada.ca/en/corporate/careers/",
+    "category": "government",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "americas"
+    ],
+    "notes": "CF: yes (403) | Fields: title, description | Volume: ~1 | LOW confidence -- site returns 403, scrapling required"
+  },
+  {
+    "name": "Quebec PBEEE Merit Scholarship",
+    "url": "https://frq.gouv.qc.ca/en/program/merit-scholarship-program-for-foreign-students-pbeee/",
+    "category": "government",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "americas"
+    ],
+    "notes": "CF: no | Fields: title, description, amount, eligibility | Volume: ~1 program | Fonds de recherche du Quebec merit scholarships for foreign students"
+  },
+  {
+    "name": "SSHRC Partnership Grants",
+    "url": "https://www.sshrc-crsh.gc.ca/funding-financement/programs-programmes/partnership_grants-subventions_partenariat-eng.aspx",
+    "category": "government",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "americas"
+    ],
+    "notes": "CF: no | Fields: title, description, amount, deadline | Volume: ~1 program | Social Sciences and Humanities Research Council of Canada"
+  },
+  {
+    "name": "Palmerston North Mayor Goodwill Ambassador Scholarship",
+    "url": "https://www.studywithnewzealand.govt.nz/en/study-options/scholarship/ba974507-8483-4638-ad3f-de4f5aae2e71",
+    "category": "government",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "oceania"
+    ],
+    "notes": "CF: yes (rate limited) | Fields: title, description | Volume: ~1 | NZ$1,000 towards first year tuition for international students"
   }
 ]

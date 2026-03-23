@@ -11,7 +11,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program (80 awards/year) | Bill & Melinda Gates Foundation"
   },
   {
@@ -26,7 +28,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Aga Khan Development Network"
   },
   {
@@ -41,7 +45,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Ford Foundation social justice fellowships"
   },
   {
@@ -56,7 +62,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~20",
-    "geographic_coverage": ["africa", "global"],
+    "geographic_coverage": [
+      "africa",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility, university | Volume: ~20 partner universities | African youth education and leadership"
   },
   {
@@ -71,7 +80,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | Soros Foundation education initiatives"
   },
   {
@@ -86,7 +97,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~10 programs | Biomedical research studentships"
   },
   {
@@ -101,7 +115,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~10",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: yes | Fields: title, deadline, amount, eligibility | Volume: ~10 programs | Google.org education scholarships"
   },
   {
@@ -116,7 +132,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["americas", "global"],
+    "geographic_coverage": [
+      "americas",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~5 programs | Microsoft diversity and inclusion scholarships"
   },
   {
@@ -131,7 +150,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~3 programs | High-achieving students with financial need"
   },
   {
@@ -146,7 +167,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Social entrepreneurship scholarship at Said Business School"
   },
   {
@@ -161,7 +184,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | African governance leadership fellowship"
   },
   {
@@ -176,7 +201,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["africa", "europe"],
+    "geographic_coverage": [
+      "africa",
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Southern African students studying in UK/SA"
   },
   {
@@ -191,7 +219,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program (60 awards/year) | African leadership scholarship"
   },
   {
@@ -206,7 +236,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["middle_east", "europe"],
+    "geographic_coverage": [
+      "middle_east",
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Middle Eastern students studying in UK"
   },
   {
@@ -221,7 +254,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["asia", "global"],
+    "geographic_coverage": [
+      "asia",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Japan-based international peace foundation"
   },
   {
@@ -236,7 +272,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~5 programs | DAAD-managed foundation scholarships"
   },
   {
@@ -251,7 +289,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program | UK-based research foundation"
   },
   {
@@ -266,7 +306,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Open Society civil society scholar awards"
   },
   {
@@ -281,7 +323,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | International Committee of the Red Cross"
   },
   {
@@ -296,7 +340,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program (150 awards/year) | US undergraduate scholarship"
   },
   {
@@ -311,7 +357,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program (500 awards/year) | Michael & Susan Dell Foundation"
   },
   {
@@ -326,7 +374,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program (30 awards/year) | Paul & Daisy Soros Fellowships"
   },
   {
@@ -341,7 +391,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["global"],
+    "geographic_coverage": [
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Oxford scholarship for developing country students"
   },
   {
@@ -356,7 +408,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Korea Advanced Institute of Science and Technology"
   },
   {
@@ -371,7 +425,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~1 program | Need-based for African students"
   },
   {
@@ -386,7 +442,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["europe"],
+    "geographic_coverage": [
+      "europe"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~5 programs | Alan Turing Institute doctoral studentships"
   },
   {
@@ -401,7 +459,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["africa"],
+    "geographic_coverage": [
+      "africa"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program (1000 entrepreneurs/year) | African entrepreneurship seed funding"
   },
   {
@@ -416,7 +476,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["europe", "global"],
+    "geographic_coverage": [
+      "europe",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | Green-affiliated German foundation international scholarships"
   },
   {
@@ -431,7 +494,10 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~3",
-    "geographic_coverage": ["americas", "global"],
+    "geographic_coverage": [
+      "americas",
+      "global"
+    ],
     "notes": "CF: no | Fields: title, deadline, eligibility | Volume: ~3 programs | STEM and engineering scholarships"
   },
   {
@@ -446,7 +512,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, deadline, amount, eligibility | Volume: ~1 program | International women studying in US/Canada"
   },
   {
@@ -461,7 +529,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~1",
-    "geographic_coverage": ["americas"],
+    "geographic_coverage": [
+      "americas"
+    ],
     "notes": "CF: no | Fields: title, description, amount | Volume: ~1 program (100 scholars/year) | Full funding for Stanford graduate study"
   },
   {
@@ -476,7 +546,9 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~5 | Bangladesh's largest private CSR donor | Scholarship and research grant programmes"
   },
   {
@@ -491,7 +563,43 @@
     "auth_required": false,
     "has_api": false,
     "estimated_volume": "~5",
-    "geographic_coverage": ["asia"],
+    "geographic_coverage": [
+      "asia"
+    ],
     "notes": "CF: no | Fields: title, detail_link, description | Volume: ~5 | JS-heavy Bootstrap site | Islami Bank Foundation education programmes"
+  },
+  {
+    "name": "Trudeau Foundation Scholarships",
+    "url": "https://fondationtrudeau.ca/en/programs/",
+    "category": "foundation",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "americas"
+    ],
+    "notes": "CF: no | Fields: title, description | Volume: ~1 program | Pierre Elliott Trudeau Foundation doctoral scholarships up to $50,000/year"
+  },
+  {
+    "name": "Narotam Sekhsaria Foundation",
+    "url": "https://pg.nsfoundation.co.in/",
+    "category": "foundation",
+    "scrape_method": "scrape",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 720,
+    "wave": 7,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~1",
+    "geographic_coverage": [
+      "asia"
+    ],
+    "notes": "CF: no | Fields: title, description | Volume: ~1 program | Indian foundation funding PG study abroad (288+ scholars, 64 universities, 7 countries)"
   }
 ]
