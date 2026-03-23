@@ -57,6 +57,7 @@ class StealthyScraper(BaseScraper):
         records: list[dict] = []
         seen_keys: set[str] = set()
         seen_detail_urls: set[str] = set()
+        seen_page_urls: set[str] = set()
         detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
@@ -66,6 +67,13 @@ class StealthyScraper(BaseScraper):
         )
 
         while url:
+            current_url = str(url).strip()
+            current_url_norm = current_url.lower()
+            if current_url_norm in seen_page_urls:
+                logger.warning("pagination_loop_detected", source=self.config.name, url=current_url)
+                break
+            seen_page_urls.add(current_url_norm)
+
             # Run sync Playwright in thread to avoid asyncio conflict
             response = await asyncio.to_thread(self._fetch_sync, url)
             body = response.body if hasattr(response, "body") else b""
@@ -180,11 +188,20 @@ class StealthyScraper(BaseScraper):
                 if next_selector:
                     next_result = response.css(next_selector)
                     next_link = next_result.get() if next_result else None
-                    url = (
-                        response.urljoin(next_link)
-                        if next_link and hasattr(response, "urljoin")
-                        else None
-                    )
+                    if next_link and hasattr(response, "urljoin"):
+                        next_url = str(response.urljoin(next_link)).strip()
+                        next_url_norm = next_url.lower()
+                        if next_url_norm == current_url_norm or next_url_norm in seen_page_urls:
+                            logger.warning(
+                                "pagination_repeat_url",
+                                source=self.config.name,
+                                url=next_url,
+                            )
+                            url = None
+                        else:
+                            url = next_url
+                    else:
+                        url = None
                 else:
                     url = None
 

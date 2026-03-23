@@ -466,23 +466,30 @@ class PipelineRunner:
                 try:
                     # Record failure in per-run telemetry stream.
                     if run_id:
-                        self.convex.mutation(
-                            "scraping:recordSourceResult",
-                            {
-                                "run_id": run_id,
-                                "source_id": convex_source_id,
-                                "status": "failure",
-                                "method_used": config.primary_method,
-                                "records_found": 0,
-                                "records_new": 0,
-                                "records_updated": 0,
-                                "records_unchanged": 0,
-                                "duration_seconds": int(duration),
-                                "bytes_downloaded": 0,
-                                "error_type": error_type,
-                                "error_message": str(e)[:500],
-                            },
-                        )
+                        try:
+                            self.convex.mutation(
+                                "scraping:recordSourceResult",
+                                {
+                                    "run_id": run_id,
+                                    "source_id": convex_source_id,
+                                    "status": "failed",
+                                    "method_used": config.primary_method,
+                                    "records_found": 0,
+                                    "records_new": 0,
+                                    "records_updated": 0,
+                                    "records_unchanged": 0,
+                                    "duration_seconds": int(duration),
+                                    "bytes_downloaded": 0,
+                                    "error_type": error_type,
+                                    "error_message": str(e)[:500],
+                                },
+                            )
+                        except Exception as source_result_error:
+                            logger.warning(
+                                "source_result_record_failed",
+                                source=config.name,
+                                error=str(source_result_error),
+                            )
 
                     health_result = HealthTracker(self.convex).record_failure(
                         convex_source_id, error_type, str(e),

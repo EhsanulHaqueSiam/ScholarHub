@@ -21,7 +21,7 @@ class Config(BaseAggregatorConfig):
         "country": "[class*='location']::text, .country::text",
         "amount": "[class*='funding']::text, .amount::text",
         "detail_link": "a.ecl-link--standalone::attr(href), h2 a::attr(href), h3 a::attr(href)",
-        "next_page": ".ecl-pagination__link::attr(href), a[rel='next']::attr(href)",
+        "next_page": ".ecl-pagination__item--next .ecl-pagination__link::attr(href), a[aria-label*='next page']::attr(href)",
     })
     field_mappings: dict[str, str] = field(default_factory=lambda: {
         "title": "title",
@@ -32,8 +32,8 @@ class Config(BaseAggregatorConfig):
     })
     pagination: dict | None = field(default_factory=lambda: {
         "type": "url",
-        "selector": ".ecl-pagination__link::attr(href), a[rel='next']::attr(href)",
-        "max_pages": 40,
+        "selector": ".ecl-pagination__item--next .ecl-pagination__link::attr(href), a[aria-label*='next page']::attr(href)",
+        "max_pages": 20,
     })
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {
