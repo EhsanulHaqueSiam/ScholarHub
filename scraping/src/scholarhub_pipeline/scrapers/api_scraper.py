@@ -1,9 +1,10 @@
-"""API scraper for sources with public JSON/CSV endpoints.
+"""API scraper for sources with public JSON/CSV/nextdata endpoints.
 
 Fetches paginated JSON data from API endpoints using httpx,
 extracts items via a configurable JSON path, applies field
 mappings, and produces normalized records. Also supports CSV
-responses when selectors["format"] == "csv".
+responses when selectors["format"] == "csv" and Next.js
+``__NEXT_DATA__`` extraction when selectors["format"] == "nextdata".
 """
 
 from __future__ import annotations
@@ -11,6 +12,8 @@ from __future__ import annotations
 import asyncio
 import csv
 import io
+import json as json_mod
+import re
 from typing import Any
 
 import httpx
@@ -28,14 +31,19 @@ class ApiScraper(BaseScraper):
     Consumes a SourceConfig whose ``selectors`` dict should include:
     - ``items_path``: dot-separated JSON path to the array of items
       (e.g. ``"data.scholarships"``).
+    - ``format``: response format -- ``"json"`` (default), ``"csv"``, or
+      ``"nextdata"`` (extract JSON from ``__NEXT_DATA__`` script tag).
 
     Pagination is driven by ``pagination`` config:
-    - ``cursor_path``: dot-separated path to next page URL in the response
+    - ``type``: ``"cursor"`` (default) or ``"page_num"``
+    - ``cursor_path``: (cursor) dot-separated path to next page URL
+    - ``param"``: (page_num) query parameter name (default ``"page"``)
+    - ``start``: (page_num) first page number (default 1)
     - ``max_pages``: upper bound on pages to fetch (default 100)
     """
 
     async def scrape(self) -> list[dict]:
-        """Fetch records from a JSON API with pagination support.
+        """Fetch records from a JSON/CSV/nextdata API with pagination support.
 
         Returns:
             List of normalized raw record dicts.
@@ -48,15 +56,29 @@ class ApiScraper(BaseScraper):
             page = 0
 
             is_csv = self.config.selectors.get("format") == "csv"
+            is_nextdata = self.config.selectors.get("format") == "nextdata"
 
             while url:
                 response = await client.get(url)
                 response.raise_for_status()
                 self.bytes_downloaded += len(response.content)
 
+                data: dict | list = {}
+
                 if is_csv:
                     reader = csv.DictReader(io.StringIO(response.text))
                     items = list(reader)
+                elif is_nextdata:
+                    match = re.search(
+                        r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                        response.text,
+                        re.DOTALL,
+                    )
+                    if not match:
+                        logger.warning("no_nextdata_script", url=url)
+                        break
+                    data = json_mod.loads(match.group(1))
+                    items = self._extract_items(data)
                 else:
                     data = response.json()
                     # Extract items using selectors["items_path"]
@@ -74,7 +96,6 @@ class ApiScraper(BaseScraper):
                     # Strip HTML tags from string values (e.g., EduCanada's <a> tags)
                     for k, v in mapped.items():
                         if isinstance(v, str) and "<" in v and ">" in v:
-                            import re
                             mapped[k] = re.sub(r"<[^>]+>", "", v).strip()
                     if host_country_default and not mapped.get("host_country"):
                         mapped["host_country"] = host_country_default
@@ -93,13 +114,28 @@ class ApiScraper(BaseScraper):
                     records.append(record)
                     self.records_found += 1
 
+                    # Respect max_records limit
+                    if self.config.max_records and self.records_found >= self.config.max_records:
+                        return records
+
                 # CSV endpoints return all data in a single request
                 if is_csv:
                     break
 
                 # Pagination
-                url = self._get_next_url(data)
-                page += 1
+                pag_type = self.config.pagination.get("type") if self.config.pagination else None
+
+                if pag_type == "page_num":
+                    page += 1
+                    param = self.config.pagination.get("param", "page")
+                    start = self.config.pagination.get("start", 1)
+                    base = self.config.url.split("?")[0]
+                    sep = "&" if "?" in self.config.url else "?"
+                    url = f"{self.config.url}{sep}{param}={start + page}"
+                else:
+                    url = self._get_next_url(data)
+                    page += 1
+
                 max_pages = (
                     self.config.pagination.get("max_pages", 100)
                     if self.config.pagination
