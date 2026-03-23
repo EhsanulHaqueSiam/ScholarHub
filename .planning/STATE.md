@@ -52,6 +52,7 @@ None.
 | 260322-hcw | Demote published scholarships with missing important info to pending_review | 2026-03-22 | 36f6528 | [260322-hcw-demote-public-scholarships-with-missing-](./quick/260322-hcw-demote-public-scholarships-with-missing-/) |
 | 260322-hky | Fix desktop pagination to replace content instead of appending | 2026-03-22 | 8740ff2 | [260322-hky-fix-desktop-pagination-to-replace-conten](./quick/260322-hky-fix-desktop-pagination-to-replace-conten/) |
 | 260322-lih | Country detail pages with tuition, visa, intakes, post-study work + improved funding display | 2026-03-22 | cb725e0 | [260322-lih-add-country-detail-sections-cost-of-stud](./quick/260322-lih-add-country-detail-sections-cost-of-stud/) |
+| 260323-p9x | Scholarship type taxonomy, classification engine, coverage expansion, type filtering, and application tips | 2026-03-23 | aa9fac9 | [260323-p9x-integrate-scholarship-types-coverage-and](./quick/260323-p9x-integrate-scholarship-types-coverage-and/) |
 
 ### Blockers/Concerns
 
