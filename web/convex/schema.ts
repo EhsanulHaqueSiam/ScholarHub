@@ -52,6 +52,19 @@ export const prestigeTierValidator = v.union(
 );
 export type PrestigeTier = Infer<typeof prestigeTierValidator>;
 
+export const scholarshipTypeValidator = v.union(
+  v.literal("merit"),
+  v.literal("need_based"),
+  v.literal("government"),
+  v.literal("university"),
+  v.literal("country_specific"),
+  v.literal("subject_specific"),
+  v.literal("research"),
+  v.literal("athletic"),
+  v.literal("general"),
+);
+export type ScholarshipType = Infer<typeof scholarshipTypeValidator>;
+
 export const scrapeMethodValidator = v.union(
   v.literal("api"),
   v.literal("scrape"),
@@ -138,6 +151,8 @@ export default defineSchema({
     funding_living: v.optional(v.boolean()),
     funding_travel: v.optional(v.boolean()),
     funding_insurance: v.optional(v.boolean()),
+    funding_books: v.optional(v.boolean()),
+    funding_research: v.optional(v.boolean()),
     award_amount: v.optional(v.string()),
     award_currency: v.optional(v.string()),
     application_deadline: v.optional(v.string()),
@@ -224,6 +239,10 @@ export default defineSchema({
     ),
     prestige_tier: v.optional(prestigeTierValidator),
     prestige_score: v.optional(v.number()),
+    scholarship_type: v.optional(scholarshipTypeValidator),
+    funding_books: v.optional(v.boolean()),
+    funding_research: v.optional(v.boolean()),
+    application_tips: v.optional(v.string()),
     search_text: v.optional(v.string()),
     match_key: v.optional(v.string()),
     suggested_tags: v.optional(
@@ -249,7 +268,7 @@ export default defineSchema({
     .index("by_status_prestige_deadline", ["status", "prestige_tier", "application_deadline"])
     .searchIndex("search_scholarships", {
       searchField: "search_text",
-      filterFields: ["status", "host_country", "funding_type", "prestige_tier"],
+      filterFields: ["status", "host_country", "funding_type", "prestige_tier", "scholarship_type"],
     }),
 
   // Scrape run tracking -- one entry per pipeline execution

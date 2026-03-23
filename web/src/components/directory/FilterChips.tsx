@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
-import { DEGREE_LEVELS, FIELDS_OF_STUDY, FUNDING_TYPES } from "@/lib/filters";
+import { DEGREE_LEVELS, FIELDS_OF_STUDY, FUNDING_TYPES, SCHOLARSHIP_TYPES } from "@/lib/filters";
 import { getTagLabel } from "@/lib/tags";
 
 /**
@@ -83,6 +83,17 @@ export function FilterChips() {
       filterKey: "tier",
       value,
       label: `Tier: ${value.charAt(0).toUpperCase() + value.slice(1)}`,
+    });
+  }
+
+  // Scholarship type chips
+  for (const value of filters.type) {
+    const typeOption = SCHOLARSHIP_TYPES.find((t) => t.value === value);
+    chips.push({
+      key: `type-${value}`,
+      filterKey: "type",
+      value,
+      label: `Type: ${typeOption?.label ?? value}`,
     });
   }
 

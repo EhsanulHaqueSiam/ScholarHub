@@ -9,6 +9,7 @@ export const scholarshipSearchSchema = z.object({
   field: z.string().optional(), // comma-separated: "engineering,medicine"
   funding: z.string().optional(), // comma-separated: "fully_funded,partial"
   tier: z.string().optional(), // comma-separated: "gold,silver"
+  type: z.string().optional(), // comma-separated: "government,merit"
   tags: z.string().optional(), // comma-separated: "stem,no_gre"
   sort: z.enum(["deadline", "prestige", "newest", "amount"]).optional(),
   view: z.enum(["grid", "list"]).optional(),
@@ -77,6 +78,18 @@ export const FUNDING_TYPES = [
   { value: "partial", label: "Partial" },
   { value: "tuition_waiver", label: "Tuition Waiver" },
   { value: "stipend_only", label: "Stipend Only" },
+] as const;
+
+/** Scholarship type options */
+export const SCHOLARSHIP_TYPES = [
+  { value: "government", label: "Government" },
+  { value: "merit", label: "Merit-Based" },
+  { value: "need_based", label: "Need-Based" },
+  { value: "university", label: "University" },
+  { value: "research", label: "Research" },
+  { value: "country_specific", label: "Country-Specific" },
+  { value: "subject_specific", label: "Subject-Specific" },
+  { value: "athletic", label: "Athletic" },
 ] as const;
 
 /** Sort options */

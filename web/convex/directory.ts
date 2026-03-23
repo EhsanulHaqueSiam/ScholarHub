@@ -6,6 +6,7 @@ import {
   fundingTypeValidator,
   prestigeTierValidator,
   scholarshipStatusValidator,
+  scholarshipTypeValidator,
 } from "./schema";
 
 /**
@@ -29,6 +30,7 @@ export const listScholarships = query({
     fieldsOfStudy: v.optional(v.array(v.string())),
     fundingTypes: v.optional(v.array(fundingTypeValidator)),
     prestigeTiers: v.optional(v.array(prestigeTierValidator)),
+    scholarshipTypes: v.optional(v.array(scholarshipTypeValidator)),
     sort: v.optional(v.string()),
     showClosed: v.optional(v.boolean()),
     closingSoon: v.optional(v.boolean()),
@@ -62,6 +64,11 @@ export const listScholarships = query({
             sq = sq.eq("host_country", args.hostCountries[0]);
           }
 
+          // Single-value scholarship_type can be pushed into the search index
+          if (args.scholarshipTypes && args.scholarshipTypes.length === 1) {
+            sq = sq.eq("scholarship_type", args.scholarshipTypes[0]);
+          }
+
           return sq;
         });
 
@@ -80,6 +87,10 @@ export const listScholarships = query({
           args.fundingTypes && args.fundingTypes.length > 1 ? args.fundingTypes : undefined,
         prestigeTiers:
           args.prestigeTiers && args.prestigeTiers.length > 1 ? args.prestigeTiers : undefined,
+        scholarshipTypes:
+          args.scholarshipTypes && args.scholarshipTypes.length > 1
+            ? args.scholarshipTypes
+            : undefined,
         showClosed,
         closingSoon: args.closingSoon,
         now,
@@ -138,6 +149,12 @@ export const listScholarships = query({
         if (args.prestigeTiers && args.prestigeTiers.length > 0) {
           conditions.push(
             q.or(...args.prestigeTiers.map((tier) => q.eq(q.field("prestige_tier"), tier))),
+          );
+        }
+
+        if (args.scholarshipTypes && args.scholarshipTypes.length > 0) {
+          conditions.push(
+            q.or(...args.scholarshipTypes.map((st) => q.eq(q.field("scholarship_type"), st))),
           );
         }
 
@@ -304,6 +321,7 @@ export const listScholarshipsBatch = query({
     fieldsOfStudy: v.optional(v.array(v.string())),
     fundingTypes: v.optional(v.array(fundingTypeValidator)),
     prestigeTiers: v.optional(v.array(prestigeTierValidator)),
+    scholarshipTypes: v.optional(v.array(scholarshipTypeValidator)),
     tags: v.optional(v.array(v.string())),
     sort: v.optional(v.string()),
     showClosed: v.optional(v.boolean()),
@@ -346,6 +364,12 @@ export const listScholarshipsBatch = query({
 
       if (args.prestigeTiers && args.prestigeTiers.length > 0) {
         conditions.push(q.or(...args.prestigeTiers.map((t) => q.eq(q.field("prestige_tier"), t))));
+      }
+
+      if (args.scholarshipTypes && args.scholarshipTypes.length > 0) {
+        conditions.push(
+          q.or(...args.scholarshipTypes.map((st) => q.eq(q.field("scholarship_type"), st))),
+        );
       }
 
       if (!showClosed) {
@@ -488,6 +512,7 @@ interface PostFilterOptions {
   fieldsOfStudy?: string[];
   fundingTypes?: string[];
   prestigeTiers?: string[];
+  scholarshipTypes?: string[];
   showClosed: boolean;
   closingSoon?: boolean;
   now: number;
@@ -502,6 +527,7 @@ function applyPostFilters<
     fields_of_study?: string[] | null;
     funding_type: string;
     prestige_tier?: string | null;
+    scholarship_type?: string | null;
     application_deadline?: number | null;
     status: string;
   },
@@ -548,6 +574,13 @@ function applyPostFilters<
   if (opts.prestigeTiers && opts.prestigeTiers.length > 0) {
     filtered = filtered.filter((d) =>
       d.prestige_tier ? opts.prestigeTiers!.includes(d.prestige_tier) : false,
+    );
+  }
+
+  // Scholarship type filter (multi-value OR)
+  if (opts.scholarshipTypes && opts.scholarshipTypes.length > 0) {
+    filtered = filtered.filter((d) =>
+      d.scholarship_type ? opts.scholarshipTypes!.includes(d.scholarship_type) : false,
     );
   }
 

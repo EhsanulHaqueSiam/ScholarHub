@@ -17,6 +17,11 @@ import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
 import {
+  formatCoverageCompact,
+  getCoveredItems,
+  SCHOLARSHIP_TYPE_META,
+} from "@/lib/scholarship-types";
+import {
   formatFundingAmount,
   formatFundingType,
   hasLimitedInfo,
@@ -25,6 +30,7 @@ import {
 } from "@/lib/shared";
 import { cn } from "@/lib/utils";
 import type { Doc } from "../../../convex/_generated/dataModel";
+import type { ScholarshipType } from "../../../convex/schema";
 
 type Scholarship = Doc<"scholarships">;
 
@@ -40,6 +46,13 @@ export const ScholarshipCard = memo(function ScholarshipCard({
   const urgency = getDeadlineUrgency(scholarship.application_deadline);
   const isNewScholarship = isNew(scholarship._creationTime);
   const limitedInfo = hasLimitedInfo(scholarship);
+  const scholarshipType = scholarship.scholarship_type as ScholarshipType | undefined;
+  const typeMeta =
+    scholarshipType && scholarshipType !== "general"
+      ? SCHOLARSHIP_TYPE_META[scholarshipType]
+      : null;
+  const coveredItems = getCoveredItems(scholarship);
+  const coverageText = formatCoverageCompact(coveredItems);
   const slug = scholarship.slug ?? scholarship._id;
 
   const handleCopyLink = useCallback(
@@ -118,6 +131,11 @@ export const ScholarshipCard = memo(function ScholarshipCard({
           <Badge variant={urgencyVariantMap[urgency]}>{urgencyLabelMap[urgency]}</Badge>
           {isNewScholarship && <Badge variant="new">New</Badge>}
           {limitedInfo && <Badge variant="limitedInfo">Limited Info</Badge>}
+          {typeMeta && (
+            <Badge variant={typeMeta.badgeVariant as any} className="text-xs">
+              {typeMeta.label}
+            </Badge>
+          )}
         </CardContent>
 
         {/* Content: Description + Degrees + Funding */}
@@ -141,6 +159,9 @@ export const ScholarshipCard = memo(function ScholarshipCard({
             <span className="font-heading text-xs">
               {formatFundingType(scholarship.funding_type)}
             </span>
+            {coverageText && (
+              <span className="text-xs text-foreground/70 block">{coverageText}</span>
+            )}
             {formatFundingAmount(scholarship) && (
               <div className="flex items-center gap-1 mt-0.5">
                 <Banknote className="size-3.5 text-foreground/70 shrink-0" />

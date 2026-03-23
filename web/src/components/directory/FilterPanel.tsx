@@ -7,6 +7,7 @@ import {
   DEGREE_LEVELS,
   FIELDS_OF_STUDY,
   FUNDING_TYPES,
+  SCHOLARSHIP_TYPES,
   serializeCommaSeparated,
 } from "@/lib/filters";
 import { cn } from "@/lib/utils";
@@ -114,7 +115,9 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
           ? filters.funding
           : key === "tier"
             ? filters.tier
-            : [];
+            : key === "type"
+              ? filters.type
+              : [];
     const updated = current.includes(value)
       ? current.filter((v) => v !== value)
       : [...current, value];
@@ -137,6 +140,33 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
   return (
     <div>
       <h2 className="font-heading text-lg mb-4 hidden lg:block">Filters</h2>
+
+      {/* Scholarship Type */}
+      <section className="py-4 border-b border-border" aria-label="Filter by scholarship type">
+        <h3 className="text-sm font-heading text-foreground/80 mb-2">Scholarship Type</h3>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Scholarship type options">
+          {SCHOLARSHIP_TYPES.map((type) => {
+            const isActive = filters.type.includes(type.value);
+            return (
+              <button
+                key={type.value}
+                type="button"
+                aria-pressed={isActive}
+                aria-label={`Filter by ${type.label}`}
+                onClick={() => toggleMultiFilter("type", type.value)}
+                className={cn(
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  isActive
+                    ? "bg-main text-main-foreground"
+                    : "bg-secondary-background text-foreground",
+                )}
+              >
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Degree Level */}
       <section className="py-4 border-b border-border" aria-label="Filter by degree level">
