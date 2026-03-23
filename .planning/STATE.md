@@ -53,6 +53,7 @@ None.
 | 260322-hky | Fix desktop pagination to replace content instead of appending | 2026-03-22 | 8740ff2 | [260322-hky-fix-desktop-pagination-to-replace-conten](./quick/260322-hky-fix-desktop-pagination-to-replace-conten/) |
 | 260322-lih | Country detail pages with tuition, visa, intakes, post-study work + improved funding display | 2026-03-22 | cb725e0 | [260322-lih-add-country-detail-sections-cost-of-stud](./quick/260322-lih-add-country-detail-sections-cost-of-stud/) |
 | 260323-ne9 | IDP Education scholarship finder config (~6300 scholarships, detail pages, wave 2) | 2026-03-23 | 4c4b108 | [260323-ne9-build-idp-education-spider-with-blog-pos](./quick/260323-ne9-build-idp-education-spider-with-blog-pos/) |
+| 260323-oaz | Enhance IDP Education spider: nextdata format, page_num pagination, max_records in ApiScraper | 2026-03-23 | caa82e1 | [260323-oaz-enhance-idp-education-spider-maximize-da](./quick/260323-oaz-enhance-idp-education-spider-maximize-da/) |
 
 ### Blockers/Concerns
 
@@ -63,6 +64,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-23
-Last activity: 2026-03-23 - Completed quick task 260323-ne9: Build IDP Education spider with blog post processing for scholarship extraction
-Stopped at: Completed quick-260323-ne9 (IDP Education spider)
+Last activity: 2026-03-23 - Completed quick task 260323-oaz: Enhance IDP Education spider
+Stopped at: Completed quick-260323-oaz
 Resume file: None
