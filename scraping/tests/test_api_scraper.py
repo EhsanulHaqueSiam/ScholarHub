@@ -255,6 +255,208 @@ async def test_api_scraper_handles_csv_format():
     assert scraper.records_found == 2
 
 
+class HtmlFakeResponse:
+    """Minimal mock of httpx.Response for HTML content (e.g., __NEXT_DATA__)."""
+
+    def __init__(self, html: str, status_code: int = 200):
+        self.text = html
+        self.status_code = status_code
+        self.content = html.encode()
+
+    def json(self):
+        raise ValueError("Not a JSON response")
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import httpx
+
+            raise httpx.HTTPStatusError(
+                "Error",
+                request=httpx.Request("GET", "http://test"),
+                response=self,
+            )
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_nextdata_format():
+    """API scraper should extract records from __NEXT_DATA__ JSON in HTML."""
+    config = BaseSourceConfig(
+        name="NextData Test",
+        url="https://example.com/scholarships",
+        source_id="test-nextdata",
+        primary_method="api",
+        selectors={
+            "format": "nextdata",
+            "items_path": "props.pageProps.results",
+        },
+        field_mappings={
+            "scholarship_name": "title",
+            "institution_name.value": "provider_organization",
+            "funding_type": "funding_type",
+        },
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    nextdata_json = json.dumps({
+        "props": {
+            "pageProps": {
+                "results": [
+                    {
+                        "scholarship_name": "Test Award",
+                        "institution_name": {"value": "Test University", "key": "Test University"},
+                        "funding_type": "Fee waiver/discount",
+                    },
+                    {
+                        "scholarship_name": "Another Award",
+                        "institution_name": {"value": "Another Uni", "key": "Another Uni"},
+                        "funding_type": "Cash",
+                    },
+                ],
+            },
+        },
+    })
+    html = f'<html><body><script id="__NEXT_DATA__" type="application/json">{nextdata_json}</script></body></html>'
+
+    async def mock_get(url, **kwargs):
+        return HtmlFakeResponse(html)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(records) == 2
+    assert records[0]["title"] == "Test Award"
+    assert records[0]["provider_organization"] == "Test University"
+    assert records[1]["title"] == "Another Award"
+    assert records[1]["funding_type"] == "Cash"
+    assert scraper.records_found == 2
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_nextdata_missing_script():
+    """API scraper should return empty list when __NEXT_DATA__ script tag is missing."""
+    config = BaseSourceConfig(
+        name="NextData Missing Test",
+        url="https://example.com/scholarships",
+        source_id="test-nextdata-missing",
+        primary_method="api",
+        selectors={
+            "format": "nextdata",
+            "items_path": "props.pageProps.results",
+        },
+        field_mappings={"scholarship_name": "title"},
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    html = "<html><body><p>No next data here</p></body></html>"
+
+    async def mock_get(url, **kwargs):
+        return HtmlFakeResponse(html)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert records == []
+    assert scraper.records_found == 0
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_page_num_pagination():
+    """API scraper should construct page_num URLs like {base}?page={start+N}."""
+    config = BaseSourceConfig(
+        name="PageNum Test",
+        url="https://example.com/search",
+        source_id="test-pagenum",
+        primary_method="api",
+        selectors={"items_path": "items"},
+        field_mappings={"name": "title"},
+        pagination={
+            "type": "page_num",
+            "param": "page",
+            "start": 1,
+            "max_pages": 3,
+        },
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    urls_called = []
+
+    async def mock_get(url, **kwargs):
+        urls_called.append(url)
+        return FakeResponse({"items": [{"name": f"Item from {url}"}]})
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(urls_called) == 3
+    assert urls_called[0] == "https://example.com/search"
+    assert urls_called[1] == "https://example.com/search?page=2"
+    assert urls_called[2] == "https://example.com/search?page=3"
+    assert len(records) == 3
+
+
+@pytest.mark.asyncio
+async def test_api_scraper_max_records():
+    """API scraper should stop collecting after max_records is reached."""
+    config = BaseSourceConfig(
+        name="MaxRecords Test",
+        url="https://example.com/data",
+        source_id="test-maxrecords",
+        primary_method="api",
+        selectors={"items_path": "items"},
+        field_mappings={"name": "title"},
+        max_records=2,
+        rate_limit_delay=0.0,
+    )
+    scraper = ApiScraper(config)
+
+    response_data = {
+        "items": [
+            {"name": "Item 1"},
+            {"name": "Item 2"},
+            {"name": "Item 3"},
+            {"name": "Item 4"},
+            {"name": "Item 5"},
+        ],
+    }
+
+    async def mock_get(url, **kwargs):
+        return FakeResponse(response_data)
+
+    with patch("scholarhub_pipeline.scrapers.api_scraper.httpx.AsyncClient") as mock_client:
+        instance = AsyncMock()
+        instance.get = mock_get
+        instance.__aenter__ = AsyncMock(return_value=instance)
+        instance.__aexit__ = AsyncMock(return_value=False)
+        mock_client.return_value = instance
+
+        records = await scraper.scrape()
+
+    assert len(records) == 2
+    assert records[0]["title"] == "Item 1"
+    assert records[1]["title"] == "Item 2"
+
+
 @pytest.mark.asyncio
 async def test_api_scraper_csv_sets_host_country_default():
     """API scraper should set host_country from selectors.host_country_default for CSV."""
