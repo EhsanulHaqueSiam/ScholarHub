@@ -24,6 +24,7 @@ import type * as monitoring from "../monitoring.js";
 import type * as prestige from "../prestige.js";
 import type * as related from "../related.js";
 import type * as scheduler from "../scheduler.js";
+import type * as scholarshipSummary from "../scholarshipSummary.js";
 import type * as scraping from "../scraping.js";
 import type * as seed from "../seed.js";
 import type * as seed_collections from "../seed_collections.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   prestige: typeof prestige;
   related: typeof related;
   scheduler: typeof scheduler;
+  scholarshipSummary: typeof scholarshipSummary;
   scraping: typeof scraping;
   seed: typeof seed;
   seed_collections: typeof seed_collections;

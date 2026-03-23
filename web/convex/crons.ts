@@ -29,6 +29,17 @@ crons.daily(
   {},
 );
 
+// Daily refresh of SEO landing caches to avoid expensive per-request full scans.
+crons.daily("refresh seo caches", { hourUTC: 2, minuteUTC: 15 }, internal.seo.refreshSeoCaches, {});
+
+// Daily legacy raw payload compaction to control bytes-read costs.
+crons.daily(
+  "trim raw payloads",
+  { hourUTC: 2, minuteUTC: 30 },
+  internal.maintenance.trimRawPayloads,
+  { cursor: undefined, processed: 0 },
+);
+
 // Daily auto-archive of expired scholarships (4:00 UTC)
 crons.daily("archive_expired", { hourUTC: 4, minuteUTC: 0 }, internal.aggregation.archiveExpired, {
   cursor: null,

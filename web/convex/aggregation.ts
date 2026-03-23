@@ -32,9 +32,67 @@ const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(
 // Valid degree levels and funding types for validation
 const VALID_DEGREES = new Set(["bachelor", "master", "phd", "postdoc"]);
 const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
-const DEFAULT_AGGREGATION_BATCH_SIZE = 20;
+const DEFAULT_AGGREGATION_BATCH_SIZE = 10;
 const MAX_CANDIDATES_PER_MATCH_KEY = 25;
-const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 60;
+const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 20;
+const AGGREGATION_LOCK_NAME = "aggregation.aggregateBatch";
+const AGGREGATION_LOCK_LEASE_MS = 2 * 60 * 1000;
+const AGGREGATION_RETRY_DELAY_MS = 3 * 1000;
+
+async function getSourceCategory(
+  ctx: any,
+  sourceId: any,
+  cache: Map<string, string>,
+): Promise<string> {
+  const key = String(sourceId);
+  if (cache.has(key)) return cache.get(key)!;
+  const source = await ctx.db.get(sourceId);
+  const category = source?.category ?? "aggregator";
+  cache.set(key, category);
+  return category;
+}
+
+async function acquireAggregationLock(
+  ctx: any,
+  owner: string,
+): Promise<{ acquired: boolean; lockId?: any }> {
+  const now = Date.now();
+  const existing = await ctx.db
+    .query("pipeline_locks")
+    .withIndex("by_name", (q: any) => q.eq("name", AGGREGATION_LOCK_NAME))
+    .first();
+
+  if (!existing) {
+    const lockId = await ctx.db.insert("pipeline_locks", {
+      name: AGGREGATION_LOCK_NAME,
+      owner,
+      lease_expires_at: now + AGGREGATION_LOCK_LEASE_MS,
+      updated_at: now,
+    });
+    return { acquired: true, lockId };
+  }
+
+  if (existing.lease_expires_at > now && existing.owner !== owner) {
+    return { acquired: false, lockId: existing._id };
+  }
+
+  await ctx.db.patch(existing._id, {
+    owner,
+    lease_expires_at: now + AGGREGATION_LOCK_LEASE_MS,
+    updated_at: now,
+  });
+  return { acquired: true, lockId: existing._id };
+}
+
+async function releaseAggregationLock(ctx: any, lockId: any, owner: string): Promise<void> {
+  if (!lockId) return;
+  const existing = await ctx.db.get(lockId);
+  if (!existing || existing.owner !== owner) return;
+  await ctx.db.patch(lockId, {
+    lease_expires_at: 0,
+    updated_at: Date.now(),
+  });
+}
 
 // ---------- Mutation 1: aggregateBatch ----------
 
@@ -45,93 +103,111 @@ export const aggregateBatch = triggeredInternalMutation({
     runId: v.optional(v.id("scrape_runs")),
   },
   handler: async (ctx, args) => {
-    const batchSize = Math.max(1, Math.min(args.batchSize ?? DEFAULT_AGGREGATION_BATCH_SIZE, 100));
+    const batchSize = Math.max(1, Math.min(args.batchSize ?? DEFAULT_AGGREGATION_BATCH_SIZE, 40));
     const counts = { new: 0, updated: 0, duplicate: 0 };
+    const owner = `${args.runId ?? "manual"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+    const sourceCategoryCache = new Map<string, string>();
 
-    // Query unpromoted raw_records (canonical_id is undefined) via index to avoid full scans.
-    const unpromoted = await ctx.db
-      .query("raw_records")
-      .withIndex("by_canonical", (q) => q.eq("canonical_id", undefined))
-      .take(batchSize);
+    const lock = await acquireAggregationLock(ctx, owner);
+    if (!lock.acquired) {
+      await ctx.scheduler.runAfter(AGGREGATION_RETRY_DELAY_MS, internal.aggregation.aggregateBatch, {
+        cursor: null,
+        batchSize,
+        runId: args.runId,
+      });
+      console.log("[aggregation] lock busy, deferred batch");
+      return;
+    }
 
-    for (const record of unpromoted) {
-      // Skip records with empty titles
-      if (!record.title || !record.title.trim()) {
-        await ctx.db.patch(record._id, { match_status: "new" as const });
-        continue;
-      }
+    try {
 
-      const org = record.provider_organization ?? "Unknown";
-      const country = record.host_country ?? "International";
-      const matchKey = computeMatchKey(record.title, org, country);
+      // Query unpromoted raw_records (canonical_id is undefined) via index to avoid full scans.
+      const unpromoted = await ctx.db
+        .query("raw_records")
+        .withIndex("by_canonical", (q) => q.eq("canonical_id", undefined))
+        .take(batchSize);
 
-      // Look up existing scholarships by match_key
-      const candidates = await ctx.db
-        .query("scholarships")
-        .withIndex("by_match_key", (q) => q.eq("match_key", matchKey))
-        .take(MAX_CANDIDATES_PER_MATCH_KEY);
+      for (const record of unpromoted) {
+        // Skip records with empty titles
+        if (!record.title || !record.title.trim()) {
+          await ctx.db.patch(record._id, { match_status: "new" as const });
+          continue;
+        }
 
-      const recordDegrees = (record.degree_levels as string[]) ?? [];
+        const org = record.provider_organization ?? "Unknown";
+        const country = record.host_country ?? "International";
+        const matchKey = computeMatchKey(record.title, org, country);
 
-      // Extract year from the incoming record for cycle detection
-      const recordDeadlineTs = parseDeadlineToTimestamp(record.application_deadline);
-      const recordYear = extractYear(record.title, recordDeadlineTs);
+        // Look up existing scholarships by match_key
+        const candidates = await ctx.db
+          .query("scholarships")
+          .withIndex("by_match_key", (q) => q.eq("match_key", matchKey))
+          .take(MAX_CANDIDATES_PER_MATCH_KEY);
 
-      // Full match (D-01): same match_key + degree overlap
-      const fullMatches = candidates.filter((c) =>
-        hasDegreeLevelOverlap(c.degree_levels, recordDegrees),
-      );
+        const recordDegrees = (record.degree_levels as string[]) ?? [];
 
-      if (fullMatches.length > 0) {
-        // Check for cycle: if years differ, this is a new cycle, not a duplicate (D-09/D-12)
-        const sameYearMatches = fullMatches.filter((c) => {
-          if (recordYear === null) return true; // No year info -> treat as same cycle
-          const candidateYear = extractYear(c.title, c.application_deadline ?? undefined);
-          return candidateYear === null || candidateYear === recordYear;
-        });
+        // Extract year from the incoming record for cycle detection
+        const recordDeadlineTs = parseDeadlineToTimestamp(record.application_deadline);
+        const recordYear = extractYear(record.title, recordDeadlineTs);
 
-        if (sameYearMatches.length > 0) {
-          // Same year (or no year info): merge into existing scholarship
-          const target =
-            sameYearMatches.find((m) => m.status === "published") ??
-            sameYearMatches.sort((a, b) => b._creationTime - a._creationTime)[0];
+        // Full match (D-01): same match_key + degree overlap
+        const fullMatches = candidates.filter((c) =>
+          hasDegreeLevelOverlap(c.degree_levels, recordDegrees),
+        );
 
-          await mergeIntoScholarship(ctx, target, record);
-          counts.updated++;
+        if (fullMatches.length > 0) {
+          // Check for cycle: if years differ, this is a new cycle, not a duplicate (D-09/D-12)
+          const sameYearMatches = fullMatches.filter((c) => {
+            if (recordYear === null) return true; // No year info -> treat as same cycle
+            const candidateYear = extractYear(c.title, c.application_deadline ?? undefined);
+            return candidateYear === null || candidateYear === recordYear;
+          });
+
+          if (sameYearMatches.length > 0) {
+            // Same year (or no year info): merge into existing scholarship
+            const target =
+              sameYearMatches.find((m) => m.status === "published") ??
+              sameYearMatches.sort((a, b) => b._creationTime - a._creationTime)[0];
+
+            await mergeIntoScholarship(ctx, target, record, sourceCategoryCache);
+            counts.updated++;
+          } else {
+            // Different year: new cycle entry (D-09/D-12)
+            const newId = await createScholarship(ctx, record, matchKey, false);
+            await handleCycleDetection(ctx, newId, record, matchKey);
+            await handleAutoArchive(ctx, newId, record);
+            counts.new++;
+          }
+        } else if (candidates.length > 0) {
+          // Partial match (D-03): same match_key but NO degree overlap
+          const newId = await createScholarship(ctx, record, matchKey, true);
+          await handleCycleDetection(ctx, newId, record, matchKey);
+          await handleAutoArchive(ctx, newId, record);
+          counts.duplicate++;
         } else {
-          // Different year: new cycle entry (D-09/D-12)
+          // No match: create new canonical entry
           const newId = await createScholarship(ctx, record, matchKey, false);
           await handleCycleDetection(ctx, newId, record, matchKey);
           await handleAutoArchive(ctx, newId, record);
           counts.new++;
         }
-      } else if (candidates.length > 0) {
-        // Partial match (D-03): same match_key but NO degree overlap
-        const newId = await createScholarship(ctx, record, matchKey, true);
-        await handleCycleDetection(ctx, newId, record, matchKey);
-        await handleAutoArchive(ctx, newId, record);
-        counts.duplicate++;
-      } else {
-        // No match: create new canonical entry
-        const newId = await createScholarship(ctx, record, matchKey, false);
-        await handleCycleDetection(ctx, newId, record, matchKey);
-        await handleAutoArchive(ctx, newId, record);
-        counts.new++;
       }
-    }
 
-    // Log run-level counts
-    console.log(
-      `[aggregation] batch complete: ${counts.new} new, ${counts.updated} updated, ${counts.duplicate} possible duplicates`,
-    );
+      // Log run-level counts
+      console.log(
+        `[aggregation] batch complete: ${counts.new} new, ${counts.updated} updated, ${counts.duplicate} possible duplicates`,
+      );
 
-    // If there are more records, schedule next batch
-    if (unpromoted.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.aggregation.aggregateBatch, {
-        cursor: null,
-        batchSize: batchSize,
-        runId: args.runId,
-      });
+      // If there are more records, schedule next batch
+      if (unpromoted.length === batchSize) {
+        await ctx.scheduler.runAfter(0, internal.aggregation.aggregateBatch, {
+          cursor: null,
+          batchSize: batchSize,
+          runId: args.runId,
+        });
+      }
+    } finally {
+      await releaseAggregationLock(ctx, lock.lockId, owner);
     }
   },
 });
@@ -262,7 +338,12 @@ export const archiveExpired = triggeredInternalMutation({
 
 // ---------- Helper: Merge raw_record into existing scholarship ----------
 
-async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
+async function mergeIntoScholarship(
+  ctx: any,
+  scholarship: any,
+  record: any,
+  sourceCategoryCache: Map<string, string>,
+) {
   // Load recent linked raw_records for this scholarship.
   // Keeping this bounded prevents read-limit spikes on long-lived scholarships.
   const linkedRecords = await ctx.db
@@ -276,12 +357,16 @@ async function mergeIntoScholarship(ctx: any, scholarship: any, record: any) {
   const linkedSourceIds = [...new Set(linkedRecords.map((lr: any) => String(lr.source_id)))];
   await Promise.all(
     linkedSourceIds.map(async (sourceId) => {
-      const source = await ctx.db.get(sourceId);
-      sourceCategoryById.set(sourceId, source?.category ?? "aggregator");
+      sourceCategoryById.set(
+        sourceId,
+        await getSourceCategory(ctx, sourceId, sourceCategoryCache),
+      );
     }),
   );
-  const recordSource = await ctx.db.get(record.source_id);
-  sourceCategoryById.set(String(record.source_id), recordSource?.category ?? "aggregator");
+  sourceCategoryById.set(
+    String(record.source_id),
+    await getSourceCategory(ctx, record.source_id, sourceCategoryCache),
+  );
 
   // Build candidates arrays for trust-weighted field resolution
   type Candidate<T> = {

@@ -269,6 +269,51 @@ export default defineSchema({
     updated_at: v.number(),
   }).index("by_status", ["status"]),
 
+  // Cached SEO landing taxonomies and stats for low-cost landing queries.
+  seo_taxonomy_cache: defineTable({
+    key: v.string(),
+    top_countries: v.array(
+      v.object({
+        code: v.string(),
+        count: v.number(),
+      }),
+    ),
+    all_degrees: v.array(
+      v.object({
+        level: v.string(),
+        count: v.number(),
+      }),
+    ),
+    updated_at: v.number(),
+  }).index("by_key", ["key"]),
+
+  seo_country_cache: defineTable({
+    country_code: v.string(),
+    total: v.number(),
+    fully_funded: v.number(),
+    degree_levels: v.array(v.string()),
+    top_fields: v.array(v.string()),
+    closing_soon: v.number(),
+    updated_at: v.number(),
+  }).index("by_country_code", ["country_code"]),
+
+  seo_degree_cache: defineTable({
+    degree_level: v.string(),
+    total: v.number(),
+    fully_funded: v.number(),
+    top_countries: v.array(v.string()),
+    top_fields: v.array(v.string()),
+    updated_at: v.number(),
+  }).index("by_degree_level", ["degree_level"]),
+
+  // Lightweight distributed locks for internal background jobs.
+  pipeline_locks: defineTable({
+    name: v.string(),
+    owner: v.string(),
+    lease_expires_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_name", ["name"]),
+
   // Scrape run tracking -- one entry per pipeline execution
   scrape_runs: defineTable({
     started_at: v.number(),

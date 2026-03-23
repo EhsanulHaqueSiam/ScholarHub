@@ -21,11 +21,9 @@ import {
   getCoveredItems,
   SCHOLARSHIP_TYPE_META,
 } from "@/lib/scholarship-types";
+import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import { cn } from "@/lib/utils";
-import type { Doc } from "../../../convex/_generated/dataModel";
 import type { ScholarshipType } from "../../../convex/schema";
-
-type Scholarship = Doc<"scholarships">;
 
 const urgencyVariantMap = {
   critical: "urgencyCritical",
@@ -41,11 +39,11 @@ const urgencyLabelMap = {
   closed: "Closed",
 } as const;
 
-function hasLimitedInfo(scholarship: Scholarship): boolean {
+function hasLimitedInfo(scholarship: ScholarshipSummary): boolean {
   return !scholarship.description && !scholarship.fields_of_study?.length;
 }
 
-function formatFundingAmount(scholarship: Scholarship): string | null {
+function formatFundingAmount(scholarship: ScholarshipSummary): string | null {
   if (!scholarship.award_amount_max) return null;
   const currency = scholarship.award_currency ?? "USD";
   const formatter = new Intl.NumberFormat("en-US", {
@@ -84,7 +82,7 @@ function formatDeadline(deadline: number | undefined): string | null {
 export const ScholarshipListItem = memo(function ScholarshipListItem({
   scholarship,
 }: {
-  scholarship: Scholarship;
+  scholarship: ScholarshipSummary;
 }) {
   const [copied, setCopied] = useState(false);
   const prestigeTier = (scholarship.prestige_tier ?? "unranked") as PrestigeTier;

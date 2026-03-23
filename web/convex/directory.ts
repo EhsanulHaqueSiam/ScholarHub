@@ -8,6 +8,7 @@ import {
   scholarshipStatusValidator,
   scholarshipTypeValidator,
 } from "./schema";
+import { toScholarshipSummary } from "./scholarshipSummary";
 
 const CACHED_COUNT_STATUSES = [
   "pending_review",
@@ -158,7 +159,7 @@ export const listScholarships = query({
         startIndex + numItems < filtered.length ? String(startIndex + numItems) : null;
 
       return {
-        page,
+        page: page.map((doc) => toScholarshipSummary(doc)),
         isDone: nextCursor === null,
         continueCursor: nextCursor ?? "",
       };
@@ -265,7 +266,7 @@ export const listScholarships = query({
 
     return {
       ...paginatedResults,
-      page,
+      page: page.map((doc) => toScholarshipSummary(doc)),
     };
   },
 });
@@ -335,7 +336,7 @@ export const getFeaturedScholarships = query({
       return 0;
     });
 
-    return combined.slice(0, limit);
+    return combined.slice(0, limit).map((doc) => toScholarshipSummary(doc));
   },
 });
 
@@ -425,6 +426,61 @@ export const listScholarshipsBatch = query({
     const sort = args.sort ?? "deadline";
     const showClosed = args.showClosed ?? false;
     const maxResults = args.limit ?? 200;
+    const now = Date.now();
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+    if (args.search && args.search.trim().length > 0) {
+      const searchQuery = ctx.db
+        .query("scholarships")
+        .withSearchIndex("search_scholarships", (q) => {
+          let sq = q.search("search_text", args.search!).eq("status", status);
+
+          if (args.fundingTypes && args.fundingTypes.length === 1) {
+            sq = sq.eq("funding_type", args.fundingTypes[0]);
+          }
+          if (args.prestigeTiers && args.prestigeTiers.length === 1) {
+            sq = sq.eq("prestige_tier", args.prestigeTiers[0]);
+          }
+          if (args.hostCountries && args.hostCountries.length === 1) {
+            sq = sq.eq("host_country", args.hostCountries[0]);
+          }
+          if (args.scholarshipTypes && args.scholarshipTypes.length === 1) {
+            sq = sq.eq("scholarship_type", args.scholarshipTypes[0]);
+          }
+          return sq;
+        });
+
+      const searchCap = Math.min(800, Math.max(maxResults * 6, 120));
+      let results = applyPostFilters(await searchQuery.take(searchCap), {
+        hostCountries:
+          args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
+        nationalities: args.nationalities,
+        showIneligible: args.showIneligible,
+        degreeLevels: args.degreeLevels,
+        fieldsOfStudy: args.fieldsOfStudy,
+        fundingTypes:
+          args.fundingTypes && args.fundingTypes.length > 1 ? args.fundingTypes : undefined,
+        prestigeTiers:
+          args.prestigeTiers && args.prestigeTiers.length > 1 ? args.prestigeTiers : undefined,
+        scholarshipTypes:
+          args.scholarshipTypes && args.scholarshipTypes.length > 1
+            ? args.scholarshipTypes
+            : undefined,
+        showClosed,
+        closingSoon: args.closingSoon,
+        now,
+        thirtyDays,
+      });
+
+      if (args.tags && args.tags.length > 0) {
+        results = results.filter((doc) => {
+          if (!doc.tags || doc.tags.length === 0) return false;
+          return args.tags!.some((t) => doc.tags!.includes(t));
+        });
+      }
+
+      return results.slice(0, maxResults).map((doc) => toScholarshipSummary(doc));
+    }
 
     // Build base query with sort
     let baseQuery;
@@ -470,7 +526,7 @@ export const listScholarshipsBatch = query({
         conditions.push(
           q.or(
             q.eq(q.field("application_deadline"), undefined),
-            q.gte(q.field("application_deadline"), Date.now()),
+            q.gte(q.field("application_deadline"), now),
           ),
         );
       }
@@ -480,41 +536,52 @@ export const listScholarshipsBatch = query({
       return q.and(...conditions);
     });
 
-    // Take a reasonable batch
-    let results = await filtered.take(maxResults);
+    // Progressive fetch: keep scanning until we fill the requested batch
+    // after post-filters, avoiding sparse/empty responses for valid filters.
+    const numItemsPerPage = Math.min(120, Math.max(maxResults * 2, 40));
+    const maxScannedDocs = Math.max(400, maxResults * 12);
+    const collected: any[] = [];
+    let cursor: string | null = null;
+    let scannedDocs = 0;
 
-    // Post-filter for array fields
-    if (args.nationalities && args.nationalities.length > 0 && !args.showIneligible) {
-      results = results.filter((doc) => {
-        if (!doc.eligibility_nationalities || doc.eligibility_nationalities.length === 0)
-          return true;
-        return args.nationalities!.some((n) => doc.eligibility_nationalities!.includes(n));
+    while (collected.length < maxResults && scannedDocs < maxScannedDocs) {
+      const page = await filtered.paginate({ cursor, numItems: numItemsPerPage });
+      if (page.page.length === 0) break;
+      scannedDocs += page.page.length;
+
+      let pageResults = applyPostFilters(page.page, {
+        // Already pushed into db-level filter above.
+        hostCountries: undefined,
+        fundingTypes: undefined,
+        prestigeTiers: undefined,
+        scholarshipTypes: undefined,
+        nationalities: args.nationalities,
+        showIneligible: args.showIneligible,
+        degreeLevels: args.degreeLevels,
+        fieldsOfStudy: args.fieldsOfStudy,
+        showClosed,
+        closingSoon: args.closingSoon,
+        now,
+        thirtyDays,
       });
+
+      if (args.tags && args.tags.length > 0) {
+        pageResults = pageResults.filter((doc) => {
+          if (!doc.tags || doc.tags.length === 0) return false;
+          return args.tags!.some((t) => doc.tags!.includes(t));
+        });
+      }
+
+      for (const doc of pageResults) {
+        if (collected.length >= maxResults) break;
+        collected.push(doc);
+      }
+
+      if (page.isDone) break;
+      cursor = page.continueCursor;
     }
 
-    if (args.degreeLevels && args.degreeLevels.length > 0) {
-      results = results.filter((doc) => {
-        if (!doc.degree_levels || doc.degree_levels.length === 0) return false;
-        return args.degreeLevels!.some((dl) => doc.degree_levels.includes(dl));
-      });
-    }
-
-    if (args.fieldsOfStudy && args.fieldsOfStudy.length > 0) {
-      results = results.filter((doc) => {
-        if (!doc.fields_of_study || doc.fields_of_study.length === 0) return false;
-        return args.fieldsOfStudy!.some((f) => doc.fields_of_study!.includes(f));
-      });
-    }
-
-    // Tags post-filter (OR logic: scholarship must have at least one matching tag)
-    if (args.tags && args.tags.length > 0) {
-      results = results.filter((doc) => {
-        if (!doc.tags || doc.tags.length === 0) return false;
-        return args.tags!.some((t) => doc.tags!.includes(t));
-      });
-    }
-
-    return results;
+    return collected.map((doc) => toScholarshipSummary(doc));
   },
 });
 

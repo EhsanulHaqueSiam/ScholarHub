@@ -28,17 +28,15 @@ import {
   urgencyLabelMap,
   urgencyVariantMap,
 } from "@/lib/shared";
+import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import { cn } from "@/lib/utils";
-import type { Doc } from "../../../convex/_generated/dataModel";
 import type { ScholarshipType } from "../../../convex/schema";
-
-type Scholarship = Doc<"scholarships">;
 
 export const ScholarshipCard = memo(function ScholarshipCard({
   scholarship,
   disableHover,
 }: {
-  scholarship: Scholarship;
+  scholarship: ScholarshipSummary;
   disableHover?: boolean;
 }) {
   const [copied, setCopied] = useState(false);

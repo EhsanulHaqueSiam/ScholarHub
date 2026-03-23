@@ -23,6 +23,7 @@ import {
   fundingTypeValidator,
   prestigeTierValidator,
 } from "./schema";
+import { toScholarshipSummary } from "./scholarshipSummary";
 
 // ---- Helper: Check if a scholarship matches a collection's filter criteria ----
 
@@ -220,18 +221,51 @@ export const getCollectionScholarships = query({
         .withIndex("by_status_deadline", (q) => q.eq("status", "published"));
     }
 
-    // Take a bounded set and post-filter
-    const allResults = await baseQuery.take(500);
     const now = Date.now();
+    const pageFetchSize = Math.min(120, Math.max(limit * 2, 40));
+    const maxScannedDocs = Math.min(6000, Math.max(offset + limit + 240, 1200));
+    const scholarshipsForPage: any[] = [];
+    let totalMatched = 0;
+    let scanned = 0;
+    let exhausted = false;
+    let cursor: string | null = null;
 
-    const filtered = allResults.filter((s) => {
-      // Exclude expired unless showing closed
-      if (s.application_deadline && s.application_deadline < now) return false;
-      return matchesCollectionFilters(s, collection);
-    });
+    while (scanned < maxScannedDocs) {
+      const page = await baseQuery.paginate({ cursor, numItems: pageFetchSize });
+      if (page.page.length === 0) {
+        exhausted = true;
+        break;
+      }
 
-    const total = filtered.length;
-    const scholarships = filtered.slice(offset, offset + limit);
+      scanned += page.page.length;
+      for (const scholarship of page.page) {
+        // Exclude expired unless showing closed
+        if (scholarship.application_deadline && scholarship.application_deadline < now) continue;
+        if (!matchesCollectionFilters(scholarship, collection)) continue;
+
+        totalMatched += 1;
+        if (totalMatched > offset && scholarshipsForPage.length < limit) {
+          scholarshipsForPage.push(scholarship);
+        }
+      }
+
+      if (page.isDone) {
+        exhausted = true;
+        break;
+      }
+
+      cursor = page.continueCursor;
+
+      // Once we have enough items for the requested page, stop early to keep reads bounded.
+      if (scholarshipsForPage.length >= limit && scanned >= Math.max(offset + limit + 120, 200)) {
+        break;
+      }
+    }
+
+    const total = exhausted
+      ? totalMatched
+      : Math.max(collection.scholarship_count ?? 0, offset + scholarshipsForPage.length);
+    const scholarships = scholarshipsForPage.map((doc) => toScholarshipSummary(doc));
 
     return { scholarships, total };
   },

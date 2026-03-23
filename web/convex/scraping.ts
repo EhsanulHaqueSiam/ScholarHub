@@ -61,9 +61,14 @@ export const completeRun = mutation({
     if (args.status === "completed" && args.records_inserted > 0) {
       await runAfterSafe(ctx, 0, internal.aggregation.aggregateBatch, {
         cursor: null,
-        batchSize: 50,
+        batchSize: 10,
         runId: args.run_id,
       });
+    }
+
+    // Refresh SEO caches after successful scrape runs with any data movement.
+    if (args.status === "completed" && args.records_inserted + args.records_updated > 0) {
+      await runAfterSafe(ctx, 15 * 1000, internal.seo.refreshSeoCaches, {});
     }
   },
 });
@@ -80,7 +85,7 @@ const TRACKED_FIELDS = [
 
 // Keep only a tiny debug snapshot of raw payloads to avoid GB-scale reads
 // during downstream promotion queries (Convex reads full documents).
-const MAX_RAW_DATA_CHARS = 2048;
+export const MAX_RAW_DATA_CHARS = 2048;
 
 function compactRawData(rawData: string | undefined): string | undefined {
   if (!rawData) return undefined;

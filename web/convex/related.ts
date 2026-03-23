@@ -21,6 +21,9 @@ export const DEFAULT_RELATED_WEIGHTS = {
 };
 
 export type RelatedWeights = typeof DEFAULT_RELATED_WEIGHTS;
+const MAX_COUNTRY_CANDIDATES = 40;
+const MAX_GLOBAL_CANDIDATES = 30;
+const RELATED_REFRESH_BATCH_SIZE = 60;
 
 // ---- Pure Functions ----
 
@@ -119,11 +122,29 @@ export async function computeRelatedIds(
       : DEFAULT_RELATED_WEIGHTS;
   }
 
-  // Query published scholarships (bounded to 50 per anti-pattern warning)
-  const candidates = await ctx.db
-    .query("scholarships")
-    .withIndex("by_status", (q: any) => q.eq("status", "published"))
-    .take(50);
+  // Blend same-country candidates with global fallback for better relevance
+  // and lower read amplification than repeatedly scanning broad status lists.
+  const [sameCountryCandidates, globalCandidates] = await Promise.all([
+    ctx.db
+      .query("scholarships")
+      .withIndex("by_country_status", (q: any) =>
+        q.eq("host_country", doc.host_country).eq("status", "published"),
+      )
+      .take(MAX_COUNTRY_CANDIDATES),
+    ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q: any) => q.eq("status", "published"))
+      .take(MAX_GLOBAL_CANDIDATES),
+  ]);
+
+  const candidatesById = new Map<any, any>();
+  for (const candidate of sameCountryCandidates) {
+    candidatesById.set(candidate._id, candidate);
+  }
+  for (const candidate of globalCandidates) {
+    candidatesById.set(candidate._id, candidate);
+  }
+  const candidates = [...candidatesById.values()];
 
   const now = Date.now();
 
@@ -245,16 +266,21 @@ export const refreshAllRelatedIds = internalMutation({
     processed: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const batchSize = 100;
-    const scholarships = await ctx.db
+    const page = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(batchSize);
+      .paginate({
+        cursor: args.cursor ?? null,
+        numItems: RELATED_REFRESH_BATCH_SIZE,
+      });
 
-    if (scholarships.length === 0) return;
+    const scholarships = page.page;
+    if (scholarships.length === 0) {
+      return { processed: args.processed ?? 0, complete: true };
+    }
 
     for (const scholarship of scholarships) {
-      const newRelatedIds = await computeRelatedIds(ctx, scholarship._id);
+      const newRelatedIds = await computeRelatedIds(ctx, scholarship);
       const current = scholarship.related_ids ?? [];
       const changed =
         current.length !== newRelatedIds.length || current.some((id, i) => id !== newRelatedIds[i]);
@@ -263,5 +289,15 @@ export const refreshAllRelatedIds = internalMutation({
         await ctx.db.patch(scholarship._id, { related_ids: newRelatedIds });
       }
     }
+
+    const processed = (args.processed ?? 0) + scholarships.length;
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.related.refreshAllRelatedIds, {
+        cursor: page.continueCursor,
+        processed,
+      });
+    }
+
+    return { processed, complete: page.isDone };
   },
 });

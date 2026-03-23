@@ -1,4 +1,7 @@
+import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { MAX_RAW_DATA_CHARS } from "./scraping";
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 100;
@@ -50,5 +53,42 @@ export const cleanupChangeLog = internalMutation({
     }
 
     return { deleted };
+  },
+});
+
+/**
+ * Backfill raw_records to keep raw_data bounded for read-cost control.
+ * This trims legacy oversized payloads created before compactRawData existed.
+ */
+export const trimRawPayloads = internalMutation({
+  args: {
+    cursor: v.optional(v.string()),
+    processed: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const page = await ctx.db.query("raw_records").paginate({
+      cursor: args.cursor ?? null,
+      numItems: BATCH_SIZE,
+    });
+
+    let trimmed = 0;
+    for (const record of page.page) {
+      if (record.raw_data && record.raw_data.length > MAX_RAW_DATA_CHARS) {
+        await ctx.db.patch(record._id, {
+          raw_data: record.raw_data.slice(0, MAX_RAW_DATA_CHARS),
+        });
+        trimmed += 1;
+      }
+    }
+
+    const processed = (args.processed ?? 0) + page.page.length;
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.maintenance.trimRawPayloads, {
+        cursor: page.continueCursor,
+        processed,
+      });
+    }
+
+    return { processed, trimmed, complete: page.isDone };
   },
 });

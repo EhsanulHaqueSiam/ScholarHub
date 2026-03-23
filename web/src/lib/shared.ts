@@ -1,7 +1,3 @@
-import type { Doc } from "../../convex/_generated/dataModel";
-
-type Scholarship = Doc<"scholarships">;
-
 /** Map urgency level to badge variant */
 export const urgencyVariantMap = {
   critical: "urgencyCritical",
@@ -19,7 +15,10 @@ export const urgencyLabelMap = {
 } as const;
 
 /** Check if scholarship has limited info (title + URL only, no description) */
-export function hasLimitedInfo(scholarship: Scholarship): boolean {
+export function hasLimitedInfo(scholarship: {
+  description?: string;
+  fields_of_study?: string[] | null;
+}): boolean {
   return !scholarship.description && !scholarship.fields_of_study?.length;
 }
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FeaturedCollectionsRow } from "@/components/collections/FeaturedCollectionsRow";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
@@ -118,17 +118,13 @@ function ScholarshipsDirectory() {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Batch query — loads up to 200 scholarships, paginated client-side
-  const batchArgs = useMemo(
-    () => ({
-      ...queryArgs,
-      limit: 200,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(queryArgs)],
-  );
-  const allResults = useQuery(api.directory.listScholarshipsBatch, batchArgs);
-  const isLoading = allResults === undefined;
+  // Paginated query keeps Convex reads bounded while still allowing full result visibility.
+  const {
+    results: allResults,
+    status,
+    loadMore,
+    isLoading,
+  } = usePaginatedQuery(api.directory.listScholarships, queryArgs, { initialNumItems: PAGE_SIZE * 2 });
 
   // Client-side pagination — desktop replaces content per-page, mobile accumulates
   const results = useMemo(() => {
@@ -142,8 +138,17 @@ function ScholarshipsDirectory() {
   }, [allResults, currentPage, isDesktop]);
 
   const totalAvailable = allResults?.length ?? 0;
-  // Desktop uses numbered pagination, not "Show More"; mobile keeps accumulative behavior
-  const hasMore = !isDesktop && results ? results.length < totalAvailable : false;
+  const hasMore = status === "CanLoadMore";
+  const loadedPages = Math.max(1, Math.ceil(totalAvailable / PAGE_SIZE));
+  const totalPages = hasMore ? loadedPages + 1 : loadedPages;
+
+  // Desktop numbered pagination can request additional pages lazily as user advances.
+  useEffect(() => {
+    if (!isDesktop || status !== "CanLoadMore") return;
+    const needed = currentPage * PAGE_SIZE;
+    if (totalAvailable >= needed) return;
+    loadMore(Math.max(PAGE_SIZE, needed - totalAvailable));
+  }, [currentPage, hasMore, isDesktop, loadMore, status, totalAvailable]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -172,7 +177,7 @@ function ScholarshipsDirectory() {
   const isGridView = filters.view === "grid";
   const hasResults = results && results.length > 0;
   const isInitialLoading = isLoading && !results?.length;
-  const isFilterChanging = isLoading && !!results?.length;
+  const isFilterChanging = status === "LoadingFirstPage" && !!results?.length;
 
   return (
     <div className="min-h-screen">
@@ -307,7 +312,12 @@ function ScholarshipsDirectory() {
                 <div className="lg:hidden flex justify-center mt-8">
                   <button
                     type="button"
-                    onClick={() => setCurrentPage((p) => p + 1)}
+                    onClick={() => {
+                      if (status === "CanLoadMore") {
+                        loadMore(PAGE_SIZE);
+                      }
+                      setCurrentPage((p) => p + 1);
+                    }}
                     className="inline-flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-6 py-3 border-2 border-border rounded-base shadow-shadow active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
                   >
                     Show More Scholarships
@@ -315,16 +325,32 @@ function ScholarshipsDirectory() {
                 </div>
               )}
 
+              {status === "LoadingMore" && (
+                <div
+                  className={cn(
+                    "mt-6",
+                    isGridView
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "flex flex-col gap-4",
+                  )}
+                >
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <SkeletonCard key={`load-more-${i}`} />
+                  ))}
+                </div>
+              )}
+
               {/* Desktop: Numbered pagination */}
               <div className="hidden lg:block">
                 <DesktopPagination
                   currentPage={currentPage}
-                  totalPages={Math.ceil(totalAvailable / PAGE_SIZE)}
+                  totalPages={totalPages}
                   onPageChange={setCurrentPage}
                 />
                 {hasResults && (
                   <p className="text-center text-sm text-foreground/60 mt-4">
-                    Showing {results.length} of {totalAvailable} matching scholarships
+                    Showing {results.length} of {hasMore ? `${totalAvailable}+` : totalAvailable}{" "}
+                    matching scholarships
                   </p>
                 )}
               </div>
