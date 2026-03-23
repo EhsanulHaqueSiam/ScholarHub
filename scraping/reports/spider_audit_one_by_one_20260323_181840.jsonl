@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "csc_china", "method_used": "scrape", "records": 20, "duration_s": 0.39, "bytes": 314705, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 0.92, "return_code": 0}

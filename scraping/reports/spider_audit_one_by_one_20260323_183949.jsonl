@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "source_id": "targetstudy_scholarships", "status": "failed", "method_used": null, "records": 0, "duration_s": 20.01, "elapsed_s": 20.01, "bytes": 0, "errors": [{"method": "process", "error": "timeout"}], "chain": [], "return_code": 124}

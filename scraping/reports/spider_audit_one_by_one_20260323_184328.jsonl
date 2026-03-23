@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "unigo_scholarships", "method_used": "scrape", "records": 1, "duration_s": 0.57, "bytes": 5764, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 1.12, "return_code": 0}

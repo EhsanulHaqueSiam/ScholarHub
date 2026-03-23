@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "youthop", "method_used": "scrape", "records": 1, "duration_s": 2.68, "bytes": 103149, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 3.14, "return_code": 0}

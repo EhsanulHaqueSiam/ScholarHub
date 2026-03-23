@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "uae_government_scholarships_mohre", "method_used": "scrape", "records": 1, "duration_s": 4.55, "bytes": 102177, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 5.06, "return_code": 0}

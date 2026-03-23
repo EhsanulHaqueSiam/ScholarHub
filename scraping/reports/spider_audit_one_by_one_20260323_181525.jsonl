@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "university_of_tokyo_mext_research_scholarship", "method_used": "scrapling", "records": 1, "duration_s": 31.89, "bytes": 6441, "errors": [{"method": "scrape", "error": "empty", "duration_s": 1.57}], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 33.94, "return_code": 0}

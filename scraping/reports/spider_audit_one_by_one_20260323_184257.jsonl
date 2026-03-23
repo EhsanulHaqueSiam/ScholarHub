@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "tony_elumelu_foundation_entrepreneurship_programme", "method_used": "scrape", "records": 3, "duration_s": 4.08, "bytes": 249630, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 4.61, "return_code": 0}

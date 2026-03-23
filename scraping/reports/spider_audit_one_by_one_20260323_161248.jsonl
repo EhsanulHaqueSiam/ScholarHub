@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "aauw_international_fellowships", "method_used": "scrape", "records": 1, "duration_s": 1.45, "bytes": 72011, "errors": [], "chain": ["scrape", "scrapling", "jsonld"], "elapsed_s": 1.98, "return_code": 0}

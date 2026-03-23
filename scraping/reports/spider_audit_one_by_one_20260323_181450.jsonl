@@ -1,0 +1,1 @@
+{"index": 1, "total": 1, "status": "success", "source_id": "top_universities_scholarships", "method_used": "scrapling", "records": 1, "duration_s": 33.91, "bytes": 673545, "errors": [], "chain": ["scrapling", "scrape", "jsonld"], "elapsed_s": 34.37, "return_code": 0}
