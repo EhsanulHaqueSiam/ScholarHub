@@ -32,56 +32,30 @@ function AdminDashboard() {
       {/* Stats bar (D-01) */}
       <StatsBar stats={stats} />
 
-      {/* Admin view switcher */}
-      <div className="flex gap-4 border-b-2 border-border">
-        <button
-          type="button"
-          onClick={() => setAdminView("queue")}
-          className={cn(
-            "pb-2 text-sm font-heading -mb-[2px] transition-colors",
-            adminView === "queue"
-              ? "border-b-2 border-main text-foreground"
-              : "text-foreground/60 hover:text-foreground",
-          )}
-        >
-          Review Queue
-        </button>
-        <button
-          type="button"
-          onClick={() => setAdminView("sources")}
-          className={cn(
-            "pb-2 text-sm font-heading -mb-[2px] transition-colors",
-            adminView === "sources"
-              ? "border-b-2 border-main text-foreground"
-              : "text-foreground/60 hover:text-foreground",
-          )}
-        >
-          Source Trust
-        </button>
-        <button
-          type="button"
-          onClick={() => setAdminView("collections")}
-          className={cn(
-            "pb-2 text-sm font-heading -mb-[2px] transition-colors",
-            adminView === "collections"
-              ? "border-b-2 border-main text-foreground"
-              : "text-foreground/60 hover:text-foreground",
-          )}
-        >
-          Collections
-        </button>
-        <button
-          type="button"
-          onClick={() => setAdminView("tags")}
-          className={cn(
-            "pb-2 text-sm font-heading -mb-[2px] transition-colors",
-            adminView === "tags"
-              ? "border-b-2 border-main text-foreground"
-              : "text-foreground/60 hover:text-foreground",
-          )}
-        >
-          Tags
-        </button>
+      {/* Admin view switcher — neo-brutalism pill tabs */}
+      <div className="flex gap-3 flex-wrap">
+        {(
+          [
+            { key: "queue", label: "Review Queue" },
+            { key: "sources", label: "Source Trust" },
+            { key: "collections", label: "Collections" },
+            { key: "tags", label: "Tags" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setAdminView(tab.key)}
+            className={cn(
+              "px-4 py-2 text-sm font-heading border-2 border-border rounded-base transition-all",
+              adminView === tab.key
+                ? "bg-main text-main-foreground shadow-shadow"
+                : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* View content */}

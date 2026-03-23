@@ -70,8 +70,8 @@ export function DesktopPagination({
             className={cn(
               "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
               isCurrent
-                ? "bg-main text-main-foreground shadow-shadow"
-                : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                ? "bg-main text-main-foreground shadow-shadow scale-110"
+                : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none hover:rotate-[-1deg]",
             )}
           >
             {page}
@@ -99,7 +99,7 @@ export function DesktopPagination({
       </button>
 
       {/* Page info */}
-      <span className="ml-3 text-sm font-base text-foreground/60">
+      <span className="ml-3 text-sm font-heading border-2 border-border rounded-base px-3 py-1 bg-secondary-background shadow-shadow">
         Page {currentPage} of {totalPages}
       </span>
     </nav>
@@ -109,10 +109,7 @@ export function DesktopPagination({
 /**
  * Generate page numbers with ellipsis: [1, 2, "...", 9, 10]
  */
-function generatePageNumbers(
-  current: number,
-  total: number,
-): Array<number | "..."> {
+function generatePageNumbers(current: number, total: number): Array<number | "..."> {
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }

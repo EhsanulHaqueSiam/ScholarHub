@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -9,15 +8,12 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon }: StatCardProps) {
   return (
-    <Card
-      prestige="unranked"
-      className="min-h-24 p-6 border-l-4 border-l-main flex items-center gap-4"
-    >
-      <Icon className="size-8 text-main shrink-0" />
+    <div className="border-2 border-border border-t-4 border-t-main bg-accent/10 shadow-shadow p-6 rounded-base min-h-28 flex items-center gap-4">
+      <Icon className="size-10 text-main shrink-0" />
       <div>
-        <p className="text-2xl font-heading leading-tight">{value}</p>
-        <p className="text-xs text-foreground/70 font-base">{label}</p>
+        <p className="text-3xl font-heading leading-tight">{value}</p>
+        <p className="text-sm text-foreground/70 font-heading uppercase tracking-wide">{label}</p>
       </div>
-    </Card>
+    </div>
   );
 }

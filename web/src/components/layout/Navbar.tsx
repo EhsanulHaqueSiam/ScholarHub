@@ -53,7 +53,7 @@ export function Navbar() {
       aria-label="Main navigation"
       className={cn(
         "fixed top-0 inset-x-0 z-50",
-        "bg-secondary-background border-b-4 border-border",
+        "bg-secondary-background border-b-4 border-border shadow-[0_6px_0_0_var(--border)]",
         "h-16 flex items-center",
       )}
     >

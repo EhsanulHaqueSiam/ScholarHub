@@ -26,19 +26,24 @@ export function CollectionsManager() {
   const deleteCollection = useMutation(api.collections.deleteCollection);
   const bulkUpdateStatus = useMutation(api.collections.bulkUpdateCollectionStatus);
 
-  const [editingCollection, setEditingCollection] = useState<Id<"collections"> | "new" | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Id<"collections"> | "new" | null>(
+    null,
+  );
   const [selectedIds, setSelectedIds] = useState<Set<Id<"collections">>>(new Set());
   const [deletingId, setDeletingId] = useState<Id<"collections"> | null>(null);
   const [archivingId, setArchivingId] = useState<Id<"collections"> | null>(null);
   const [bulkAction, setBulkAction] = useState<"archive" | "activate" | null>(null);
 
   if (!collections) {
-    return <div className="text-foreground/60 text-sm py-8 text-center">Loading collections...</div>;
+    return (
+      <div className="text-foreground/60 text-sm py-8 text-center">Loading collections...</div>
+    );
   }
 
-  const editingDoc = editingCollection && editingCollection !== "new"
-    ? collections.find((c) => c._id === editingCollection) ?? undefined
-    : undefined;
+  const editingDoc =
+    editingCollection && editingCollection !== "new"
+      ? (collections.find((c) => c._id === editingCollection) ?? undefined)
+      : undefined;
 
   function toggleSelect(id: Id<"collections">) {
     setSelectedIds((prev) => {
@@ -152,17 +157,22 @@ export function CollectionsManager() {
                       {collection.emoji} {collection.name}
                     </span>
                     {collection.is_featured && (
-                      <Badge variant="default" className="ml-2 text-[10px]">Featured</Badge>
+                      <Badge variant="default" className="ml-2 text-[10px]">
+                        Featured
+                      </Badge>
                     )}
                   </td>
                   <td className="p-3">
-                    <Badge variant={STATUS_BADGE_MAP[collection.status as keyof typeof STATUS_BADGE_MAP] ?? "neutral"}>
+                    <Badge
+                      variant={
+                        STATUS_BADGE_MAP[collection.status as keyof typeof STATUS_BADGE_MAP] ??
+                        "neutral"
+                      }
+                    >
                       {collection.status}
                     </Badge>
                   </td>
-                  <td className="p-3 text-right tabular-nums">
-                    {collection.scholarship_count}
-                  </td>
+                  <td className="p-3 text-right tabular-nums">{collection.scholarship_count}</td>
                   <td className="p-3">
                     <input
                       type="number"
@@ -209,11 +219,14 @@ export function CollectionsManager() {
                                 Archive collection?
                               </AlertDialog.Title>
                               <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
-                                Archive this collection? It will be hidden from public view but can be reactivated later.
+                                Archive this collection? It will be hidden from public view but can
+                                be reactivated later.
                               </AlertDialog.Description>
                               <div className="flex justify-end gap-2">
                                 <AlertDialog.Cancel asChild>
-                                  <Button variant="neutral" size="sm">Keep Collection</Button>
+                                  <Button variant="neutral" size="sm">
+                                    Keep Collection
+                                  </Button>
                                 </AlertDialog.Cancel>
                                 <AlertDialog.Action asChild>
                                   <Button
@@ -255,11 +268,14 @@ export function CollectionsManager() {
                               Delete collection?
                             </AlertDialog.Title>
                             <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
-                              This will permanently delete &ldquo;{collection.name}&rdquo;. This action cannot be undone.
+                              This will permanently delete &ldquo;{collection.name}&rdquo;. This
+                              action cannot be undone.
                             </AlertDialog.Description>
                             <div className="flex justify-end gap-2">
                               <AlertDialog.Cancel asChild>
-                                <Button variant="neutral" size="sm">Keep Collection</Button>
+                                <Button variant="neutral" size="sm">
+                                  Keep Collection
+                                </Button>
                               </AlertDialog.Cancel>
                               <AlertDialog.Action asChild>
                                 <Button
@@ -286,15 +302,21 @@ export function CollectionsManager() {
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-0 inset-x-0 z-40">
-          <div className="max-w-[1280px] mx-auto bg-foreground text-background border-t-2 border-border shadow-[0_-4px_0_0_var(--border)] h-14 flex items-center justify-between py-2 px-6">
-            <span className="text-sm">{selectedIds.size} collection{selectedIds.size > 1 ? "s" : ""} selected</span>
+          <div className="max-w-[1280px] mx-auto bg-foreground text-background border-t-4 border-border shadow-[0_-6px_0_0_var(--border)] h-16 flex items-center justify-between py-2 px-6">
+            <span className="text-sm">
+              {selectedIds.size} collection{selectedIds.size > 1 ? "s" : ""} selected
+            </span>
             <div className="flex items-center gap-2">
               <AlertDialog.Root
                 open={bulkAction === "activate"}
                 onOpenChange={(open) => setBulkAction(open ? "activate" : null)}
               >
                 <AlertDialog.Trigger asChild>
-                  <Button variant="default" size="sm" className="bg-main text-main-foreground border-background/30">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-main text-main-foreground border-background/30"
+                  >
                     Activate Selected
                   </Button>
                 </AlertDialog.Trigger>
@@ -309,10 +331,16 @@ export function CollectionsManager() {
                     </AlertDialog.Description>
                     <div className="flex justify-end gap-2">
                       <AlertDialog.Cancel asChild>
-                        <Button variant="neutral" size="sm">Cancel</Button>
+                        <Button variant="neutral" size="sm">
+                          Cancel
+                        </Button>
                       </AlertDialog.Cancel>
                       <AlertDialog.Action asChild>
-                        <Button variant="default" size="sm" onClick={() => handleBulkAction("activate")}>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleBulkAction("activate")}
+                        >
                           Activate All
                         </Button>
                       </AlertDialog.Action>
@@ -337,14 +365,21 @@ export function CollectionsManager() {
                       Archive {selectedIds.size} collection{selectedIds.size > 1 ? "s" : ""}?
                     </AlertDialog.Title>
                     <AlertDialog.Description className="text-sm text-foreground/70 mb-4">
-                      These collections will be hidden from public view but can be reactivated later.
+                      These collections will be hidden from public view but can be reactivated
+                      later.
                     </AlertDialog.Description>
                     <div className="flex justify-end gap-2">
                       <AlertDialog.Cancel asChild>
-                        <Button variant="neutral" size="sm">Keep All</Button>
+                        <Button variant="neutral" size="sm">
+                          Keep All
+                        </Button>
                       </AlertDialog.Cancel>
                       <AlertDialog.Action asChild>
-                        <Button variant="destructive" size="sm" onClick={() => handleBulkAction("archive")}>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleBulkAction("archive")}
+                        >
                           Archive All
                         </Button>
                       </AlertDialog.Action>
@@ -368,7 +403,9 @@ export function CollectionsManager() {
       {/* Edit form slide-out */}
       <Dialog.Root
         open={editingCollection !== null}
-        onOpenChange={(open) => { if (!open) setEditingCollection(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditingCollection(null);
+        }}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-40 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />

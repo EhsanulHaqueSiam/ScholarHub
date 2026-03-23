@@ -133,19 +133,16 @@ export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
   return (
     <section>
       <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
-        <Tabs.List
-          className="flex gap-4 border-b-2 border-border mb-4"
-          aria-label="Queue status filter"
-        >
+        <Tabs.List className="flex gap-3 flex-wrap mb-6" aria-label="Queue status filter">
           {STATUS_TABS.map((tab) => (
             <Tabs.Trigger
               key={tab.value}
               value={tab.value}
               className={cn(
-                "font-heading text-sm pb-2 px-1 transition-colors -mb-[2px]",
+                "px-4 py-2 text-sm font-heading border-2 border-border rounded-base transition-all",
                 activeTab === tab.value
-                  ? "border-b-2 border-main text-foreground"
-                  : "text-foreground/60 hover:text-foreground",
+                  ? "bg-main text-main-foreground shadow-shadow"
+                  : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",
               )}
             >
               {getTabLabel(tab)}

@@ -111,17 +111,17 @@ export function SourceTrustManager() {
       {/* Table */}
       <div className="border-2 border-border rounded-base overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-3 bg-secondary-background border-b-2 border-border">
-          <span className="text-xs font-heading uppercase tracking-wide text-foreground/60">
+        <div className="grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-4 bg-secondary-background border-b-2 border-border">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
             Source Name
           </span>
-          <span className="text-xs font-heading uppercase tracking-wide text-foreground/60">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
             Category
           </span>
-          <span className="text-xs font-heading uppercase tracking-wide text-foreground/60">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
             Trust Level
           </span>
-          <span className="text-xs font-heading uppercase tracking-wide text-foreground/60">
+          <span className="text-sm font-heading font-bold uppercase tracking-wide text-foreground/70">
             Actions
           </span>
         </div>
@@ -144,8 +144,8 @@ export function SourceTrustManager() {
               <div
                 key={source._id}
                 className={cn(
-                  "grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-3 border-b border-border items-center",
-                  !source.is_active && "opacity-50",
+                  "grid grid-cols-[1fr_140px_140px_160px] gap-4 px-4 py-4 border-b-2 border-border items-center hover:bg-accent/5 transition-colors",
+                  !source.is_active && "opacity-50 grayscale",
                 )}
               >
                 {/* Source name */}
@@ -170,7 +170,7 @@ export function SourceTrustManager() {
                     onChange={(e) =>
                       handleDropdownChange(source._id, currentTrust, e.target.value as TrustLevel)
                     }
-                    className="text-xs border-2 border-border rounded-base bg-background px-2 py-1 font-base"
+                    className="text-xs border-2 border-border rounded-base bg-background px-3 py-1.5 font-heading"
                   >
                     <option value="auto_publish">Auto Publish</option>
                     <option value="needs_review">Needs Review</option>

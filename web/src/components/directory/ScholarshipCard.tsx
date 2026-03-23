@@ -16,6 +16,7 @@ import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countr
 import { getDeadlineUrgency, isNew } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
+import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import {
   formatCoverageCompact,
   getCoveredItems,
@@ -28,7 +29,6 @@ import {
   urgencyLabelMap,
   urgencyVariantMap,
 } from "@/lib/shared";
-import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import { cn } from "@/lib/utils";
 import type { ScholarshipType } from "../../../convex/schema";
 
@@ -79,7 +79,7 @@ export const ScholarshipCard = memo(function ScholarshipCard({
           "relative h-full",
           disableHover && "overflow-hidden",
           !disableHover &&
-            "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
+            "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none motion-safe:hover:rotate-[-0.5deg]",
         )}
       >
         {/* Compare checkbox - top left */}
@@ -146,7 +146,7 @@ export const ScholarshipCard = memo(function ScholarshipCard({
               {scholarship.degree_levels.map((level) => (
                 <span
                   key={level}
-                  className="inline-block rounded-base border border-border px-1.5 py-0.5 text-xs"
+                  className="inline-block rounded-base border-2 border-border bg-secondary-background font-heading px-1.5 py-0.5 text-xs"
                 >
                   {level.charAt(0).toUpperCase() + level.slice(1)}
                 </span>

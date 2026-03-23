@@ -6,7 +6,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-base border-2 border-border px-2.5 py-0.5 text-xs font-base w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] overflow-hidden",
+  "inline-flex items-center justify-center rounded-base border-2 border-border px-2.5 py-0.5 text-[13px] font-base w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] overflow-hidden",
   {
     variants: {
       variant: {
@@ -37,6 +37,7 @@ const badgeVariants = cva(
         typeAthletic: "bg-type-athletic-badge text-white border-type-athletic-border font-heading",
         typeSubjectSpecific:
           "bg-type-subject-specific-badge text-black border-type-subject-specific-border font-heading",
+        accent: "bg-accent text-accent-foreground border-accent-foreground/20 font-heading",
       },
     },
     defaultVariants: {

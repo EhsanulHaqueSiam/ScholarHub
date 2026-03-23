@@ -109,7 +109,7 @@ export function BulkActionBar({ selectedCount, selectedIds, onClear }: BulkActio
       role="toolbar"
       aria-label={`Bulk actions for ${selectedCount} selected scholarships`}
     >
-      <div className="max-w-[1280px] mx-auto bg-foreground text-background border-t-2 border-border shadow-[0_-4px_0_0_var(--border)] h-14 flex items-center justify-between py-2 px-6">
+      <div className="max-w-[1280px] mx-auto bg-foreground text-background border-t-4 border-border shadow-[0_-6px_0_0_var(--border)] h-16 flex items-center justify-between py-2 px-6">
         {/* Left: count */}
         <span className="text-sm">{resultMessage ?? `${selectedCount} scholarships selected`}</span>
 

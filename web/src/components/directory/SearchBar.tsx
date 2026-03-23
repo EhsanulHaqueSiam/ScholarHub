@@ -171,7 +171,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
                 setIsOpen(true);
               }
             }}
-            className="border-2 border-border rounded-base bg-secondary-background h-12 px-4 ps-12 w-full text-base font-base shadow-shadow focus:ring-2 focus:ring-ring focus:outline-none transition-all focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none"
+            className="border-[3px] border-border rounded-base bg-secondary-background h-14 px-4 ps-12 w-full text-base font-base shadow-shadow focus:ring-2 focus:ring-ring focus:outline-none transition-all focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none placeholder:text-foreground/40 placeholder:font-heading"
           />
         </div>
       </Popover.Anchor>
@@ -181,7 +181,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
           onCloseAutoFocus={(e) => e.preventDefault()}
           sideOffset={4}
           align="start"
-          className="z-50 w-[var(--radix-popover-trigger-width)] border-2 border-border rounded-base bg-secondary-background shadow-shadow overflow-hidden"
+          className="z-50 w-[var(--radix-popover-trigger-width)] border-[3px] border-border rounded-base bg-secondary-background shadow-shadow overflow-hidden"
         >
           <ul id={listboxId} role="listbox" className="py-1">
             {combinedSuggestions.map((suggestion, index) => (

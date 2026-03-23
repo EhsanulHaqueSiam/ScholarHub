@@ -6,8 +6,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { DuplicateBadge } from "./DuplicateBadge";
 
 interface QueueRowProps {
@@ -47,7 +47,10 @@ interface QueueRowProps {
 
 const STATUS_BADGE_MAP: Record<
   string,
-  { variant: "urgencyWarning" | "urgencyOpen" | "urgencyCritical" | "urgencyClosed" | "neutral"; label: string }
+  {
+    variant: "urgencyWarning" | "urgencyOpen" | "urgencyCritical" | "urgencyClosed" | "neutral";
+    label: string;
+  }
 > = {
   pending_review: { variant: "urgencyWarning", label: "Pending Review" },
   published: { variant: "urgencyOpen", label: "Published" },
@@ -135,15 +138,15 @@ export function QueueRow({
   }
 
   return (
-    <div className="border-b border-border">
+    <div className="border-2 border-border mb-2 rounded-base overflow-hidden">
       {/* Compact row */}
       <div
         role="row"
         aria-expanded={isExpanded}
         className={cn(
-          "flex items-center min-h-14 bg-secondary-background cursor-pointer transition-all",
-          "hover:-translate-y-px hover:shadow-sm",
-          isSelected && "bg-main/5",
+          "flex items-center min-h-14 bg-secondary-background cursor-pointer transition-all duration-150",
+          "hover:-translate-y-0.5 hover:shadow-shadow",
+          isSelected && "bg-accent/10 border-l-4 border-l-main",
         )}
       >
         {/* Checkbox */}
@@ -204,18 +207,12 @@ export function QueueRow({
         </div>
 
         {/* Deadline */}
-        <div
-          className="w-25 shrink-0 text-sm px-1 hidden xl:block"
-          onClick={onToggleExpand}
-        >
+        <div className="w-25 shrink-0 text-sm px-1 hidden xl:block" onClick={onToggleExpand}>
           {formatDeadline(scholarship.application_deadline, scholarship.application_deadline_text)}
         </div>
 
         {/* Status badge */}
-        <div
-          className="w-25 shrink-0 px-1 hidden lg:block"
-          onClick={onToggleExpand}
-        >
+        <div className="w-25 shrink-0 px-1 hidden lg:block" onClick={onToggleExpand}>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
         </div>
 
@@ -227,7 +224,7 @@ export function QueueRow({
                 type="button"
                 onClick={onToggleExpand}
                 aria-label={isExpanded ? "Collapse row" : "Expand row"}
-                className="w-8 h-8 flex items-center justify-center shrink-0"
+                className="w-8 h-8 flex items-center justify-center shrink-0 border-2 border-border rounded-base hover:bg-main/10 transition-colors"
               >
                 <ChevronDown
                   className={cn(
@@ -251,7 +248,7 @@ export function QueueRow({
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="bg-secondary-background border-t border-border overflow-hidden">
+        <div className="bg-background border-t-2 border-border overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
             {/* Left column */}
             <div className="space-y-3">
@@ -400,12 +397,7 @@ export function QueueRow({
 
           {/* Action buttons */}
           <div className="flex justify-end gap-2 px-4 pb-4">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleApprove}
-              disabled={isApproving}
-            >
+            <Button variant="default" size="sm" onClick={handleApprove} disabled={isApproving}>
               {isApproving ? "Approving..." : "Approve Scholarship"}
             </Button>
 
@@ -431,11 +423,7 @@ export function QueueRow({
                       </Button>
                     </AlertDialog.Cancel>
                     <AlertDialog.Action asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleReject}
-                      >
+                      <Button variant="destructive" size="sm" onClick={handleReject}>
                         Reject Scholarship
                       </Button>
                     </AlertDialog.Action>

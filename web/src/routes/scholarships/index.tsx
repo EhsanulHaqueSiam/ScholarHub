@@ -206,9 +206,10 @@ function ScholarshipsDirectory() {
       {/* Hero Section */}
       <section className="pt-20 pb-12 md:pt-24 md:pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-4">
-          <h1 className="font-heading text-[32px] md:text-[48px] leading-[1.1] text-foreground">
+          <h1 className="font-heading text-[36px] md:text-[56px] leading-[1.1] text-foreground">
             Browse {totalCount !== undefined && <>{totalCount.toLocaleString()}+ </>}
-            International Scholarships
+            <span className="text-accent-pink">International</span>{" "}
+            <span className="text-accent">Scholarships</span>
           </h1>
           <p className="font-base text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
             Find fully funded scholarships you qualify for. Filter by country, degree, and prestige.
@@ -263,7 +264,7 @@ function ScholarshipsDirectory() {
             <ViewToggle />
           </div>
           <p
-            className="text-sm font-heading text-foreground border-2 border-border rounded-base px-3 py-1.5 bg-secondary-background"
+            className="text-sm font-heading text-accent-foreground border-2 border-border rounded-base px-4 py-2 bg-accent shadow-shadow"
             aria-live="polite"
           >
             {totalCount !== undefined && !filters.q

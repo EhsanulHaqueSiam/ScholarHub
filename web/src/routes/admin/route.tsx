@@ -29,9 +29,7 @@ function AdminLayout() {
 
 function AdminHeader() {
   const [isDark, setIsDark] = useState(() =>
-    typeof document !== "undefined"
-      ? document.documentElement.classList.contains("dark")
-      : false,
+    typeof document !== "undefined" ? document.documentElement.classList.contains("dark") : false,
   );
 
   function toggleTheme() {
@@ -42,9 +40,9 @@ function AdminHeader() {
   }
 
   return (
-    <header className="h-12 bg-secondary-background border-b-2 border-border flex items-center justify-between px-6">
-      <span className="font-heading text-lg text-foreground">
-        ScholarHub Admin
+    <header className="h-16 bg-secondary-background border-b-4 border-border shadow-[0_6px_0_0_var(--border)] flex items-center justify-between px-6">
+      <span className="font-heading text-xl text-foreground">
+        ScholarHub <span className="text-accent">Admin</span>
       </span>
       <Button
         variant="neutral"
