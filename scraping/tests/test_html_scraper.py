@@ -175,6 +175,40 @@ async def test_html_scraper_fuzzy_fallback():
 
 
 @pytest.mark.asyncio
+async def test_html_scraper_single_page_fallback_when_no_listings():
+    """When listing selectors miss, scraper should still parse single-page opportunities."""
+    config = BaseSourceConfig(
+        name="Single Page Source",
+        url="https://example.com/scholarship-detail",
+        source_id="test-single-page",
+        primary_method="scrape",
+        selectors={
+            "listing": ".missing-listing",
+            "title": "h1.page-title",
+            "description": ".summary",
+        },
+        field_mappings={"title": "title", "description": "description"},
+        detail_page=False,
+        rate_limit_delay=0.0,
+    )
+
+    html = """<html><body>
+    <h1 class="page-title">Global Excellence Scholarship</h1>
+    <div class="summary">Fully funded opportunity for international students.</div>
+    </body></html>"""
+
+    scraper = HtmlScraper(config)
+    response = _make_response(html, "https://example.com/scholarship-detail")
+
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", return_value=response):
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert records[0]["title"] == "Global Excellence Scholarship"
+    assert records[0]["source_url"] == "https://example.com/scholarship-detail"
+
+
+@pytest.mark.asyncio
 async def test_html_scraper_stops_at_expired_cutoff():
     """HTML scraper should stop collecting records when deadline is past cutoff."""
     config = BaseSourceConfig(

@@ -18,6 +18,7 @@ def _make_config(
     name: str = "Test Source",
     source_id: str = "test-source",
     method: str = "api",
+    secondary_method: str | None = None,
     auth_config: dict | None = None,
     wave: int | None = None,
 ) -> BaseSourceConfig:
@@ -27,6 +28,7 @@ def _make_config(
         url="https://example.com",
         source_id=source_id,
         primary_method=method,
+        secondary_method=secondary_method,
         selectors={"items_path": "data"},
         field_mappings={"title": "title"},
     )
@@ -463,6 +465,74 @@ class TestPipelineRunner:
 
         called_config = mock_get_scraper.call_args[0][0]
         assert called_config.incremental_mode is True
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_fallbacks_to_secondary_method_after_empty_results(
+        self,
+        mock_discover,
+        mock_get_scraper,
+    ):
+        """If primary returns no records, runner should try secondary method."""
+        config = _make_config(method="scrape", secondary_method="scrapling")
+        config.selectors = {"listing": ".item"}
+        mock_discover.return_value = [config]
+
+        primary_scraper = AsyncMock()
+        primary_scraper.scrape.return_value = []
+        primary_scraper.records_found = 0
+        primary_scraper.bytes_downloaded = 100
+
+        secondary_scraper = AsyncMock()
+        secondary_scraper.scrape.return_value = [{"title": "Recovered"}]
+        secondary_scraper.records_found = 1
+        secondary_scraper.bytes_downloaded = 200
+
+        mock_get_scraper.side_effect = [primary_scraper, secondary_scraper]
+
+        runner = PipelineRunner(dry_run=True)
+        stats = await runner.run()
+
+        assert stats["sources_completed"] == 1
+        assert stats["sources_failed"] == 0
+        assert stats["records_inserted"] == 1
+        assert mock_get_scraper.call_args_list[0].kwargs["method"] == "scrape"
+        assert mock_get_scraper.call_args_list[1].kwargs["method"] == "scrapling"
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_fallbacks_to_secondary_method_after_primary_error(
+        self,
+        mock_discover,
+        mock_get_scraper,
+    ):
+        """If primary raises, runner should continue with configured fallback method."""
+        config = _make_config(method="scrape", secondary_method="scrapling")
+        config.selectors = {"listing": ".item"}
+        mock_discover.return_value = [config]
+
+        primary_scraper = AsyncMock()
+        primary_scraper.scrape.side_effect = RuntimeError("Blocked")
+        primary_scraper.records_found = 0
+        primary_scraper.bytes_downloaded = 25
+
+        secondary_scraper = AsyncMock()
+        secondary_scraper.scrape.return_value = [{"title": "Recovered"}]
+        secondary_scraper.records_found = 1
+        secondary_scraper.bytes_downloaded = 150
+
+        mock_get_scraper.side_effect = [primary_scraper, secondary_scraper]
+
+        runner = PipelineRunner(dry_run=True)
+        stats = await runner.run()
+
+        assert stats["sources_completed"] == 1
+        assert stats["sources_failed"] == 0
+        assert stats["records_inserted"] == 1
+        assert mock_get_scraper.call_args_list[0].kwargs["method"] == "scrape"
+        assert mock_get_scraper.call_args_list[1].kwargs["method"] == "scrapling"
 
     @pytest.mark.asyncio
     @patch("scholarhub_pipeline.pipeline.runner.get_scraper")

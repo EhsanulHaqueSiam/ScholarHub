@@ -14,7 +14,9 @@
  */
 
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { internalMutation, mutation, query } from "./_generated/server";
+import { runAfterSafe } from "./scheduler";
 import {
   collectionStatusValidator,
   degreeLevelValidator,
@@ -125,12 +127,29 @@ async function countMatchingScholarships(
   ctx: { db: any },
   filters: CollectionFilters,
 ): Promise<number> {
-  const published = await ctx.db
-    .query("scholarships")
-    .withIndex("by_status", (q: any) => q.eq("status", "published"))
-    .take(10000);
+  let count = 0;
+  let cursor: string | null = null;
 
-  return published.filter((s: any) => matchesCollectionFilters(s, filters)).length;
+  while (true) {
+    const page = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q: any) => q.eq("status", "published"))
+      .paginate({ cursor, numItems: 256 });
+
+    for (const scholarship of page.page) {
+      if (matchesCollectionFilters(scholarship as any, filters)) {
+        count += 1;
+      }
+    }
+
+    if (page.isDone) {
+      break;
+    }
+
+    cursor = page.continueCursor;
+  }
+
+  return count;
 }
 
 // ---- Slug generation ----
@@ -450,26 +469,53 @@ export const getCollectionPreview = query({
     added_since: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const published = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(500);
-
     const now = Date.now();
-    const matching = published.filter((s) => {
-      if (s.application_deadline && s.application_deadline < now) return false;
-      return matchesCollectionFilters(s as any, args);
-    });
+    const preview: Array<{
+      _id: any;
+      title: string;
+      host_country: string;
+      funding_type: string;
+      prestige_tier?: string | null;
+    }> = [];
+    let count = 0;
+    let cursor: string | null = null;
+
+    while (true) {
+      const page = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .paginate({ cursor, numItems: 256 });
+
+      for (const scholarship of page.page) {
+        if (scholarship.application_deadline && scholarship.application_deadline < now) {
+          continue;
+        }
+        if (!matchesCollectionFilters(scholarship as any, args)) {
+          continue;
+        }
+
+        count += 1;
+        if (preview.length < 5) {
+          preview.push({
+            _id: scholarship._id,
+            title: scholarship.title,
+            host_country: scholarship.host_country,
+            funding_type: scholarship.funding_type,
+            prestige_tier: scholarship.prestige_tier,
+          });
+        }
+      }
+
+      if (page.isDone) {
+        break;
+      }
+
+      cursor = page.continueCursor;
+    }
 
     return {
-      count: matching.length,
-      preview: matching.slice(0, 5).map((s) => ({
-        _id: s._id,
-        title: s.title,
-        host_country: s.host_country,
-        funding_type: s.funding_type,
-        prestige_tier: s.prestige_tier,
-      })),
+      count,
+      preview,
     };
   },
 });
@@ -483,29 +529,33 @@ export const getCollectionPreview = query({
  */
 export const recomputeAllCounts = internalMutation({
   args: {
-    cursor: v.optional(v.string()),
+    cursor: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, args) => {
-    const collections = await ctx.db
+    const page = await ctx.db
       .query("collections")
       .withIndex("by_status", (q) => q.eq("status", "active"))
-      .take(50);
-
-    const published = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(5000);
+      .paginate({ cursor: args.cursor ?? null, numItems: 50 });
 
     const now = Date.now();
-    for (const collection of collections) {
-      const count = published.filter((s) => {
-        if (s.application_deadline && s.application_deadline < now) return false;
-        return matchesCollectionFilters(s as any, collection);
-      }).length;
+    for (const collection of page.page) {
+      const count = await countMatchingScholarships(ctx, collection as any);
 
       if (count !== collection.scholarship_count) {
-        await ctx.db.patch(collection._id, { scholarship_count: count });
+        await ctx.db.patch(collection._id, { scholarship_count: count, updated_at: now });
       }
     }
+
+    if (!page.isDone) {
+      await runAfterSafe(ctx, 0, internal.collections.recomputeAllCounts, {
+        cursor: page.continueCursor,
+      });
+    }
+
+    return {
+      processed: page.page.length,
+      complete: page.isDone,
+      nextCursor: page.isDone ? null : page.continueCursor,
+    };
   },
 });

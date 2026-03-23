@@ -15,7 +15,7 @@ class Config(BaseGovernmentConfig):
     """NZ Government Scholarships government config."""
 
     name: str = "NZ Government Scholarships"
-    url: str = "https://scholarships.govt.nz"
+    url: str = "https://www.nzscholarships.govt.nz/"
     source_id: str = "nz_government_scholarships"
     primary_method: str = "scrapling"
     secondary_method: str | None = None
@@ -44,6 +44,7 @@ class Config(BaseGovernmentConfig):
         "amount": ".amount::text, .value::text",
     })
     rate_limit_delay: float = 5.0
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

@@ -37,8 +37,19 @@ def scrape(ctx: click.Context, json_logs: bool) -> None:
 @click.option("--dry-run", is_flag=True, help="Write to local JSON instead of Convex")
 @click.option("--source", help="Run single source by name or source_id")
 @click.option("--wave", type=int, help="Run all sources in a specific wave")
+@click.option(
+    "--full-refresh",
+    is_flag=True,
+    help="Force full scrape for selected sources (disable incremental mode)",
+)
 @click.pass_context
-def run(ctx: click.Context, dry_run: bool, source: str | None, wave: int | None) -> None:
+def run(
+    ctx: click.Context,
+    dry_run: bool,
+    source: str | None,
+    wave: int | None,
+    full_refresh: bool,
+) -> None:
     """Run scraping pipeline."""
     from scholarhub_pipeline.pipeline.runner import PipelineRunner
 
@@ -53,6 +64,7 @@ def run(ctx: click.Context, dry_run: bool, source: str | None, wave: int | None)
         dry_run=dry_run,
         source_filter=source,
         wave_filter=wave,
+        full_refresh=full_refresh,
         json_logs=ctx.obj.get("json_logs", False),
     )
     stats = asyncio.run(runner.run())

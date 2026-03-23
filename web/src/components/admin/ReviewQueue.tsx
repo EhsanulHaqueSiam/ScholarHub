@@ -55,9 +55,17 @@ const EMPTY_STATE_COPY: Record<string, { heading: string; body: string }> = {
 
 interface ReviewQueueProps {
   onEditScholarship: (id: Id<"scholarships">, title: string) => void;
+  stats?:
+    | {
+        total: number;
+        pending: number;
+        published: number;
+        rejected: number;
+      }
+    | undefined;
 }
 
-export function ReviewQueue({ onEditScholarship }: ReviewQueueProps) {
+export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
   const [activeTab, setActiveTab] = useState<string>("pending_review");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedId, setExpandedId] = useState<Id<"scholarships"> | null>(null);
@@ -70,7 +78,6 @@ export function ReviewQueue({ onEditScholarship }: ReviewQueueProps) {
     status: statusFilter,
     limit: 200,
   });
-  const stats = useQuery(api.admin.getAdminStats);
 
   // Client-side sorting: highest trust rank desc, then newest first
   const sortedItems = useMemo(() => {

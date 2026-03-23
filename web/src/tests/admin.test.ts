@@ -58,6 +58,79 @@ async function insertScholarship(
 }
 
 describe("Admin queries and mutations", () => {
+  describe("getAdminStats", () => {
+    it("returns status and source-health counts via aggregated pass", async () => {
+      const t = convexTest(schema, modules);
+
+      const sourceA = await createSource(t, {
+        name: "Stats Source A",
+        url: "https://stats-a.example.com",
+      });
+      const sourceB = await createSource(t, {
+        name: "Stats Source B",
+        url: "https://stats-b.example.com",
+      });
+
+      await insertScholarship(t, sourceA, {
+        title: "Pending Stats",
+        status: "pending_review",
+        match_key: "pending stats|test org|de",
+      });
+      await insertScholarship(t, sourceA, {
+        title: "Published Stats",
+        status: "published",
+        match_key: "published stats|test org|de",
+      });
+      await insertScholarship(t, sourceB, {
+        title: "Rejected Stats",
+        status: "rejected",
+        match_key: "rejected stats|test org|de",
+      });
+      await insertScholarship(t, sourceB, {
+        title: "Archived Stats",
+        status: "archived",
+        match_key: "archived stats|test org|de",
+      });
+      // Draft should not contribute to total (existing behavior).
+      await insertScholarship(t, sourceB, {
+        title: "Draft Stats",
+        status: "draft",
+        match_key: "draft stats|test org|de",
+      });
+
+      await t.run(async (ctx: any) => {
+        await ctx.db.insert("source_health", {
+          source_id: sourceA,
+          status: "healthy",
+          consecutive_failures: 0,
+        });
+        await ctx.db.insert("source_health", {
+          source_id: sourceB,
+          status: "degraded",
+          consecutive_failures: 2,
+        });
+        await ctx.db.insert("source_health", {
+          source_id: sourceB,
+          status: "deactivated",
+          consecutive_failures: 8,
+        });
+      });
+
+      const stats = await t.query(anyApi.admin.getAdminStats, {});
+
+      expect(stats.total).toBe(4);
+      expect(stats.pending).toBe(1);
+      expect(stats.published).toBe(1);
+      expect(stats.rejected).toBe(1);
+      expect(stats.publishedToday).toBe(1);
+      expect(stats.sourceHealth).toEqual({
+        healthy: 1,
+        degraded: 1,
+        failing: 1,
+      });
+    });
+  });
+
   describe("getReviewQueue", () => {
     it("returns pending_review scholarships with resolved_sources", async () => {
       const t = convexTest(schema, modules);
@@ -83,6 +156,41 @@ describe("Admin queries and mutations", () => {
       expect(queue[0].resolved_sources[0].name).toBe("Gov Source");
       expect(queue[0].resolved_sources[0].category).toBe("government");
       expect(queue[0].resolved_sources[0].trust_level).toBe("needs_review");
+    });
+
+    it("sets has_possible_duplicate using indexed canonical+match lookup", async () => {
+      const t = convexTest(schema, modules);
+
+      const sourceId = await createSource(t, {
+        name: "Dup Source",
+        category: "aggregator",
+        trust_level: "needs_review",
+        url: "https://dup.example.com",
+      });
+
+      const scholarshipId = await insertScholarship(t, sourceId, {
+        title: "Dup Candidate",
+        status: "pending_review",
+        match_key: "dup candidate|test org|de",
+      });
+
+      await t.run(async (ctx: any) => {
+        await ctx.db.insert("raw_records", {
+          source_id: sourceId,
+          title: "Dup Candidate Raw",
+          source_url: "https://dup.example.com/raw",
+          scraped_at: Date.now(),
+          canonical_id: scholarshipId,
+          match_status: "possible_duplicate",
+        });
+      });
+
+      const queue = await t.query(anyApi.admin.getReviewQueue, {
+        status: "pending_review",
+      });
+
+      expect(queue).toHaveLength(1);
+      expect(queue[0].has_possible_duplicate).toBe(true);
     });
   });
 

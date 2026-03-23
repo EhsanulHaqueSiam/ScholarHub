@@ -10,7 +10,8 @@ class Config(BaseGovernmentConfig):
     """Oman Government Scholarships government config."""
 
     name: str = "Oman Government Scholarships"
-    url: str = "https://www.mohe.gov.om/en/scholarships"
+    # MOHE endpoint has DNS issues; use Ministry of Education Oman entrypoint.
+    url: str = "https://www.moe.gov.om/"
     source_id: str = "oman_government_scholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +20,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getCountryFlag } from "@/lib/countries";
-import { FIELDS_OF_STUDY } from "@/lib/filters";
+import { FIELDS_OF_STUDY, parseCommaSeparated, serializeCommaSeparated } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
@@ -43,6 +43,11 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // Keep input value in sync when URL-backed search changes externally.
+  useEffect(() => {
+    setInputValue(defaultValue);
+  }, [defaultValue]);
 
   // Fetch suggestions from Convex (reactive query)
   const suggestions = useQuery(
@@ -117,9 +122,26 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
     if (suggestion.type === "scholarship") {
       navigate({ to: `/scholarships/${suggestion.slug}` });
     } else {
-      // Category suggestion: apply as field filter
-      onSearch("");
+      // Category suggestion: add/merge with existing "field" URL filter.
+      navigate({
+        search: (prev: Record<string, unknown>) => {
+          const current = parseCommaSeparated(
+            typeof prev.field === "string" ? prev.field : undefined,
+          );
+          const next = current.includes(suggestion.field)
+            ? current
+            : [...current, suggestion.field];
+          return {
+            ...prev,
+            q: undefined,
+            field: serializeCommaSeparated(next),
+          };
+        },
+        replace: true,
+        resetScroll: false,
+      });
       setInputValue("");
+      setDebouncedQuery("");
     }
   }
 

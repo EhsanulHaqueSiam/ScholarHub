@@ -1,6 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
-import satori from "satori";
-import { Resvg } from "@resvg/resvg-js";
+import { createFileRoute } from "@tanstack/react-router";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 
@@ -327,74 +325,92 @@ const TRANSPARENT_PIXEL = new Uint8Array([
   0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 ]);
 
-export const ServerRoute = createServerFileRoute("/api/og").methods({
-  GET: async ({ request }) => {
-    try {
-      const url = new URL(request.url);
-      const type = url.searchParams.get("type") || "default";
-      const slug = url.searchParams.get("slug") || "";
-      const id = url.searchParams.get("id") || "";
+export const Route = createFileRoute("/api/og")({
+  server: {
+    handlers: {
+      HEAD: async () => {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        });
+      },
+      GET: async ({ request }) => {
+        try {
+          const [{ default: satori }, { Resvg }] = await Promise.all([
+            import("satori"),
+            import("@resvg/resvg-js"),
+          ]);
 
-      // Initialize Convex client if URL is available
-      const convexUrl = process.env.VITE_CONVEX_URL;
-      const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null;
+          const url = new URL(request.url);
+          const type = url.searchParams.get("type") || "default";
+          const slug = url.searchParams.get("slug") || "";
+          const id = url.searchParams.get("id") || "";
 
-      // Build the element tree based on type
-      let element: Record<string, unknown>;
+          // Initialize Convex client if URL is available
+          const convexUrl = process.env.VITE_CONVEX_URL;
+          const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null;
 
-      switch (type) {
-        case "scholarship":
-          element = await buildScholarshipImage(convex, slug);
-          break;
-        case "country":
-          element = await buildCountryImage(convex, id);
-          break;
-        case "degree":
-          element = await buildDegreeImage(convex, id);
-          break;
-        case "collection":
-          element = buildCollectionImage(id);
-          break;
-        default:
-          element = buildDefaultImage();
-          break;
-      }
+          // Build the element tree based on type
+          let element: Record<string, unknown>;
 
-      // Load fonts
-      const fonts = await loadFonts();
+          switch (type) {
+            case "scholarship":
+              element = await buildScholarshipImage(convex, slug);
+              break;
+            case "country":
+              element = await buildCountryImage(convex, id);
+              break;
+            case "degree":
+              element = await buildDegreeImage(convex, id);
+              break;
+            case "collection":
+              element = buildCollectionImage(id);
+              break;
+            default:
+              element = buildDefaultImage();
+              break;
+          }
 
-      // Generate SVG with satori
-      const svg = await satori(element as React.ReactNode, {
-        width: 1200,
-        height: 630,
-        fonts,
-      });
+          // Load fonts
+          const fonts = await loadFonts();
 
-      // Convert SVG to PNG
-      const resvg = new Resvg(svg, {
-        fitTo: { mode: "width", value: 1200 },
-      });
-      const pngBuffer = resvg.render().asPng();
+          // Generate SVG with satori
+          const svg = await satori(element as any, {
+            width: 1200,
+            height: 630,
+            fonts,
+          });
 
-      return new Response(pngBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "image/png",
-          "Cache-Control":
-            "public, max-age=86400, stale-while-revalidate=604800",
-        },
-      });
-    } catch (error) {
-      console.error("OG image generation failed:", error);
+          // Convert SVG to PNG
+          const resvg = new Resvg(svg, {
+            fitTo: { mode: "width", value: 1200 },
+          });
+          const pngBuffer = resvg.render().asPng();
 
-      // Return 1x1 transparent PNG on error
-      return new Response(TRANSPARENT_PIXEL, {
-        status: 500,
-        headers: {
-          "Content-Type": "image/png",
-          "Cache-Control": "no-cache",
-        },
-      });
-    }
+          return new Response(pngBuffer, {
+            status: 200,
+            headers: {
+              "Content-Type": "image/png",
+              "Cache-Control":
+                "public, max-age=86400, stale-while-revalidate=604800",
+            },
+          });
+        } catch (error) {
+          console.error("OG image generation failed:", error);
+
+          // Return 1x1 transparent PNG on error
+          return new Response(TRANSPARENT_PIXEL, {
+            status: 500,
+            headers: {
+              "Content-Type": "image/png",
+              "Cache-Control": "no-cache",
+            },
+          });
+        }
+      },
+    },
   },
 });

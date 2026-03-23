@@ -10,7 +10,8 @@ class Config(BaseGovernmentConfig):
     """Tanzania Government Scholarships (TCU) government config."""
 
     name: str = "Tanzania Government Scholarships (TCU)"
-    url: str = "https://www.tcu.go.tz"
+    # Use apex domain; www variant has intermittent certificate mismatch.
+    url: str = "https://tcu.go.tz"
     source_id: str = "tanzania_government_scholarships_tcu"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +20,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 12.0
 
 
 CONFIG = Config()

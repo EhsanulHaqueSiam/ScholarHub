@@ -96,10 +96,17 @@ class ApiScraper(BaseScraper):
                     "host_country_default", ""
                 )
 
-                # Detail page support for nextdata format
+                # Detail page support for nextdata format.
+                # In incremental verification mode we skip detail fan-out to keep
+                # one-by-one audits fast and avoid false timeout failures.
+                incremental_mode = bool(getattr(self.config, "incremental_mode", False))
+                skip_detail_incremental = bool(
+                    getattr(self.config, "incremental_skip_detail", True),
+                )
                 detail_enabled = (
                     is_nextdata
                     and self.config.detail_page
+                    and not (incremental_mode and skip_detail_incremental)
                     and self.config.selectors.get("detail_url_template")
                 )
                 detail_mappings = self.config.selectors.get("detail_field_mappings", {})

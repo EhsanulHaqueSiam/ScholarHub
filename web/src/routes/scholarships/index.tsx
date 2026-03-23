@@ -105,7 +105,6 @@ function formatResultsCount(
 
 function ScholarshipsDirectory() {
   const { filters, queryArgs, setFilter } = useScholarshipFilters();
-  const [isFilterChanging, setIsFilterChanging] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
 
@@ -147,7 +146,7 @@ function ScholarshipsDirectory() {
   const hasMore = !isDesktop && results ? results.length < totalAvailable : false;
 
   // Reset to page 1 when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(queryArgs)]);
@@ -173,6 +172,7 @@ function ScholarshipsDirectory() {
   const isGridView = filters.view === "grid";
   const hasResults = results && results.length > 0;
   const isInitialLoading = isLoading && !results?.length;
+  const isFilterChanging = isLoading && !!results?.length;
 
   return (
     <div className="min-h-screen">

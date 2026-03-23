@@ -170,6 +170,7 @@ export default defineSchema({
   })
     .index("by_source", ["source_id"])
     .index("by_canonical", ["canonical_id"])
+    .index("by_canonical_match", ["canonical_id", "match_status"])
     .index("by_source_external", ["source_id", "external_id"])
     .index("by_scrape_run", ["scrape_run_id"]),
 
@@ -245,16 +246,6 @@ export default defineSchema({
     application_tips: v.optional(v.string()),
     search_text: v.optional(v.string()),
     match_key: v.optional(v.string()),
-    suggested_tags: v.optional(
-      v.array(
-        v.object({
-          tag: v.string(),
-          reason: v.string(),
-          suggested_at: v.number(),
-        }),
-      ),
-    ),
-    related_ids: v.optional(v.array(v.id("scholarships"))),
   })
     .index("by_status", ["status"])
     .index("by_country_status", ["host_country", "status"])
@@ -270,6 +261,13 @@ export default defineSchema({
       searchField: "search_text",
       filterFields: ["status", "host_country", "funding_type", "prestige_tier", "scholarship_type"],
     }),
+
+  // Cached scholarship counts by status for low-cost count queries.
+  scholarship_counts: defineTable({
+    status: scholarshipStatusValidator,
+    count: v.number(),
+    updated_at: v.number(),
+  }).index("by_status", ["status"]),
 
   // Scrape run tracking -- one entry per pipeline execution
   scrape_runs: defineTable({

@@ -10,7 +10,7 @@ class Config(BaseGovernmentConfig):
     """Colombia Government Scholarships (ICETEX) government config."""
 
     name: str = "Colombia Government Scholarships (ICETEX)"
-    url: str = "https://portal.icetex.gov.co/Portal/Home/HomeEstudiante/becas-para-estudiar-en-el-exterior"
+    url: str = "https://www.icetex.gov.co/"
     source_id: str = "colombia_government_scholarships_icetex"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

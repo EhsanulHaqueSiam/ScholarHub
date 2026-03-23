@@ -1,7 +1,7 @@
 """Scraper implementations for ScholarHub pipeline.
 
-Provides a factory function ``get_scraper`` that maps a SourceConfig's
-``primary_method`` to the appropriate scraper class.
+Provides a factory function ``get_scraper`` that maps a configured scrape
+method to the appropriate scraper class.
 """
 
 from __future__ import annotations
@@ -30,21 +30,24 @@ SCRAPER_MAP: dict[str, type[BaseScraper]] = {
 }
 
 
-def get_scraper(config: SourceConfig) -> BaseScraper:
-    """Return appropriate scraper instance for a config's primary_method.
+def get_scraper(config: SourceConfig, method: str | None = None) -> BaseScraper:
+    """Return appropriate scraper instance for a configured method.
 
     Args:
-        config: SourceConfig with ``primary_method`` set.
+        config: SourceConfig with scraping metadata.
+        method: Optional explicit method override. Defaults to
+            ``config.primary_method``.
 
     Returns:
         Instantiated scraper ready to call ``.scrape()``.
 
     Raises:
-        ValueError: If the primary_method is not recognized.
+        ValueError: If the selected method is not recognized.
     """
-    scraper_cls = SCRAPER_MAP.get(config.primary_method)
+    selected_method = method or config.primary_method
+    scraper_cls = SCRAPER_MAP.get(selected_method)
     if not scraper_cls:
-        msg = f"Unknown scrape method: {config.primary_method}"
+        msg = f"Unknown scrape method: {selected_method}"
         raise ValueError(msg)
     return scraper_cls(config)
 

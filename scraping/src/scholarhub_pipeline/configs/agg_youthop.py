@@ -18,8 +18,8 @@ class Config(BaseAggregatorConfig):
     name: str = "YouthOp"
     url: str = "https://youthop.com/scholarships"
     source_id: str = "youthop"
-    primary_method: str = "scrapling"
-    secondary_method: str | None = None
+    primary_method: str = "scrape"
+    secondary_method: str | None = "scrapling"
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": ".opportunit-item, article, .card, .post, .entry",
         "title": "h3::text, h2 a::text, h3 a::text, .card-title::text",
@@ -48,7 +48,8 @@ class Config(BaseAggregatorConfig):
         "amount": ".amount::text, .value::text",
         "country": ".country::text, .location::text",
     })
-    rate_limit_delay: float = 3.0
+    rate_limit_delay: float = 1.5
+    method_timeout_seconds: float = 6.0
 
 
 CONFIG = Config()

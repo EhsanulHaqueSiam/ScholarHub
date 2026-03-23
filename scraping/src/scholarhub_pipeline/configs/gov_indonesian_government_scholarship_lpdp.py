@@ -10,7 +10,9 @@ class Config(BaseGovernmentConfig):
     """Indonesian Government Scholarship (LPDP) government config."""
 
     name: str = "Indonesian Government Scholarship (LPDP)"
-    url: str = "https://lpdp.kemenkeu.go.id"
+    # Primary LPDP domain is intermittently unreachable from crawler regions; use
+    # an official Indonesia scholarships information page as resilient fallback.
+    url: str = "https://www.kemlu.go.id/portal/en/page/scholarships"
     source_id: str = "indonesian_government_scholarship_lpdp"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +21,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

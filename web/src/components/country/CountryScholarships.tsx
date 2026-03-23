@@ -64,7 +64,7 @@ export function CountryScholarships({ countryCode }: CountryScholarshipsProps) {
       <div className="mt-6 text-center">
         <Link
           to="/scholarships"
-          search={{ hostCountries: [countryCode] } as Record<string, unknown>}
+          search={{ to: countryCode } as Record<string, unknown>}
         >
           <Button variant="neutral" size="lg">
             View all scholarships in {countryName}

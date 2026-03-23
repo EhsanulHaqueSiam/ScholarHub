@@ -10,7 +10,7 @@ class Config(BaseOfficialConfig):
     """Italian Government Scholarships official program config."""
 
     name: str = "Italian Government Scholarships"
-    url: str = "https://studyinitaly.esteri.it/en/call-for-procedures"
+    url: str = "https://www.esteri.it/en/opportunita/borse-di-studio/"
     source_id: str = "italian_government_scholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseOfficialConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

@@ -1,9 +1,7 @@
 """Campus China / CSC (China Scholarship Council) source configuration.
 
-Targets the Campus China scholarship pages at campuschina.org which list
-Chinese government scholarships including CSC, Confucius Institute, and
-bilateral programme scholarships. The site has heavy anti-bot protections
-(HTTP 412 responses) requiring StealthyFetcher (scrapling) for access.
+Uses a stable CSC-focused scholarship endpoint to reduce intermittent DNS and
+WAF issues observed on campuschina.org from some crawler regions.
 """
 
 from dataclasses import dataclass, field
@@ -16,10 +14,10 @@ class Config(BaseGovernmentConfig):
     """CSC China government config."""
 
     name: str = "CSC China"
-    url: str = "https://www.campuschina.org/scholarships/index.html"
+    url: str = "https://www.chinesescholarshipcouncil.com/"
     source_id: str = "csc_china"
-    primary_method: str = "scrapling"
-    secondary_method: str | None = None
+    primary_method: str = "scrape"
+    secondary_method: str | None = "scrapling"
     selectors: dict[str, str] = field(default_factory=lambda: {
         "listing": ".scholarship-item, .list-item, article, .content-item, li.item, .news-list li, .scholarship-list li",
         "title": "h3 a::text, h4 a::text, .title a::text, .item-title a::text, a::text",
@@ -49,7 +47,8 @@ class Config(BaseGovernmentConfig):
         "level": ".level::text, .degree::text, .programme-level::text",
         "deadline": ".deadline::text, .date::text, .application-period::text",
     })
-    rate_limit_delay: float = 5.0
+    rate_limit_delay: float = 2.0
+    method_timeout_seconds: float = 12.0
 
 
 CONFIG = Config()

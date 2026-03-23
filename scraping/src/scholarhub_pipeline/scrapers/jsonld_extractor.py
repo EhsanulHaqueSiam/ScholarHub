@@ -65,7 +65,11 @@ class JsonLdExtractor(BaseScraper):
         records: list[dict] = []
         headers = {"User-Agent": get_random_ua()}
 
-        async with httpx.AsyncClient(headers=headers, timeout=30.0) as client:
+        async with httpx.AsyncClient(
+            headers=headers,
+            timeout=30.0,
+            follow_redirects=True,
+        ) as client:
             response = await client.get(self.config.url)
             response.raise_for_status()
             self.bytes_downloaded += len(response.content)

@@ -36,10 +36,10 @@ class PipelineConvexClient:
         if env_file.exists():
             load_dotenv(env_file)
 
-        url = convex_url or os.getenv("CONVEX_URL")
+        url = convex_url or os.getenv("CONVEX_URL") or os.getenv("VITE_CONVEX_URL")
         key = deploy_key or os.getenv("CONVEX_DEPLOY_KEY")
         if not url:
-            msg = "CONVEX_URL not set"
+            msg = "CONVEX_URL not set (accepted env: CONVEX_URL or VITE_CONVEX_URL)"
             raise ValueError(msg)
         if not key:
             msg = "CONVEX_DEPLOY_KEY not set"

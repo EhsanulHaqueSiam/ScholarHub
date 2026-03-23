@@ -41,9 +41,6 @@ export function TagsManager() {
   // Get scholarships with suggested tags for Section 2
   const reviewQueue = useQuery(api.admin.getReviewQueue, { status: "published" as any, limit: 200 });
 
-  // Get all published scholarships for filter-then-tag
-  const allScholarships = useQuery(api.admin.getReviewQueue, { limit: 200 });
-
   // Build tag count map
   const tagCountMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -69,8 +66,8 @@ export function TagsManager() {
 
   // Filtered scholarships for Section 3
   const filteredScholarships = useMemo(() => {
-    if (!allScholarships) return [];
-    let results = [...allScholarships] as any[];
+    if (!reviewQueue) return [];
+    let results = [...reviewQueue] as any[];
 
     if (showUntaggedOnly) {
       results = results.filter((s) => !s.tags || s.tags.length === 0);
@@ -82,7 +79,7 @@ export function TagsManager() {
     }
 
     return results.slice(0, 50);
-  }, [allScholarships, searchQuery, showUntaggedOnly]);
+  }, [reviewQueue, searchQuery, showUntaggedOnly]);
 
   function toggleCategory(key: string) {
     setExpandedCategories((prev) => {

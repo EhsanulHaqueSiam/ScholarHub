@@ -112,6 +112,9 @@ class InertiaScraper(BaseScraper):
         records: list[dict] = []
         headers = {"User-Agent": get_random_ua()}
 
+        incremental_mode = bool(getattr(self.config, "incremental_mode", False))
+        max_records = int(self.config.max_records) if self.config.max_records else None
+
         async with httpx.AsyncClient(
             headers=headers, timeout=30.0, follow_redirects=True
         ) as client:
@@ -137,6 +140,8 @@ class InertiaScraper(BaseScraper):
                 if self.config.pagination
                 else 200
             )
+            if incremental_mode:
+                max_pages = min(max_pages, int(getattr(self.config, "incremental_max_pages", 1)))
             page = 1
 
             while page <= max_pages:
@@ -206,6 +211,13 @@ class InertiaScraper(BaseScraper):
                     record = self.process_record(mapped)
                     records.append(record)
                     self.records_found += 1
+                    if max_records and self.records_found >= max_records:
+                        logger.info(
+                            "inertia_max_records_reached",
+                            source=self.config.name,
+                            max_records=max_records,
+                        )
+                        return records
 
                 # Check if we've reached the last page
                 per_page = meta.get("per_page", 10)

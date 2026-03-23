@@ -20,6 +20,15 @@ crons.daily(
 // Hourly heartbeat check to detect stalled pipeline
 crons.hourly("heartbeat_check", { minuteUTC: 0 }, internal.monitoring.checkHeartbeat);
 
+// Daily fallback refresh of cached scholarship counts by status.
+// Most updates should be event-driven; this acts as reconciliation.
+crons.daily(
+  "refresh scholarship count cache",
+  { hourUTC: 2, minuteUTC: 45 },
+  internal.directory.refreshScholarshipCountCache,
+  {},
+);
+
 // Daily auto-archive of expired scholarships (4:00 UTC)
 crons.daily("archive_expired", { hourUTC: 4, minuteUTC: 0 }, internal.aggregation.archiveExpired, {
   cursor: null,

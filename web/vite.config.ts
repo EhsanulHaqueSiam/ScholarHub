@@ -13,6 +13,14 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    optimizeDeps: {
+      exclude: [
+        "satori",
+        "@resvg/resvg-js",
+        "@resvg/resvg-js-linux-x64-gnu",
+        "@resvg/resvg-js-linux-x64-musl",
+      ],
+    },
     plugins: [
       tsConfigPaths(),
       tanstackStart(),

@@ -47,7 +47,7 @@ export function buildPageMeta(opts: {
   description: string;
   canonicalPath: string;
   ogImageUrl?: string;
-}): { meta: Record<string, string>[]; links: Record<string, string>[] } {
+}): { meta: Record<string, string>[]; links: Array<Record<string, string> & { hrefLang?: string }> } {
   const canonicalUrl = buildCanonicalUrl(opts.canonicalPath);
 
   const ogMeta = buildOgMeta({
@@ -63,9 +63,9 @@ export function buildPageMeta(opts: {
     ...ogMeta,
   ];
 
-  const links: Record<string, string>[] = [
+  const links: Array<Record<string, string> & { hrefLang?: string }> = [
     { rel: "canonical", href: canonicalUrl },
-    { rel: "alternate", hreflang: "en", href: canonicalUrl },
+    { rel: "alternate", hrefLang: "en", href: canonicalUrl },
   ];
 
   return { meta, links };

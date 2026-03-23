@@ -10,7 +10,7 @@ class Config(BaseOfficialConfig):
     """Thailand International Postgraduate Programme (TIPP) official program config."""
 
     name: str = "Thailand International Postgraduate Programme (TIPP)"
-    url: str = "https://www.tica.thaigov.net/main/en/other/7929"
+    url: str = "https://tica-scholarships.com/tipp/"
     source_id: str = "thailand_international_postgraduate_programme_tipp"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseOfficialConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

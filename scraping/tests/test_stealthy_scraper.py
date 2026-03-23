@@ -185,6 +185,43 @@ async def test_stealthy_scraper_respects_max_records(stealthy_config):
 
 
 @pytest.mark.asyncio
+async def test_stealthy_scraper_single_page_fallback_when_no_listings():
+    """When listing selectors miss, stealthy scraper should parse single-page opportunities."""
+    config = BaseSourceConfig(
+        name="Stealth Single Page",
+        url="https://protected.example.com/detail",
+        source_id="test-stealth-single-page",
+        primary_method="scrapling",
+        selectors={
+            "listing": ".missing-listing",
+            "title": "h1.page-title",
+            "description": ".summary",
+        },
+        field_mappings={"title": "title", "description": "description"},
+        detail_page=False,
+        rate_limit_delay=0.0,
+    )
+
+    html = """<html><body>
+    <h1 class="page-title">Stealth Fellowship Program</h1>
+    <div class="summary">Opportunity for graduate applicants.</div>
+    </body></html>"""
+
+    scraper = StealthyScraper(config)
+    response = _make_response(html, "https://protected.example.com/detail")
+
+    with patch(
+        "scholarhub_pipeline.scrapers.stealthy_scraper.StealthyFetcher.fetch",
+        return_value=response,
+    ):
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert records[0]["title"] == "Stealth Fellowship Program"
+    assert records[0]["source_url"] == "https://protected.example.com/detail"
+
+
+@pytest.mark.asyncio
 async def test_stealthy_scraper_incremental_limits_pagination(stealthy_config):
     """Incremental mode should cap pagination to incremental_max_pages."""
     html_with_next = STEALTHY_HTML.replace(

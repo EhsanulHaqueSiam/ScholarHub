@@ -10,7 +10,7 @@ class Config(BaseGovernmentConfig):
     """Egyptian Government Scholarships (MOHESR) government config."""
 
     name: str = "Egyptian Government Scholarships (MOHESR)"
-    url: str = "https://www.mohesr.gov.eg/en/pages/international-scholarships.aspx"
+    url: str = "https://mohesr.gov.eg/en/"
     source_id: str = "egyptian_government_scholarships_mohesr"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

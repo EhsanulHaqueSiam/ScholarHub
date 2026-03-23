@@ -141,17 +141,17 @@ describe("buildPageMeta", () => {
     expect(canonical!.href).toContain("/scholarships");
   });
 
-  it("includes hreflang link", () => {
+  it("includes hrefLang link", () => {
     const result = buildPageMeta({
       title: "Test",
       description: "Desc",
       canonicalPath: "/test",
     });
 
-    const hreflang = result.links.find(
-      (l: Record<string, string>) => l.hreflang === "en",
+    const hrefLang = result.links.find(
+      (l: Record<string, string>) => (l as any).hrefLang === "en",
     );
-    expect(hreflang).toBeDefined();
+    expect(hrefLang).toBeDefined();
   });
 
   it("strips query params from canonical URL", () => {

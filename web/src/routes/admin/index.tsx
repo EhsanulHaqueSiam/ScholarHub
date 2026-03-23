@@ -86,7 +86,10 @@ function AdminDashboard() {
 
       {/* View content */}
       {adminView === "queue" && (
-        <ReviewQueue onEditScholarship={(id, title) => setEditingScholarship({ id, title })} />
+        <ReviewQueue
+          stats={stats}
+          onEditScholarship={(id, title) => setEditingScholarship({ id, title })}
+        />
       )}
       {adminView === "sources" && <SourceTrustManager />}
       {adminView === "collections" && <CollectionsManager />}

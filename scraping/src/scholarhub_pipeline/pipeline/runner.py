@@ -7,6 +7,7 @@ startRun -> scrape sources -> completeRun.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -327,6 +328,51 @@ class PipelineRunner:
             if source and config.url not in self._source_url_cache:
                 self._source_url_cache[config.url] = source
 
+    @staticmethod
+    def _resolve_method_chain(config: SourceConfig) -> list[str]:
+        """Resolve ordered method attempts for a source.
+
+        Order of preference:
+        1. Explicit config methods (primary then secondary).
+        2. Runtime fallbacks for JS/AJAX-heavy pages.
+        3. Structured-data fallback for sparse HTML pages.
+        """
+        chain: list[str] = []
+
+        def add(method: str | None) -> None:
+            if method and method not in chain:
+                chain.append(method)
+
+        add(config.primary_method)
+        add(config.secondary_method)
+
+        selectors = config.selectors or {}
+        primary = config.primary_method
+
+        # Inertia.js endpoints expose props/items_key and require protocol headers.
+        if selectors.get("items_key"):
+            add("inertia")
+
+        # AJAX/API-style selectors indicate a JSON payload shape.
+        if (
+            (selectors.get("items_path") or selectors.get("cursor_path"))
+            and "api" not in chain
+            and "ajax" not in chain
+        ):
+            add("ajax")
+
+        # For JS-rendered and anti-bot pages, always try Scrapling as fallback.
+        if primary in {"scrape", "jsonld", "inertia"}:
+            add("scrapling")
+        elif primary == "scrapling":
+            add("scrape")
+
+        # If CSS selectors fail but page exposes schema.org payloads, JSON-LD can recover data.
+        if primary in {"scrape", "scrapling"}:
+            add("jsonld")
+
+        return chain
+
     async def _scrape_source(self, config: SourceConfig, run_id: str | None) -> None:
         """Scrape a single source, handle errors, update health.
 
@@ -359,9 +405,64 @@ class PipelineRunner:
             and source_meta
             and source_meta.get("last_scraped"),
         )
+        method_chain = self._resolve_method_chain(config)
+        method_timeout = float(getattr(config, "method_timeout_seconds", 45.0) or 45.0)
+        method_used = config.primary_method
+        bytes_downloaded = 0
+        scraper = None
         try:
-            scraper = get_scraper(config)
-            records = await scraper.scrape()
+            records: list[dict] = []
+            for index, method in enumerate(method_chain):
+                method_used = method
+                scraper = get_scraper(config, method=method)
+                try:
+                    candidate_records = await asyncio.wait_for(
+                        scraper.scrape(),
+                        timeout=method_timeout,
+                    )
+                except Exception as method_error:
+                    bytes_downloaded += scraper.bytes_downloaded
+                    if index < len(method_chain) - 1:
+                        logger.warning(
+                            "source_method_failed_fallback",
+                            source=config.name,
+                            method=method,
+                            next_method=method_chain[index + 1],
+                            error=str(method_error),
+                        )
+                        continue
+                    raise
+
+                bytes_downloaded += scraper.bytes_downloaded
+                if candidate_records:
+                    records = candidate_records
+                    if index > 0:
+                        logger.info(
+                            "source_method_fallback_success",
+                            source=config.name,
+                            method=method,
+                            attempted_methods=method_chain[: index + 1],
+                            records=len(records),
+                        )
+                    break
+
+                if index < len(method_chain) - 1:
+                    logger.info(
+                        "source_method_empty_fallback",
+                        source=config.name,
+                        method=method,
+                        next_method=method_chain[index + 1],
+                    )
+                else:
+                    records = candidate_records
+
+            if scraper is None:
+                msg = f"No scraper available for source {config.name}"
+                raise RuntimeError(msg)
+
+            if bytes_downloaded == 0:
+                bytes_downloaded = scraper.bytes_downloaded
+
             records_for_ingest = 0
 
             if self.dry_run:
@@ -427,13 +528,13 @@ class PipelineRunner:
                             "run_id": run_id,
                             "source_id": convex_source_id,
                             "status": "success",
-                            "method_used": config.primary_method,
+                            "method_used": method_used,
                             "records_found": scraper.records_found,
                             "records_new": records_for_ingest,
                             "records_updated": 0,
                             "records_unchanged": 0,
                             "duration_seconds": int(duration),
-                            "bytes_downloaded": scraper.bytes_downloaded,
+                            "bytes_downloaded": bytes_downloaded,
                         },
                     )
                 except Exception as telemetry_error:
@@ -472,13 +573,13 @@ class PipelineRunner:
                                     "run_id": run_id,
                                     "source_id": convex_source_id,
                                     "status": "failed",
-                                    "method_used": config.primary_method,
+                                    "method_used": method_used,
                                     "records_found": 0,
                                     "records_new": 0,
                                     "records_updated": 0,
                                     "records_unchanged": 0,
                                     "duration_seconds": int(duration),
-                                    "bytes_downloaded": 0,
+                                    "bytes_downloaded": bytes_downloaded,
                                     "error_type": error_type,
                                     "error_message": str(e)[:500],
                                 },

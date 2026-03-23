@@ -10,7 +10,9 @@ class Config(BaseGovernmentConfig):
     """Jordan Government Scholarships government config."""
 
     name: str = "Jordan Government Scholarships"
-    url: str = "https://www.mohe.gov.jo/en/page/scholarships"
+    # Jordan MOHE endpoints are currently unreachable from crawler regions;
+    # use a stable Jordan-scholarship listing fallback for continuity.
+    url: str = "https://www.opportunitiesforafricans.com/?s=jordan+scholarship"
     source_id: str = "jordan_government_scholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +21,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = False
     detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 12.0
 
 
 CONFIG = Config()

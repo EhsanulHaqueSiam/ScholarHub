@@ -10,7 +10,7 @@ class Config(BaseOfficialConfig):
     """Indian Government ICCR Scholarships official program config."""
 
     name: str = "Indian Government ICCR Scholarships"
-    url: str = "https://www.iccr.gov.in/scholarship"
+    url: str = "https://a2ascholarships.iccr.gov.in/"
     source_id: str = "indian_government_iccr_scholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseOfficialConfig):
     pagination: dict | None = None
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()

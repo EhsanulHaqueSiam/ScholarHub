@@ -20,6 +20,7 @@ class Config(BaseAggregatorConfig):
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
     auth_config: dict | None = field(default_factory=lambda: {'required': True, 'note': 'Auth not implemented in v1'})
+    method_timeout_seconds: float = 12.0
 
 
 CONFIG = Config()

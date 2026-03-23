@@ -10,15 +10,27 @@ class Config(BaseAggregatorConfig):
     """Top Universities Scholarships aggregator config."""
 
     name: str = "Top Universities Scholarships"
-    url: str = "https://www.topuniversities.com/scholarships"
+    # HTML pages are often WAF-challenged; RSS endpoint is significantly
+    # more reliable for automated incremental crawling.
+    url: str = "https://www.topuniversities.com/rss.xml"
     source_id: str = "top_universities_scholarships"
-    primary_method: str = "scrapling"
-    secondary_method: str | None = None
-    selectors: dict[str, str] = field(default_factory=lambda: {'listing': '.scholarship-item, .result-item, article, .listing, .post, .entry', 'title': 'h2 a::text, h3 a::text, .title::text, .entry-title a::text', 'deadline': '.deadline::text, .date::text, time::text, .meta-date::text', 'country': '.country::text, .location::text, .meta-location::text', 'degree': '.degree::text, .level::text, .study-level::text', 'amount': '.amount::text, .funding::text, .value::text', 'detail_link': 'h2 a::attr(href), h3 a::attr(href), .title a::attr(href)', 'next_page': '.pagination .next::attr(href), a.next::attr(href), .nav-next a::attr(href)'})
-    field_mappings: dict[str, str] = field(default_factory=lambda: {'title': 'title', 'deadline': 'application_deadline', 'amount': 'award_amount', 'detail_link': 'source_url', 'country': 'host_country', 'degree': 'degree_levels'})
-    pagination: dict | None = field(default_factory=lambda: {'type': 'url', 'selector': '.pagination .next::attr(href), a.next::attr(href)', 'max_pages': 75})
-    detail_page: bool = True
-    detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
+    primary_method: str = "rss"
+    secondary_method: str | None = "scrape"
+    selectors: dict[str, str] = field(default_factory=lambda: {"feed_url": "https://www.topuniversities.com/rss.xml"})
+    field_mappings: dict[str, str] = field(default_factory=lambda: {
+        "title": "title",
+        "description": "description",
+        "source_url": "source_url",
+        "application_url": "application_url",
+        "application_deadline": "application_deadline",
+        "external_id": "external_id",
+        "provider_organization": "provider_organization",
+        "fields_of_study": "fields_of_study",
+    })
+    pagination: dict | None = None
+    detail_page: bool = False
+    detail_selectors: dict[str, str] | None = None
+    method_timeout_seconds: float = 12.0
 
 
 CONFIG = Config()

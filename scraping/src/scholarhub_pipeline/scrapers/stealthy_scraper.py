@@ -46,6 +46,89 @@ class StealthyScraper(BaseScraper):
         """Run StealthyFetcher.fetch in a thread (sync Playwright can't run in asyncio loop)."""
         return StealthyFetcher.fetch(url, headless=True, network_idle=True)
 
+    @staticmethod
+    def _extract_from_node(node: object, selectors: dict[str, str]) -> dict:
+        """Extract field values from a Scrapling node using configured selectors."""
+        extracted: dict = {}
+        non_css_keys = {
+            "listing",
+            "next_page",
+            "feed_url",
+            "items_key",
+            "items_path",
+            "cursor_path",
+        }
+        for field_name, selector in selectors.items():
+            if field_name in non_css_keys or field_name.endswith("_default"):
+                continue
+            if not selector:
+                continue
+            result = node.css(selector)  # type: ignore[attr-defined]
+            if result:
+                value = result[0].text if result[0].text else result.get()
+                if value:
+                    extracted[field_name] = str(value).strip()
+        return extracted
+
+    @staticmethod
+    def _extract_page_metadata(node: object) -> dict:
+        """Extract generic metadata fallback from a page-level node."""
+        metadata: dict[str, str] = {}
+        field_selectors = {
+            "title": (
+                "meta[property='og:title']::attr(content), "
+                "meta[name='twitter:title']::attr(content), "
+                "title::text, h1::text"
+            ),
+            "description": (
+                "meta[name='description']::attr(content), "
+                "meta[property='og:description']::attr(content), "
+                "article p::text, main p::text"
+            ),
+        }
+        for field, selector in field_selectors.items():
+            result = node.css(selector)  # type: ignore[attr-defined]
+            if not result:
+                continue
+            value = result[0].text if result[0].text else result.get()
+            if value:
+                metadata[field] = str(value).strip()
+        return metadata
+
+    def _extract_single_page_record(self, response: object, page_url: str) -> dict | None:
+        """Fallback when listing selectors miss but the page has one opportunity."""
+        extracted = self._extract_from_node(response, self.config.selectors)
+        if not extracted:
+            extracted = self._extract_page_metadata(response)
+        if extracted and not extracted.get("title"):
+            extracted["title"] = self.config.name
+        if not extracted:
+            return None
+
+        mapped = self.apply_field_mappings(extracted) if self.config.field_mappings else extracted
+        if not mapped.get("title"):
+            mapped["title"] = extracted.get("title") or self.config.name
+
+        for key, val in self.config.selectors.items():
+            if key.endswith("_default") and val:
+                target = key.removesuffix("_default")
+                if not mapped.get(target):
+                    mapped[target] = val
+
+        if self.config.detail_selectors:
+            detail_raw = self._extract_from_node(response, self.config.detail_selectors)
+            detail_mapped = (
+                self.apply_field_mappings(detail_raw)
+                if self.config.field_mappings
+                else detail_raw
+            )
+            mapped.update(detail_mapped)
+
+        mapped["source_url"] = mapped.get("source_url") or page_url
+        if not mapped.get("title"):
+            return None
+        return self.process_record(mapped)
+
     async def scrape(self) -> list[dict]:
         """Scrape protected pages and return normalized records.
 
@@ -84,20 +167,16 @@ class StealthyScraper(BaseScraper):
 
             if not items:
                 logger.warning("no_items_found", source=self.config.name, url=url)
+                single_record = self._extract_single_page_record(response, current_url)
+                if single_record:
+                    logger.info("single_page_fallback_success", source=self.config.name, url=current_url)
+                    records.append(single_record)
+                    self.records_found += 1
+                    return records
                 break
 
             for item in items:
-                extracted: dict = {}
-                for field_name, selector in self.config.selectors.items():
-                    if field_name in ("listing", "next_page") or field_name.endswith("_default"):
-                        continue
-                    if not selector:
-                        continue
-                    result = item.css(selector)
-                    if result:
-                        value = result[0].text if result[0].text else result.get()
-                        if value:
-                            extracted[field_name] = str(value).strip()
+                extracted = self._extract_from_node(item, self.config.selectors)
 
                 mapped = (
                     self.apply_field_mappings(extracted)

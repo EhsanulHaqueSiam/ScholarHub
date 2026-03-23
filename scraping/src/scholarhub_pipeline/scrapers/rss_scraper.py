@@ -36,13 +36,24 @@ class RssScraper(BaseScraper):
         records: list[dict] = []
         feed_url = self.config.selectors.get("feed_url", self.config.url)
         feed = feedparser.parse(feed_url)
+        feed_title = str(getattr(feed, "feed", {}).get("title", "")).strip()
 
         for entry in feed.entries:
+            source_url = entry.get("link", "")
+            tag_terms = [
+                str(tag.get("term", "")).strip()
+                for tag in entry.get("tags", []) or []
+                if str(tag.get("term", "")).strip()
+            ]
             basic: dict = {
                 "title": entry.get("title", ""),
                 "description": entry.get("summary", ""),
-                "source_url": entry.get("link", ""),
-                "application_deadline": entry.get("published", ""),
+                "source_url": source_url,
+                "application_url": source_url,
+                "application_deadline": entry.get("published", "") or entry.get("updated", ""),
+                "external_id": entry.get("id", "") or source_url,
+                "provider_organization": entry.get("author", "") or feed_title,
+                "fields_of_study": tag_terms,
             }
 
             if self.is_expired_beyond_cutoff(basic.get("application_deadline")):

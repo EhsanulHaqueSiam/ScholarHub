@@ -44,10 +44,9 @@ function CountryLandingPage() {
   const flag = getCountryFlag(country);
   const countryData = getCountryData(country);
 
-  // SEO data queries
-  const countryStats = useQuery(api.seo.getCountryStats, { countryCode: country });
-  const topCountries = useQuery(api.seo.getTopCountries);
-  const allDegrees = useQuery(api.seo.getAllDegrees);
+  // SEO data query (combined to reduce Convex call count)
+  const landingData = useQuery(api.seo.getCountryLandingData, { countryCode: country });
+  const countryStats = landingData?.stats;
 
   // Generate SEO content when stats are loaded
   const intro =
@@ -58,14 +57,13 @@ function CountryLandingPage() {
     countryStats
       ? generateCountryFaq(countryStats, countryName)
       : null;
-  const crossLinks =
-    topCountries && allDegrees
-      ? generateCountryCrossLinks(
-          country,
-          topCountries.map((c) => getCountryName(c.code)),
-          allDegrees.map((d) => d.level),
-        )
-      : null;
+  const crossLinks = landingData
+    ? generateCountryCrossLinks(
+        country,
+        landingData.topCountries.map((c) => getCountryName(c.code)),
+        landingData.allDegrees.map((d) => d.level),
+      )
+    : null;
 
   // Breadcrumb JSON-LD
   const breadcrumbItems = [

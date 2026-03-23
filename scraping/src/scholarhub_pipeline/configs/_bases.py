@@ -30,6 +30,8 @@ class BaseSourceConfig:
     incremental_mode: bool = False
     incremental_max_pages: int = 3
     incremental_skip_detail: bool = True
+    # Hard ceiling per scraper method attempt to avoid hanging sources.
+    method_timeout_seconds: float = 45.0
 
 
 @dataclass

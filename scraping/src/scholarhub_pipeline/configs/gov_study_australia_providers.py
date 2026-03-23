@@ -33,6 +33,7 @@ class Config(BaseGovernmentConfig):
     })
     detail_page: bool = False
     rate_limit_delay: float = 1.5
+    method_timeout_seconds: float = 25.0
 
 
 CONFIG = Config()

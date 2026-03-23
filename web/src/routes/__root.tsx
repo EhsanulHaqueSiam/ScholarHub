@@ -50,7 +50,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600&display=swap",
       },
-      { rel: "alternate", hreflang: "en", href: "https://scholarhub.io" },
+      { rel: "alternate", hrefLang: "en", href: "https://scholarhub.io" },
     ],
   }),
   component: RootComponent,

@@ -18,6 +18,7 @@ import {
   mutation as rawMutation,
   internalMutation as rawInternalMutation,
 } from "./_generated/server";
+import { runAfterSafe } from "./scheduler";
 import { wrapDB } from "./triggers";
 import { ALL_TAGS } from "../src/lib/tags";
 
@@ -32,17 +33,27 @@ const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 export const getAllTags = query({
   args: {},
   handler: async (ctx) => {
-    const published = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(10000);
-
     // Count tag usage
     const tagCounts = new Map<string, number>();
-    for (const scholarship of published) {
-      for (const tag of scholarship.tags ?? []) {
-        tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+
+    let cursor: string | null = null;
+    while (true) {
+      const page = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", "published"))
+        .paginate({ cursor, numItems: 256 });
+
+      for (const scholarship of page.page) {
+        for (const tag of scholarship.tags ?? []) {
+          tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+        }
       }
+
+      if (page.isDone) {
+        break;
+      }
+
+      cursor = page.continueCursor;
     }
 
     // Ensure predefined tags are always included
@@ -129,18 +140,19 @@ export const renameTag = rawInternalMutation({
   args: {
     oldTag: v.string(),
     newTag: v.string(),
-    offset: v.optional(v.number()),
+    cursor: v.optional(v.union(v.string(), v.null())),
+    collectionsUpdated: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const batchSize = 50;
     let processed = 0;
 
-    // Get all scholarships (bounded)
-    const scholarships = await ctx.db
+    // Process scholarships page-by-page to avoid looping on the same first slice.
+    const page = await ctx.db
       .query("scholarships")
-      .take(batchSize);
+      .paginate({ cursor: args.cursor ?? null, numItems: batchSize });
 
-    for (const scholarship of scholarships) {
+    for (const scholarship of page.page) {
       const tags = scholarship.tags ?? [];
       if (tags.includes(args.oldTag)) {
         const newTags = tags.map((t) => (t === args.oldTag ? args.newTag : t));
@@ -149,26 +161,34 @@ export const renameTag = rawInternalMutation({
       }
     }
 
-    // Also update collection filter criteria
-    const collections = await ctx.db.query("collections").collect();
-    for (const collection of collections) {
-      const collTags = collection.tags ?? [];
-      if (collTags.includes(args.oldTag)) {
-        await ctx.db.patch(collection._id, {
-          tags: collTags.map((t) => (t === args.oldTag ? args.newTag : t)),
-        });
+    // Update collection filters once at the start of the operation.
+    if (!(args.collectionsUpdated ?? false)) {
+      const collections = await ctx.db.query("collections").collect();
+      for (const collection of collections) {
+        const collTags = collection.tags ?? [];
+        if (collTags.includes(args.oldTag)) {
+          await ctx.db.patch(collection._id, {
+            tags: collTags.map((t) => (t === args.oldTag ? args.newTag : t)),
+          });
+        }
       }
     }
 
-    // If batch was full, schedule next batch
-    if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.tags.renameTag, {
+    // Continue pagination until complete.
+    if (!page.isDone) {
+      await runAfterSafe(ctx, 0, internal.tags.renameTag, {
         oldTag: args.oldTag,
         newTag: args.newTag,
+        cursor: page.continueCursor,
+        collectionsUpdated: true,
       });
     }
 
-    return { processed };
+    return {
+      processed,
+      complete: page.isDone,
+      nextCursor: page.isDone ? null : page.continueCursor,
+    };
   },
 });
 
@@ -181,9 +201,11 @@ export const renameTagPublic = rawMutation({
     newTag: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.scheduler.runAfter(0, internal.tags.renameTag, {
+    await runAfterSafe(ctx, 0, internal.tags.renameTag, {
       oldTag: args.oldTag,
       newTag: args.newTag,
+      cursor: null,
+      collectionsUpdated: false,
     });
   },
 });
@@ -195,16 +217,18 @@ export const renameTagPublic = rawMutation({
 export const deleteTag = rawInternalMutation({
   args: {
     tag: v.string(),
+    cursor: v.optional(v.union(v.string(), v.null())),
+    collectionsUpdated: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const batchSize = 50;
     let affected = 0;
 
-    const scholarships = await ctx.db
+    const page = await ctx.db
       .query("scholarships")
-      .take(batchSize);
+      .paginate({ cursor: args.cursor ?? null, numItems: batchSize });
 
-    for (const scholarship of scholarships) {
+    for (const scholarship of page.page) {
       const tags = scholarship.tags ?? [];
       if (tags.includes(args.tag)) {
         await ctx.db.patch(scholarship._id, {
@@ -214,25 +238,33 @@ export const deleteTag = rawInternalMutation({
       }
     }
 
-    // Also remove from collection filter criteria
-    const collections = await ctx.db.query("collections").collect();
-    for (const collection of collections) {
-      const collTags = collection.tags ?? [];
-      if (collTags.includes(args.tag)) {
-        await ctx.db.patch(collection._id, {
-          tags: collTags.filter((t) => t !== args.tag),
-        });
+    // Update collection filters once at the start of the operation.
+    if (!(args.collectionsUpdated ?? false)) {
+      const collections = await ctx.db.query("collections").collect();
+      for (const collection of collections) {
+        const collTags = collection.tags ?? [];
+        if (collTags.includes(args.tag)) {
+          await ctx.db.patch(collection._id, {
+            tags: collTags.filter((t) => t !== args.tag),
+          });
+        }
       }
     }
 
-    // If batch was full, schedule next batch
-    if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.tags.deleteTag, {
+    // Continue pagination until complete.
+    if (!page.isDone) {
+      await runAfterSafe(ctx, 0, internal.tags.deleteTag, {
         tag: args.tag,
+        cursor: page.continueCursor,
+        collectionsUpdated: true,
       });
     }
 
-    return { affected };
+    return {
+      affected,
+      complete: page.isDone,
+      nextCursor: page.isDone ? null : page.continueCursor,
+    };
   },
 });
 
@@ -244,8 +276,10 @@ export const deleteTagPublic = rawMutation({
     tag: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.scheduler.runAfter(0, internal.tags.deleteTag, {
+    await runAfterSafe(ctx, 0, internal.tags.deleteTag, {
       tag: args.tag,
+      cursor: null,
+      collectionsUpdated: false,
     });
   },
 });

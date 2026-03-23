@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, mutation } from "./_generated/server";
+import { runAfterSafe } from "./scheduler";
 import {
   scrapeMethodValidator,
   scrapeRunStatusValidator,
@@ -58,7 +59,7 @@ export const completeRun = mutation({
 
     // Trigger aggregation pipeline for newly inserted raw_records
     if (args.status === "completed" && args.records_inserted > 0) {
-      await ctx.scheduler.runAfter(0, internal.aggregation.aggregateBatch, {
+      await runAfterSafe(ctx, 0, internal.aggregation.aggregateBatch, {
         cursor: null,
         batchSize: 50,
         runId: args.run_id,
@@ -76,6 +77,16 @@ const TRACKED_FIELDS = [
   "award_amount",
   "source_url",
 ] as const;
+
+// Keep only a tiny debug snapshot of raw payloads to avoid GB-scale reads
+// during downstream promotion queries (Convex reads full documents).
+const MAX_RAW_DATA_CHARS = 2048;
+
+function compactRawData(rawData: string | undefined): string | undefined {
+  if (!rawData) return undefined;
+  if (rawData.length <= MAX_RAW_DATA_CHARS) return rawData;
+  return rawData.slice(0, MAX_RAW_DATA_CHARS);
+}
 
 /**
  * Batch insert/update raw records with upsert+dedup logic.
@@ -119,6 +130,12 @@ export const batchInsertRawRecords = mutation({
     let unchanged = 0;
 
     for (const record of args.records) {
+      const compactedRawData = compactRawData(record.raw_data);
+      const normalizedRecord = {
+        ...record,
+        raw_data: compactedRawData,
+      };
+
       // Look for existing record by source + external_id
       const existing = record.external_id
         ? await ctx.db
@@ -168,7 +185,7 @@ export const batchInsertRawRecords = mutation({
 
           // Patch existing record
           await ctx.db.patch(existing._id, {
-            ...record,
+            ...normalizedRecord,
             scraped_at: Date.now(),
             scrape_run_id: args.run_id,
           });
@@ -179,7 +196,7 @@ export const batchInsertRawRecords = mutation({
       } else {
         // Insert new record
         await ctx.db.insert("raw_records", {
-          ...record,
+          ...normalizedRecord,
           scraped_at: Date.now(),
           scrape_run_id: args.run_id,
         });
@@ -429,6 +446,7 @@ export const bulkPublishRawRecords = mutation({
     const batchSize = args.limit ?? 100;
     const VALID_DEGREES = new Set(["bachelor", "master", "phd", "postdoc"]);
     const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "stipend_only"]);
+    const slugResolutionCache = new Map<string, any>();
 
     // Find raw_records without canonical_id (not yet promoted)
     // Use by_canonical index: undefined values sort FIRST in Convex indexes,
@@ -453,15 +471,20 @@ export const bulkPublishRawRecords = mutation({
         .replace(/\s+/g, "-")
         .slice(0, 80);
 
-      // Check for duplicate slug
-      const existing = await ctx.db
-        .query("scholarships")
-        .withIndex("by_slug", (q) => q.eq("slug", slug))
-        .first();
+      // Check for duplicate slug (cache lookups within this batch).
+      let existingId = slugResolutionCache.get(slug);
+      if (existingId === undefined) {
+        const existing = await ctx.db
+          .query("scholarships")
+          .withIndex("by_slug", (q) => q.eq("slug", slug))
+          .first();
+        existingId = existing?._id ?? null;
+        slugResolutionCache.set(slug, existingId);
+      }
 
-      if (existing) {
+      if (existingId) {
         // Link raw_record to existing scholarship
-        await ctx.db.patch(raw._id, { canonical_id: existing._id });
+        await ctx.db.patch(raw._id, { canonical_id: existingId, raw_data: undefined });
         skipped++;
         continue;
       }
@@ -469,9 +492,10 @@ export const bulkPublishRawRecords = mutation({
       // Map degree_levels (validate against enum)
       let degreeLevels: Array<"bachelor" | "master" | "phd" | "postdoc"> = [];
       if (raw.degree_levels && Array.isArray(raw.degree_levels)) {
-        degreeLevels = raw.degree_levels.filter((d: string) =>
-          VALID_DEGREES.has(d.toLowerCase()),
-        ) as Array<"bachelor" | "master" | "phd" | "postdoc">;
+        degreeLevels = raw.degree_levels
+          .map((d: string) => d.toLowerCase())
+          .filter((d: string) => VALID_DEGREES.has(d))
+          .map((d) => d as "bachelor" | "master" | "phd" | "postdoc");
       }
       if (degreeLevels.length === 0) {
         degreeLevels = ["master"]; // Default
@@ -479,8 +503,9 @@ export const bulkPublishRawRecords = mutation({
 
       // Map funding_type
       let fundingType: "fully_funded" | "partial" | "tuition_waiver" | "stipend_only" = "partial";
-      if (raw.funding_type && VALID_FUNDING.has(raw.funding_type)) {
-        fundingType = raw.funding_type as typeof fundingType;
+      const normalizedFundingType = raw.funding_type?.toLowerCase();
+      if (normalizedFundingType && VALID_FUNDING.has(normalizedFundingType)) {
+        fundingType = normalizedFundingType as typeof fundingType;
       } else if (
         raw.award_amount &&
         (raw.award_amount.toLowerCase().includes("full") ||
@@ -512,8 +537,15 @@ export const bulkPublishRawRecords = mutation({
       });
 
       // Link raw_record back to canonical scholarship
-      await ctx.db.patch(raw._id, { canonical_id: scholarshipId });
+      await ctx.db.patch(raw._id, { canonical_id: scholarshipId, raw_data: undefined });
+      slugResolutionCache.set(slug, scholarshipId);
       promoted++;
+    }
+
+    if (promoted > 0) {
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+        status: "published",
+      });
     }
 
     return { promoted, skipped, remaining: unpromoted.length - promoted - skipped };
@@ -595,6 +627,15 @@ export const demoteIncompleteScholarships = mutation({
         }
         demoted++;
       }
+    }
+
+    if (demoted > 0 && !isDryRun) {
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+        status: "published",
+      });
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+        status: "pending_review",
+      });
     }
 
     return { demoted, checked, reasons };

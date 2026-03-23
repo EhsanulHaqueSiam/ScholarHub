@@ -34,6 +34,11 @@ function formatDegreeName(slug: string): string {
   return DEGREE_LABELS[slug.toLowerCase()] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
 }
 
+function normalizeDegreeSlug(slug: string): string {
+  const normalized = slug.trim().toLowerCase();
+  return normalized === "masters" ? "master" : normalized;
+}
+
 export const Route = createFileRoute("/scholarships/degree/$degree")({
   head: ({ params }) => {
     const name = formatDegreeName(params.degree);
@@ -49,16 +54,16 @@ export const Route = createFileRoute("/scholarships/degree/$degree")({
 
 function DegreeLandingPage() {
   const { degree } = Route.useParams();
-  const degreeName = formatDegreeName(degree);
+  const normalizedDegree = normalizeDegreeSlug(degree);
+  const degreeName = formatDegreeName(normalizedDegree);
 
-  // SEO data queries
-  const degreeStats = useQuery(api.seo.getDegreeStats, { degreeLevel: degree });
+  // SEO data query (combined to reduce Convex call count)
+  const landingData = useQuery(api.seo.getDegreeLandingData, { degreeLevel: normalizedDegree });
+  const degreeStats = landingData?.stats;
   const scholarships = useQuery(api.directory.listScholarshipsBatch, {
-    degreeLevels: [degree],
+    degreeLevels: [normalizedDegree],
     limit: 12,
   });
-  const topCountries = useQuery(api.seo.getTopCountries);
-  const allDegrees = useQuery(api.seo.getAllDegrees);
 
   // Generate SEO content when stats are loaded
   const statsForContent = degreeStats
@@ -77,14 +82,13 @@ function DegreeLandingPage() {
     statsForContent
       ? generateDegreeFaq(statsForContent, degreeName)
       : null;
-  const crossLinks =
-    topCountries && allDegrees
-      ? generateDegreeCrossLinks(
-          degree,
-          topCountries.map((c) => getCountryName(c.code)),
-          allDegrees.map((d) => d.level),
-        )
-      : null;
+  const crossLinks = landingData
+    ? generateDegreeCrossLinks(
+        normalizedDegree,
+        landingData.topCountries.map((c) => getCountryName(c.code)),
+        landingData.allDegrees.map((d) => d.level),
+      )
+    : null;
 
   // Breadcrumb JSON-LD
   const breadcrumbItems = [
@@ -178,7 +182,7 @@ function DegreeLandingPage() {
                 <div className="mt-6 text-center">
                   <Link
                     to="/scholarships"
-                    search={{ degree } as Record<string, unknown>}
+                    search={{ degree: normalizedDegree } as Record<string, unknown>}
                   >
                     <Button variant="neutral" size="lg">
                       View all {degreeName.toLowerCase()} scholarships

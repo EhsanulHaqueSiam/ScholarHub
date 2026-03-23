@@ -10,7 +10,7 @@ class Config(BaseGovernmentConfig):
     """Study in Hungary Portal government config."""
 
     name: str = "Study in Hungary Portal"
-    url: str = "https://study.gov.hu/scholarships"
+    url: str = "https://stipendiumhungaricum.hu/about/"
     source_id: str = "study_in_hungary_portal"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
@@ -19,6 +19,7 @@ class Config(BaseGovernmentConfig):
     pagination: dict | None = None
     detail_page: bool = True
     detail_selectors: dict[str, str] | None = field(default_factory=lambda: {'description': '.description::text, .overview::text, .content p::text, article p::text', 'eligibility': '.eligibility::text, .requirements::text, .criteria::text', 'application_url': "a.apply::attr(href), a[href*='apply']::attr(href), a.btn-primary::attr(href)"})
+    method_timeout_seconds: float = 20.0
 
 
 CONFIG = Config()
