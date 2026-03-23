@@ -54,3 +54,12 @@ class SourceConfig(Protocol):
 
     max_records: int | None
     """Optional per-source hard cap on emitted records per run."""
+
+    incremental_mode: bool
+    """Runtime flag: use incremental (non-bootstrap) crawl behavior."""
+
+    incremental_max_pages: int
+    """Page cap for incremental runs."""
+
+    incremental_skip_detail: bool
+    """Whether incremental runs should skip detail-page fetching."""

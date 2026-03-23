@@ -36,7 +36,11 @@ class SourceScheduler:
         """
         self.convex = convex_client
 
-    def filter_due_sources(self, configs: list[SourceConfig]) -> list[SourceConfig]:
+    def filter_due_sources(
+        self,
+        configs: list[SourceConfig],
+        source_lookup: dict[str, dict[str, Any] | None] | None = None,
+    ) -> list[SourceConfig]:
         """Return only configs whose frequency has elapsed since last scrape.
 
         Queries Convex for each source's last_scraped timestamp and compares
@@ -44,13 +48,19 @@ class SourceScheduler:
 
         Args:
             configs: List of source configs to filter.
+            source_lookup: Optional cached source records keyed by source name.
+                When provided, avoids one Convex query per source.
 
         Returns:
             Subset of configs that are due for scraping.
         """
         due: list[SourceConfig] = []
         for config in configs:
-            source = self.convex.query("sources:getByName", {"name": config.name})
+            source = (
+                source_lookup.get(config.name)
+                if source_lookup is not None
+                else self.convex.query("sources:getByName", {"name": config.name})
+            )
             if source is None:
                 due.append(config)
                 continue
@@ -59,7 +69,8 @@ class SourceScheduler:
                 due.append(config)
                 continue
             hours_since = (time.time() * 1000 - last_scraped) / (1000 * 60 * 60)
-            freq = getattr(config, "scrape_frequency_hours", 168)
+            source_freq = source.get("scrape_frequency_hours") if source else None
+            freq = source_freq if source_freq is not None else getattr(config, "scrape_frequency_hours", 24)
             if hours_since >= freq:
                 due.append(config)
             else:

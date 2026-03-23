@@ -27,6 +27,9 @@ class BaseSourceConfig:
     rate_limit_delay: float = 2.0
     cutoff_months: int = 3
     max_records: int | None = None
+    incremental_mode: bool = False
+    incremental_max_pages: int = 3
+    incremental_skip_detail: bool = True
 
 
 @dataclass

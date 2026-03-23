@@ -229,3 +229,73 @@ async def test_html_scraper_respects_max_records(html_config):
 
     assert len(records) == 2
     assert scraper.records_found == 2
+
+
+@pytest.mark.asyncio
+async def test_html_scraper_incremental_limits_pagination(html_config):
+    """Incremental mode should cap pagination to incremental_max_pages."""
+    html_with_next = SAMPLE_HTML.replace(
+        "</body>",
+        '<a class="next" href="/scholarships?page=2">Next</a></body>',
+    )
+    html_config.incremental_mode = True
+    html_config.incremental_max_pages = 1
+
+    scraper = HtmlScraper(html_config)
+    call_count = 0
+
+    def mock_get(url, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return _make_response(html_with_next, url)
+        return _make_response(SAMPLE_HTML_PAGE2, url)
+
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", side_effect=mock_get):
+        records = await scraper.scrape()
+
+    assert len(records) == 3
+    assert call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_html_scraper_incremental_skips_detail_page_fetch():
+    """Incremental mode should skip detail page requests when configured."""
+    config = BaseSourceConfig(
+        name="Incremental Detail Skip",
+        url="https://example.com/list",
+        source_id="test-incremental-skip",
+        primary_method="scrape",
+        selectors={
+            "listing": ".item",
+            "title": "h3",
+            "detail_link": "a::attr(href)",
+        },
+        field_mappings={"title": "title"},
+        detail_page=True,
+        detail_selectors={"description": ".detail"},
+        rate_limit_delay=0.0,
+        incremental_mode=True,
+        incremental_skip_detail=True,
+    )
+
+    listing_html = """<html><body>
+    <div class="item">
+      <h3>Scholarship</h3>
+      <a href="/detail/1">View</a>
+    </div>
+    </body></html>"""
+
+    scraper = HtmlScraper(config)
+    call_count = 0
+
+    def mock_get(url, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return _make_response(listing_html, url)
+
+    with patch("scholarhub_pipeline.scrapers.html_scraper.Fetcher.get", side_effect=mock_get):
+        records = await scraper.scrape()
+
+    assert len(records) == 1
+    assert call_count == 1

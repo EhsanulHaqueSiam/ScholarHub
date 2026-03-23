@@ -80,6 +80,23 @@ class TestSourceScheduler:
 
         assert len(result) == 0
 
+    def test_filter_due_sources_uses_source_frequency_from_convex(self):
+        """Scheduler should prefer scrape_frequency_hours stored in Convex source data."""
+        mock_convex = MagicMock()
+        import time
+        # 30 hours ago should NOT be due when source frequency is 48h.
+        recent_timestamp = (time.time() - 30 * 3600) * 1000
+        mock_convex.query.return_value = {
+            "last_scraped": recent_timestamp,
+            "scrape_frequency_hours": 48,
+        }
+
+        scheduler = SourceScheduler(mock_convex)
+        configs = [_make_config()]
+        result = scheduler.filter_due_sources(configs)
+
+        assert len(result) == 0
+
     def test_filter_due_sources_null_last_scraped(self):
         """Sources with null last_scraped field are due."""
         mock_convex = MagicMock()
@@ -381,6 +398,48 @@ class TestPipelineRunner:
 
         assert stats["sources_completed"] == 1
         assert stats["sources_failed"] == 0
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_marks_existing_sources_as_incremental(
+        self,
+        mock_discover,
+        mock_get_scraper,
+    ):
+        """Sources with a last_scraped timestamp should run in incremental mode."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.return_value = [{"title": "Test Scholarship"}]
+        mock_scraper.records_found = 1
+        mock_scraper.bytes_downloaded = 100
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:batchInsertRawRecords":
+                return {"inserted": 1, "updated": 0, "unchanged": 0}
+            if name == "scraping:updateSourceHealth":
+                return {"consecutive_failures": 0}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = {
+            "_id": "test-source",
+            "name": "Test Source",
+            "last_scraped": 1700000000000,
+        }
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        called_config = mock_get_scraper.call_args[0][0]
+        assert called_config.incremental_mode is True
 
     @pytest.mark.asyncio
     @patch("scholarhub_pipeline.pipeline.runner.get_scraper")

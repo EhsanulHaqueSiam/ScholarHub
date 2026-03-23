@@ -41,6 +41,10 @@ class HtmlScraper(BaseScraper):
         detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
+        incremental_mode = bool(getattr(self.config, "incremental_mode", False))
+        effective_detail_page = self.config.detail_page and not (
+            incremental_mode and getattr(self.config, "incremental_skip_detail", True)
+        )
 
         while url:
             response = Fetcher.get(url)
@@ -102,7 +106,7 @@ class HtmlScraper(BaseScraper):
                     return records
 
                 detail_url_full: str | None = None
-                if self.config.detail_page:
+                if effective_detail_page:
                     detail_link_selector = self.config.selectors.get(
                         "detail_link",
                         "a::attr(href)",
@@ -128,7 +132,7 @@ class HtmlScraper(BaseScraper):
                     seen_keys.add(dedup_key)
 
                 # Follow detail page if configured
-                if self.config.detail_page and detail_url_full:
+                if effective_detail_page and detail_url_full:
                     if detail_url_full in detail_cache:
                         detail_data = detail_cache[detail_url_full]
                     else:
@@ -150,6 +154,9 @@ class HtmlScraper(BaseScraper):
                 if self.config.pagination
                 else 100
             )
+            if incremental_mode:
+                incremental_limit = max(1, int(getattr(self.config, "incremental_max_pages", 3)))
+                max_pages = min(max_pages, incremental_limit)
             if page >= max_pages:
                 break
 

@@ -321,6 +321,14 @@ class PipelineRunner:
                 source_url=config.url,
             )
             return
+
+        source_meta = self._source_cache.get(config.name) or self._source_url_cache.get(config.url)
+        config.incremental_mode = bool(
+            self.convex
+            and not self.dry_run
+            and source_meta
+            and source_meta.get("last_scraped"),
+        )
         try:
             scraper = get_scraper(config)
             records = await scraper.scrape()

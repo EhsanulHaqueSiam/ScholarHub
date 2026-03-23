@@ -41,6 +41,10 @@ class StealthyScraper(BaseScraper):
         detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
+        incremental_mode = bool(getattr(self.config, "incremental_mode", False))
+        effective_detail_page = self.config.detail_page and not (
+            incremental_mode and getattr(self.config, "incremental_skip_detail", True)
+        )
 
         while url:
             # Run sync Playwright in thread to avoid asyncio conflict
@@ -85,7 +89,7 @@ class StealthyScraper(BaseScraper):
                     return records
 
                 detail_url_full: str | None = None
-                if self.config.detail_page:
+                if effective_detail_page:
                     detail_link_selector = self.config.selectors.get(
                         "detail_link",
                         "a::attr(href)",
@@ -110,7 +114,7 @@ class StealthyScraper(BaseScraper):
                         continue
                     seen_keys.add(dedup_key)
 
-                if self.config.detail_page and detail_url_full:
+                if effective_detail_page and detail_url_full:
                     if detail_url_full in detail_cache:
                         detail_data = detail_cache[detail_url_full]
                     else:
@@ -132,6 +136,9 @@ class StealthyScraper(BaseScraper):
                 if self.config.pagination
                 else 50
             )
+            if incremental_mode:
+                incremental_limit = max(1, int(getattr(self.config, "incremental_max_pages", 3)))
+                max_pages = min(max_pages, incremental_limit)
             if page >= max_pages:
                 break
 
