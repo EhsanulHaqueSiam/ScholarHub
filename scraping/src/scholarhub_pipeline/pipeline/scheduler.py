@@ -44,11 +44,11 @@ class SourceScheduler:
         """Return only configs whose frequency has elapsed since last scrape.
 
         Queries Convex for each source's last_scraped timestamp and compares
-        against the configured scrape_frequency_hours (default 168 = weekly).
+        against the configured scrape_frequency_hours (default 24 = daily).
 
         Args:
             configs: List of source configs to filter.
-            source_lookup: Optional cached source records keyed by source name.
+            source_lookup: Optional cached source records keyed by source_id.
                 When provided, avoids one Convex query per source.
 
         Returns:
@@ -57,12 +57,17 @@ class SourceScheduler:
         due: list[SourceConfig] = []
         for config in configs:
             source = (
-                source_lookup.get(config.name)
+                source_lookup.get(config.source_id)
                 if source_lookup is not None
-                else self.convex.query("sources:getByName", {"name": config.name})
+                else self.convex.query("sources:getByUrl", {"url": config.url})
             )
+            if source is None and self.convex:
+                source = self.convex.query("sources:getByName", {"name": config.name})
             if source is None:
                 due.append(config)
+                continue
+            if source.get("is_active") is False:
+                logger.debug("source_inactive", name=config.name)
                 continue
             last_scraped = source.get("last_scraped")
             if last_scraped is None:
@@ -103,15 +108,38 @@ class SourceScheduler:
             groups[method].append(config)
         return groups
 
-    def filter_active(self, configs: list[SourceConfig]) -> list[SourceConfig]:
+    def filter_active(
+        self,
+        configs: list[SourceConfig],
+        source_lookup: dict[str, dict[str, Any] | None] | None = None,
+    ) -> list[SourceConfig]:
         """Exclude auth_required and deactivated sources.
 
         Sources with auth_config set are skipped until auth support is added.
 
         Args:
             configs: List of source configs to filter.
+            source_lookup: Optional cached source records keyed by source_id.
 
         Returns:
             Subset of configs that do not require authentication.
         """
-        return [c for c in configs if not getattr(c, "auth_config", None)]
+        active: list[SourceConfig] = []
+        for config in configs:
+            if getattr(config, "auth_config", None):
+                continue
+
+            source = (
+                source_lookup.get(config.source_id)
+                if source_lookup is not None
+                else self.convex.query("sources:getByUrl", {"url": config.url})
+            )
+            if source is None and self.convex:
+                source = self.convex.query("sources:getByName", {"name": config.name})
+            if source and source.get("is_active") is False:
+                logger.debug("source_inactive", name=config.name)
+                continue
+
+            active.append(config)
+
+        return active

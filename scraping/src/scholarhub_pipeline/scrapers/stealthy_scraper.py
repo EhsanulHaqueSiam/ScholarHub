@@ -25,6 +25,22 @@ class StealthyScraper(BaseScraper):
     predictable structures behind the protection.
     """
 
+    _fetcher_configured = False
+
+    @classmethod
+    def _ensure_fetcher_configured(cls) -> None:
+        if cls._fetcher_configured:
+            return
+        try:
+            StealthyFetcher.configure(auto_match=True)
+        except Exception:  # pragma: no cover - depends on Scrapling version
+            try:
+                StealthyFetcher.configure(adaptive=True)
+            except Exception:
+                # Older Scrapling builds expose configure() without kwargs.
+                StealthyFetcher.configure()
+        cls._fetcher_configured = True
+
     @staticmethod
     def _fetch_sync(url: str) -> object:
         """Run StealthyFetcher.fetch in a thread (sync Playwright can't run in asyncio loop)."""
@@ -36,8 +52,11 @@ class StealthyScraper(BaseScraper):
         Returns:
             List of normalized raw record dicts.
         """
+        self._ensure_fetcher_configured()
+
         records: list[dict] = []
         seen_keys: set[str] = set()
+        seen_detail_urls: set[str] = set()
         detail_cache: dict[str, dict] = {}
         url: str | None = self.config.url
         page = 0
@@ -104,6 +123,10 @@ class StealthyScraper(BaseScraper):
                                 else detail_url
                             )
                             mapped["source_url"] = mapped.get("source_url", detail_url_full)
+                            normalized_detail_url = str(detail_url_full).strip().lower()
+                            if normalized_detail_url in seen_detail_urls:
+                                continue
+                            seen_detail_urls.add(normalized_detail_url)
 
                 dedup_key = (
                     str(mapped.get("source_url") or "").strip().lower()

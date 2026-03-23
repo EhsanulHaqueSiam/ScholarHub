@@ -56,7 +56,7 @@ class TestSourceScheduler:
     def test_filter_due_sources_past_frequency(self):
         """Sources past their frequency window are due."""
         mock_convex = MagicMock()
-        # Last scraped 200 hours ago (past default 168h)
+        # Last scraped 200 hours ago (past default daily window)
         import time
         old_timestamp = (time.time() - 200 * 3600) * 1000
         mock_convex.query.return_value = {"last_scraped": old_timestamp}
@@ -137,6 +137,29 @@ class TestSourceScheduler:
 
         assert len(active) == 1
         assert active[0].name == "Public"
+
+    def test_filter_active_excludes_inactive_source_record(self):
+        """Sources marked inactive in Convex should be excluded."""
+        mock_convex = MagicMock()
+        scheduler = SourceScheduler(mock_convex)
+        configs = [_make_config(name="Inactive", source_id="inactive")]
+        lookup = {"inactive": {"is_active": False}}
+
+        active = scheduler.filter_active(configs, source_lookup=lookup)
+
+        assert active == []
+
+    def test_filter_due_sources_uses_source_id_lookup(self):
+        """Due filtering should use source_id-keyed lookup to avoid duplicate-name collisions."""
+        mock_convex = MagicMock()
+        scheduler = SourceScheduler(mock_convex)
+        configs = [_make_config(name="Shared Name", source_id="s1")]
+        lookup = {"s1": {"_id": "src1", "last_scraped": None}}
+
+        result = scheduler.filter_due_sources(configs, source_lookup=lookup)
+
+        assert len(result) == 1
+        assert result[0].source_id == "s1"
 
 
 # --- Buffer tests ---
@@ -458,6 +481,40 @@ class TestPipelineRunner:
 
         assert stats["sources_failed"] == 1
         assert stats["sources_completed"] == 0
+
+    @pytest.mark.asyncio
+    @patch("scholarhub_pipeline.pipeline.runner.get_scraper")
+    @patch("scholarhub_pipeline.pipeline.runner.discover_configs")
+    async def test_runner_marks_last_scraped_on_failure(self, mock_discover, mock_get_scraper):
+        """Failure path should still update last_scraped to avoid immediate retriggers."""
+        config = _make_config()
+        mock_discover.return_value = [config]
+
+        mock_scraper = AsyncMock()
+        mock_scraper.scrape.side_effect = RuntimeError("Connection refused")
+        mock_get_scraper.return_value = mock_scraper
+
+        mock_convex = MagicMock()
+
+        def mutation_side_effect(name, args):
+            if name == "scraping:startRun":
+                return "run_123"
+            if name == "scraping:updateSourceHealth":
+                return {"consecutive_failures": 1, "github_issue_number": None}
+            return None
+
+        mock_convex.mutation.side_effect = mutation_side_effect
+        mock_convex.query.return_value = {"_id": "test-source", "name": "Test Source"}
+
+        runner = PipelineRunner(convex_client=mock_convex, dry_run=False)
+        await runner.run()
+
+        mark_calls = [
+            call for call in mock_convex.mutation.call_args_list
+            if call[0][0] == "scraping:updateLastScraped"
+        ]
+        assert len(mark_calls) >= 1
+        assert mark_calls[-1][0][1]["source_id"] == "test-source"
 
     @pytest.mark.asyncio
     @patch("scholarhub_pipeline.pipeline.runner.get_scraper")

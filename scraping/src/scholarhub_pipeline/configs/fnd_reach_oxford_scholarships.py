@@ -10,11 +10,18 @@ class Config(BaseFoundationConfig):
     """Reach Oxford Scholarships foundation config."""
 
     name: str = "Reach Oxford Scholarships"
-    url: str = "https://reachoxford.ox.ac.uk"
+    url: str = "https://www.ox.ac.uk/admissions/undergraduate/fees-and-funding/oxford-support/reach-oxford-scholarship"
     source_id: str = "reach_oxford_scholarships"
     primary_method: str = "scrape"
     secondary_method: str | None = "scrapling"
-    selectors: dict[str, str] = field(default_factory=lambda: {'listing': '.scholarship-item, .programme, article, .grant-item, .fellowship', 'title': 'h2::text, h3::text, .title::text, .fellowship-title::text', 'deadline': '.deadline::text, .date::text, .closing-date::text', 'eligibility': '.eligibility::text, .requirements::text', 'amount': '.amount::text, .funding::text, .award::text', 'detail_link': 'h2 a::attr(href), h3 a::attr(href), a::attr(href)'})
+    selectors: dict[str, str] = field(default_factory=lambda: {
+        "listing": "main, article",
+        "title": "h1::text, h2::text",
+        "deadline": "time::text, .deadline::text, .date::text, .closing-date::text",
+        "eligibility": ".eligibility::text, .requirements::text, .criteria::text",
+        "amount": ".amount::text, .funding::text, .award::text",
+        "detail_link": "a[href*='reach-oxford-scholarship']::attr(href), h1 a::attr(href)",
+    })
     field_mappings: dict[str, str] = field(default_factory=lambda: {'title': 'title', 'deadline': 'application_deadline', 'amount': 'award_amount', 'detail_link': 'source_url', 'eligibility': 'eligibility_criteria'})
     pagination: dict | None = None
     detail_page: bool = False

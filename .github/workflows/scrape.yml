@@ -1,8 +1,8 @@
 name: Scrape Scholarships
 
 on:
-  # schedule:
-  #   - cron: '0 4 * * *' # Daily at 04:00 UTC  # TEMPORARILY DISABLED
+  schedule:
+    - cron: '0 4 * * *' # Daily at 04:00 UTC
   workflow_dispatch:
     inputs:
       source:
@@ -15,6 +15,11 @@ on:
         type: string
       dry_run:
         description: 'Dry run (write to local JSON, skip Convex)'
+        required: false
+        type: boolean
+        default: false
+      full_refresh:
+        description: 'Force full scrape (disable incremental mode)'
         required: false
         type: boolean
         default: false
@@ -52,18 +57,36 @@ jobs:
         run: cd scraping && uv sync
 
       - name: Install Scrapling browser dependencies
-        run: cd scraping && uv run scrapling install
+        run: |
+          cd scraping
+          # First try full system dependency install; fall back to browser-only install
+          # for environments where sudo is unavailable.
+          uv run python -m playwright install --with-deps chromium || \
+            uv run python -m playwright install chromium
 
       - name: Run scraping pipeline
         env:
-          CONVEX_URL: ${{ secrets.CONVEX_URL }}
+          CONVEX_URL: ${{ secrets.CONVEX_URL || secrets.VITE_CONVEX_URL }}
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           INPUT_SOURCE: ${{ inputs.source }}
           INPUT_WAVE: ${{ inputs.wave }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_FULL_REFRESH: ${{ inputs.full_refresh }}
         run: |
+          if [ "$INPUT_DRY_RUN" != "true" ]; then
+            if [ -z "$CONVEX_URL" ]; then
+              echo "Missing CONVEX_URL. Set GitHub secret CONVEX_URL (preferred) or VITE_CONVEX_URL."
+              exit 1
+            fi
+            if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+              echo "Missing CONVEX_DEPLOY_KEY. Set GitHub secret CONVEX_DEPLOY_KEY."
+              exit 1
+            fi
+          fi
+
           ARGS=""
           if [ -n "$INPUT_SOURCE" ]; then
             ARGS="$ARGS --source $INPUT_SOURCE"
@@ -74,7 +97,10 @@ jobs:
           if [ "$INPUT_DRY_RUN" == "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
-          cd scraping && uv run scrape run $ARGS
+          if [ "$INPUT_FULL_REFRESH" == "true" ]; then
+            ARGS="$ARGS --full-refresh"
+          fi
+          cd scraping && uv run scrape --json-logs run $ARGS
 
       - name: Upload buffer on failure
         if: failure()

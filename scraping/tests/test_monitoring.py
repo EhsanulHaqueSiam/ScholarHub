@@ -8,6 +8,7 @@ from scholarhub_pipeline.monitoring.health import HealthTracker
 from scholarhub_pipeline.monitoring.heartbeat import HeartbeatMonitor
 from scholarhub_pipeline.monitoring.rot_detector import (
     DEACTIVATE_THRESHOLD,
+    FAST_DEACTIVATE_THRESHOLDS,
     FAILURE_THRESHOLD,
     RotDetector,
 )
@@ -92,6 +93,17 @@ class TestRotDetector:
         detector = RotDetector()
         assert detector.should_deactivate(consecutive_failures=1, last_error_type="410") is True
 
+    def test_should_deactivate_true_for_dns_error_after_fast_threshold(self):
+        detector = RotDetector()
+        assert detector.should_deactivate(
+            consecutive_failures=FAST_DEACTIVATE_THRESHOLDS["dns_error"],
+            last_error_type="dns_error",
+        ) is True
+
+    def test_should_deactivate_false_for_dns_error_before_fast_threshold(self):
+        detector = RotDetector()
+        assert detector.should_deactivate(consecutive_failures=1, last_error_type="dns_error") is False
+
     def test_should_deactivate_false_below_threshold(self):
         detector = RotDetector()
         assert detector.should_deactivate(consecutive_failures=3) is False
@@ -149,6 +161,22 @@ class TestRotDetector:
         detector = RotDetector()
         result = detector.classify_error(status_code=None, exception=ConnectionError())
         assert result == "network_error"
+
+    def test_classify_error_http_404_from_exception_response(self):
+        detector = RotDetector()
+        mock_exc = MagicMock()
+        mock_exc.response.status_code = 404
+        assert detector.classify_error(status_code=None, exception=mock_exc) == "404"
+
+    def test_classify_error_dns_from_exception_message(self):
+        detector = RotDetector()
+        exc = Exception("curl: (6) Could not resolve host: example.com")
+        assert detector.classify_error(status_code=None, exception=exc) == "dns_error"
+
+    def test_classify_error_tls_from_exception_message(self):
+        detector = RotDetector()
+        exc = Exception("curl: (60) SSL certificate problem: certificate has expired")
+        assert detector.classify_error(status_code=None, exception=exc) == "tls_error"
 
 
 # --- HeartbeatMonitor tests ---

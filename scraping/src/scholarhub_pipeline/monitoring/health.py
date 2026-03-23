@@ -17,6 +17,11 @@ ERROR_TYPES = [
     "rate_limited",
     "blocked",
     "parse_error",
+    "http_error",
+    "dns_error",
+    "tls_error",
+    "404",
+    "410",
     "empty_results",
     "schema_change",
 ]

@@ -71,6 +71,7 @@ class PipelineRunner:
         dry_run: bool = False,
         source_filter: str | None = None,
         wave_filter: int | None = None,
+        full_refresh: bool = False,
         json_logs: bool = False,
     ) -> None:
         """Initialize the pipeline runner.
@@ -80,14 +81,17 @@ class PipelineRunner:
             dry_run: If True, write results to local JSON instead of Convex.
             source_filter: Only run a specific source by name or source_id.
             wave_filter: Only run sources in a specific wave number.
+            full_refresh: If True, force full (non-incremental) scraping behavior.
             json_logs: If True, configure structlog for JSON output.
         """
         self.dry_run = dry_run
         self.source_filter = source_filter
         self.wave_filter = wave_filter
+        self.full_refresh = full_refresh
         self.convex = convex_client
         self.buffer = LocalBuffer()
         self._source_cache: dict[str, dict[str, Any] | None] = {}
+        self._source_id_cache: dict[str, dict[str, Any] | None] = {}
         self._source_url_cache: dict[str, dict[str, Any] | None] = {}
         self.stats: dict[str, int] = {
             "sources_targeted": 0,
@@ -204,11 +208,16 @@ class PipelineRunner:
             configs = [c for c in configs if getattr(c, "wave", None) == self.wave_filter]
         if scheduler and not self.dry_run:
             self._prime_source_cache(configs)
-            configs = scheduler.filter_active(configs)
-            configs = scheduler.filter_due_sources(configs, source_lookup=self._source_cache)
+            configs = scheduler.filter_active(configs, source_lookup=self._source_id_cache)
+            configs = scheduler.filter_due_sources(configs, source_lookup=self._source_id_cache)
 
         self.stats["sources_targeted"] = len(configs)
-        logger.info("pipeline_start", sources=len(configs), dry_run=self.dry_run)
+        logger.info(
+            "pipeline_start",
+            sources=len(configs),
+            dry_run=self.dry_run,
+            full_refresh=self.full_refresh,
+        )
 
         # Start run in Convex
         run_id = None
@@ -265,15 +274,8 @@ class PipelineRunner:
         """
         if not self.convex:
             return None
-        if config.name not in self._source_cache:
-            self._source_cache[config.name] = self.convex.query(
-                "sources:getByName",
-                {"name": config.name},
-            )
-        source = self._source_cache.get(config.name)
+        source = self._source_id_cache.get(config.source_id)
 
-        # Fallback by URL for renamed sources where config.name no longer matches
-        # the seeded Convex source record.
         if source is None:
             if config.url not in self._source_url_cache:
                 self._source_url_cache[config.url] = self.convex.query(
@@ -281,8 +283,18 @@ class PipelineRunner:
                     {"url": config.url},
                 )
             source = self._source_url_cache.get(config.url)
-            if source:
-                self._source_cache[config.name] = source
+        if source is None:
+            if config.name not in self._source_cache:
+                self._source_cache[config.name] = self.convex.query(
+                    "sources:getByName",
+                    {"name": config.name},
+                )
+            source = self._source_cache.get(config.name)
+
+        if source:
+            self._source_id_cache[config.source_id] = source
+            self._source_cache[config.name] = source
+            self._source_url_cache[config.url] = source
 
         source_id = source.get("_id") if source else None
         return str(source_id) if source_id else None
@@ -292,12 +304,18 @@ class PipelineRunner:
         if not self.convex:
             return
         for config in configs:
-            if config.name in self._source_cache:
+            if config.source_id in self._source_id_cache:
                 continue
             source = self.convex.query(
-                "sources:getByName",
-                {"name": config.name},
+                "sources:getByUrl",
+                {"url": config.url},
             )
+            if source is None:
+                source = self.convex.query(
+                    "sources:getByName",
+                    {"name": config.name},
+                )
+            self._source_id_cache[config.source_id] = source
             self._source_cache[config.name] = source
             if source and config.url not in self._source_url_cache:
                 self._source_url_cache[config.url] = source
@@ -322,10 +340,15 @@ class PipelineRunner:
             )
             return
 
-        source_meta = self._source_cache.get(config.name) or self._source_url_cache.get(config.url)
+        source_meta = (
+            self._source_id_cache.get(config.source_id)
+            or self._source_url_cache.get(config.url)
+            or self._source_cache.get(config.name)
+        )
         config.incremental_mode = bool(
             self.convex
             and not self.dry_run
+            and not self.full_refresh
             and source_meta
             and source_meta.get("last_scraped"),
         )
@@ -433,8 +456,34 @@ class PipelineRunner:
 
             if self.convex and not self.dry_run and convex_source_id:
                 try:
+                    # Record failure in per-run telemetry stream.
+                    if run_id:
+                        self.convex.mutation(
+                            "scraping:recordSourceResult",
+                            {
+                                "run_id": run_id,
+                                "source_id": convex_source_id,
+                                "status": "failure",
+                                "method_used": config.primary_method,
+                                "records_found": 0,
+                                "records_new": 0,
+                                "records_updated": 0,
+                                "records_unchanged": 0,
+                                "duration_seconds": int(duration),
+                                "bytes_downloaded": 0,
+                                "error_type": error_type,
+                                "error_message": str(e)[:500],
+                            },
+                        )
+
                     health_result = HealthTracker(self.convex).record_failure(
                         convex_source_id, error_type, str(e),
+                    )
+                    # Mark attempt time so consistently failing sources do not run again
+                    # immediately on every manual/scheduled trigger.
+                    self.convex.mutation(
+                        "scraping:updateLastScraped",
+                        {"source_id": convex_source_id},
                     )
                     rot = RotDetector()
                     failures = health_result.get("consecutive_failures", 0) if health_result else 0
