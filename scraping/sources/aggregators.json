@@ -360,6 +360,21 @@
     "notes": "CF: no | Fields: title, university, country, amount | Volume: ~1500 | Keystone Education Group bachelor scholarships"
   },
   {
+    "name": "BachelorsPortal Scholarships",
+    "url": "https://www.bachelorsportal.com/search/scholarships/bachelor",
+    "category": "aggregator",
+    "scrape_method": "scrapling",
+    "trust_level": "needs_review",
+    "scrape_frequency_hours": 168,
+    "wave": 3,
+    "is_active": true,
+    "auth_required": false,
+    "has_api": false,
+    "estimated_volume": "~2200",
+    "geographic_coverage": ["global"],
+    "notes": "CF: yes (Cloudflare) | Fields: title, provider, country, amount, deadline | Volume: ~2200 | StudyPortals network, JS-rendered React SPA, detail pages have JSON-LD MonetaryGrant schema"
+  },
+  {
     "name": "MasterStudies Scholarships",
     "url": "https://www.masterstudies.com/scholarships",
     "category": "aggregator",
