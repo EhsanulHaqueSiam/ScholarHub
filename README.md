@@ -228,6 +228,12 @@ uv run scholarhub status                 # Check pipeline status
 
 ---
 
+## Contributors
+
+- [Aonyendo Paul Neteish](https://github.com/NitPaul) — Research
+
+---
+
 ## License
 
 All rights reserved.
