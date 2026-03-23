@@ -543,7 +543,7 @@ export const bulkPublishRawRecords = mutation({
     }
 
     if (promoted > 0) {
-      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCacheInternal, {
         status: "published",
       });
     }
@@ -630,10 +630,10 @@ export const demoteIncompleteScholarships = mutation({
     }
 
     if (demoted > 0 && !isDryRun) {
-      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCacheInternal, {
         status: "published",
       });
-      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCache, {
+      await runAfterSafe(ctx, 0, internal.directory.refreshScholarshipCountCacheInternal, {
         status: "pending_review",
       });
     }

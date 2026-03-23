@@ -1,6 +1,6 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import {
   degreeLevelValidator,
   fundingTypeValidator,
@@ -8,6 +8,58 @@ import {
   scholarshipStatusValidator,
   scholarshipTypeValidator,
 } from "./schema";
+
+const CACHED_COUNT_STATUSES = [
+  "pending_review",
+  "published",
+  "rejected",
+  "archived",
+] as const;
+
+type CachedCountStatus = (typeof CACHED_COUNT_STATUSES)[number];
+
+async function countScholarshipsByStatus(ctx: { db: any }, status: CachedCountStatus): Promise<number> {
+  let total = 0;
+  let cursor: string | null = null;
+
+  while (true) {
+    const page = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q: any) => q.eq("status", status))
+      .paginate({ cursor, numItems: 256 });
+    total += page.page.length;
+    if (page.isDone) break;
+    cursor = page.continueCursor;
+  }
+
+  return total;
+}
+
+async function refreshCountCache(
+  ctx: { db: any },
+  status: CachedCountStatus,
+): Promise<{ status: CachedCountStatus; count: number }> {
+  const count = await countScholarshipsByStatus(ctx, status);
+  const existing = await ctx.db
+    .query("scholarship_counts")
+    .withIndex("by_status", (q: any) => q.eq("status", status))
+    .first();
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      count,
+      updated_at: Date.now(),
+    });
+  } else {
+    await ctx.db.insert("scholarship_counts", {
+      status,
+      count,
+      updated_at: Date.now(),
+    });
+  }
+
+  return { status, count };
+}
 
 /**
  * List scholarships with full search, multi-filter, sort, and pagination.
@@ -295,12 +347,53 @@ export const getScholarshipCount = query({
     status: v.optional(scholarshipStatusValidator),
   },
   handler: async (ctx, args) => {
-    const status = args.status ?? "published";
-    const results = await ctx.db
-      .query("scholarships")
+    const status = (args.status ?? "published") as CachedCountStatus;
+    const cached = await ctx.db
+      .query("scholarship_counts")
       .withIndex("by_status", (q) => q.eq("status", status))
-      .take(10000);
-    return results.length;
+      .first();
+
+    if (cached) return cached.count;
+    return await countScholarshipsByStatus(ctx, status);
+  },
+});
+
+/**
+ * Refresh cached scholarship counts by status.
+ * If status is omitted, refreshes all statuses used by the directory.
+ */
+export const refreshScholarshipCountCache = mutation({
+  args: {
+    status: v.optional(scholarshipStatusValidator),
+  },
+  handler: async (ctx, args) => {
+    const statuses = args.status
+      ? [args.status as CachedCountStatus]
+      : [...CACHED_COUNT_STATUSES];
+    const results = await Promise.all(statuses.map((status) => refreshCountCache(ctx, status)));
+    return {
+      refreshed: results.length,
+      results,
+    };
+  },
+});
+
+/**
+ * Internal variant for cron jobs and post-ingestion scheduling.
+ */
+export const refreshScholarshipCountCacheInternal = internalMutation({
+  args: {
+    status: v.optional(scholarshipStatusValidator),
+  },
+  handler: async (ctx, args) => {
+    const statuses = args.status
+      ? [args.status as CachedCountStatus]
+      : [...CACHED_COUNT_STATUSES];
+    const results = await Promise.all(statuses.map((status) => refreshCountCache(ctx, status)));
+    return {
+      refreshed: results.length,
+      results,
+    };
   },
 });
 

@@ -25,7 +25,7 @@ crons.hourly("heartbeat_check", { minuteUTC: 0 }, internal.monitoring.checkHeart
 crons.daily(
   "refresh scholarship count cache",
   { hourUTC: 2, minuteUTC: 45 },
-  internal.directory.refreshScholarshipCountCache,
+  internal.directory.refreshScholarshipCountCacheInternal,
   {},
 );
 
