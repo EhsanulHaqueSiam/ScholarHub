@@ -30,6 +30,7 @@ import type * as scraping from "../scraping.js";
 import type * as seed from "../seed.js";
 import type * as seed_collections from "../seed_collections.js";
 import type * as seo from "../seo.js";
+import type * as shortlist from "../shortlist.js";
 import type * as sources from "../sources.js";
 import type * as tagging from "../tagging.js";
 import type * as tags from "../tags.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   seed_collections: typeof seed_collections;
   seo: typeof seo;
+  shortlist: typeof shortlist;
   sources: typeof sources;
   tagging: typeof tagging;
   tags: typeof tags;
