@@ -8,7 +8,7 @@ import { ResultsTierSection } from "@/components/eligibility/ResultsTierSection"
 import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getCountryName } from "@/lib/countries";
+import { getCountryName, POPULAR_NATIONALITIES } from "@/lib/countries";
 import type {
   MatchTier,
   ScoredScholarship,
@@ -36,12 +36,17 @@ const eligibilityResultsSearchSchema = z.object({
   st: z.string().optional(), // filter scholarship type
 });
 
+/** Top 15 nationalities + TZ that should be indexed for SEO (D-35) */
+const INDEXABLE_NATIONALITIES = new Set(POPULAR_NATIONALITIES);
+
 export const Route = createFileRoute("/eligibility/results")({
   validateSearch: eligibilityResultsSearchSchema,
   head: ({ search }) => {
     const parts: string[] = [];
-    if (search.n) {
-      const countryName = getCountryName(search.n.split(",")[0]);
+    const primaryNationality = search.n?.split(",")[0];
+
+    if (primaryNationality) {
+      const countryName = getCountryName(primaryNationality);
       if (countryName) parts.push(countryName);
     }
     if (search.d) {
@@ -58,12 +63,23 @@ export const Route = createFileRoute("/eligibility/results")({
     const suffix =
       parts.length > 0 ? ` for ${parts.join(" ")} Students` : "";
     const title = `Scholarship Matches${suffix} | ScholarHub`;
-    return buildPageMeta({
+
+    const pageMeta = buildPageMeta({
       title,
       description:
         "Find scholarships matching your profile. Filtered by eligibility, degree level, and field of study.",
       canonicalPath: "/eligibility/results",
     });
+
+    // D-35: noindex uncommon nationality combinations for SEO hygiene
+    const shouldNoindex =
+      primaryNationality && !INDEXABLE_NATIONALITIES.has(primaryNationality.toUpperCase());
+
+    if (shouldNoindex) {
+      pageMeta.meta.push({ name: "robots", content: "noindex, follow" });
+    }
+
+    return pageMeta;
   },
   component: EligibilityResultsPage,
 });
