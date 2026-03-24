@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShortlistRouteImport } from './routes/shortlist'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships/index'
@@ -24,6 +26,16 @@ import { Route as ApiOgRouteImport } from './routes/api/og'
 import { Route as ScholarshipsDegreeDegreeRouteImport } from './routes/scholarships/degree/$degree'
 import { Route as ScholarshipsCountryCountryRouteImport } from './routes/scholarships/country/$country'
 
+const ShortlistRoute = ShortlistRouteImport.update({
+  id: '/shortlist',
+  path: '/shortlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -100,6 +112,8 @@ const ScholarshipsCountryCountryRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/guide': typeof GuideRoute
+  '/shortlist': typeof ShortlistRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -115,6 +129,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/guide': typeof GuideRoute
+  '/shortlist': typeof ShortlistRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -132,6 +148,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/guide': typeof GuideRoute
+  '/shortlist': typeof ShortlistRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -150,6 +168,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/guide'
+    | '/shortlist'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -165,6 +185,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/guide'
+    | '/shortlist'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -181,6 +203,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/guide'
+    | '/shortlist'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -198,6 +222,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  GuideRoute: typeof GuideRoute
+  ShortlistRoute: typeof ShortlistRoute
   ApiOgRoute: typeof ApiOgRoute
   ApiRobotsDottxtRoute: typeof ApiRobotsDottxtRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
@@ -213,6 +239,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/shortlist': {
+      id: '/shortlist'
+      path: '/shortlist'
+      fullPath: '/shortlist'
+      preLoaderRoute: typeof ShortlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -329,6 +369,8 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  GuideRoute: GuideRoute,
+  ShortlistRoute: ShortlistRoute,
   ApiOgRoute: ApiOgRoute,
   ApiRobotsDottxtRoute: ApiRobotsDottxtRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,

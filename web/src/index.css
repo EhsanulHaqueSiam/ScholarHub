@@ -75,6 +75,11 @@
   /* Comparison difference highlight */
   --compare-diff-bg: oklch(92% 0.06 90);
 
+  /* Shortlist tier backgrounds */
+  --tier-dream-bg: oklch(93% 0.06 350);
+  --tier-target-bg: oklch(95% 0.06 90);
+  --tier-safety-bg: oklch(93% 0.06 140);
+
   /* Semantic colors */
   --destructive: oklch(52% 0.24 27);
 }
@@ -142,6 +147,11 @@
   /* Comparison difference highlight - dark mode */
   --compare-diff-bg: oklch(25% 0.04 85);
 
+  /* Shortlist tier backgrounds - dark mode */
+  --tier-dream-bg: oklch(22% 0.05 350);
+  --tier-target-bg: oklch(24% 0.05 90);
+  --tier-safety-bg: oklch(22% 0.05 140);
+
   /* Semantic colors - dark mode */
   --destructive: oklch(60% 0.20 25);
 }
@@ -206,6 +216,10 @@
   --color-accent-pink: var(--accent-pink);
   --color-accent-lime: var(--accent-lime);
   --color-accent-sky: var(--accent-sky);
+
+  --color-tier-dream-bg: var(--tier-dream-bg);
+  --color-tier-target-bg: var(--tier-target-bg);
+  --color-tier-safety-bg: var(--tier-safety-bg);
 }
 
 @layer base {
