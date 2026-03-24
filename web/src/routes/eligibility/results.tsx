@@ -1,23 +1,20 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { z } from "zod";
+import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { MatchIndicators } from "@/components/eligibility/MatchIndicators";
 import { ProfileSummaryCard } from "@/components/eligibility/ProfileSummaryCard";
 import { ResultsTierSection } from "@/components/eligibility/ResultsTierSection";
-import { SkeletonCard } from "@/components/directory/SkeletonCard";
+import { Navbar } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getCountryName, POPULAR_NATIONALITIES } from "@/lib/countries";
-import type {
-  MatchTier,
-  ScoredScholarship,
-  StudentProfile,
-} from "@/lib/eligibility/types";
-import { urlParamsToProfile, profileToUrlParams } from "@/lib/eligibility/url-params";
 import { useEligibilityMatching } from "@/hooks/useEligibilityMatching";
 import { useStudentProfile } from "@/hooks/useStudentProfile";
 import { analytics } from "@/lib/analytics";
+import { getCountryName, POPULAR_NATIONALITIES } from "@/lib/countries";
+import type { MatchTier, ScoredScholarship, StudentProfile } from "@/lib/eligibility/types";
+import { profileToUrlParams, urlParamsToProfile } from "@/lib/eligibility/url-params";
 import { buildPageMeta } from "@/lib/seo/meta";
 import { cn } from "@/lib/utils";
 
@@ -43,13 +40,13 @@ export const Route = createFileRoute("/eligibility/results")({
   validateSearch: eligibilityResultsSearchSchema,
   head: ({ search }) => {
     const parts: string[] = [];
-    const primaryNationality = search.n?.split(",")[0];
+    const primaryNationality = search?.n?.split(",")[0];
 
     if (primaryNationality) {
       const countryName = getCountryName(primaryNationality);
       if (countryName) parts.push(countryName);
     }
-    if (search.d) {
+    if (search?.d) {
       const degreeLabel =
         search.d === "bachelor"
           ? "Bachelor's"
@@ -60,8 +57,7 @@ export const Route = createFileRoute("/eligibility/results")({
               : "Postdoc";
       parts.push(degreeLabel);
     }
-    const suffix =
-      parts.length > 0 ? ` for ${parts.join(" ")} Students` : "";
+    const suffix = parts.length > 0 ? ` for ${parts.join(" ")} Students` : "";
     const title = `Scholarship Matches${suffix} | ScholarHub`;
 
     const pageMeta = buildPageMeta({
@@ -73,7 +69,7 @@ export const Route = createFileRoute("/eligibility/results")({
 
     // D-35: noindex uncommon nationality combinations for SEO hygiene
     const shouldNoindex =
-      primaryNationality && !INDEXABLE_NATIONALITIES.has(primaryNationality.toUpperCase());
+      primaryNationality && !INDEXABLE_NATIONALITIES.has(primaryNationality?.toUpperCase());
 
     if (shouldNoindex) {
       pageMeta.meta.push({ name: "robots", content: "noindex, follow" });
@@ -153,9 +149,7 @@ function ResultsFilterChips({
       <div className="flex flex-wrap gap-1">
         {options.map((opt) => {
           const isActive = active === opt;
-          const displayLabel = opt
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
+          const displayLabel = opt.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
           return (
             <button
               key={opt}
@@ -275,18 +269,12 @@ function EmptyResultsState({ profile }: { profile: StudentProfile | null }) {
         />
       </svg>
 
-      <h2 className="font-heading text-xl mt-8">
-        No scholarships match your criteria
-      </h2>
+      <h2 className="font-heading text-xl mt-8">No scholarships match your criteria</h2>
       <p className="text-sm text-foreground/60 mt-3 max-w-md">
-        Your filters might be too specific. Try selecting more fields of study
-        or additional destination countries.
+        Your filters might be too specific. Try selecting more fields of study or additional
+        destination countries.
       </p>
-      <Link
-        to="/scholarships"
-        search={directorySearch}
-        className="mt-6"
-      >
+      <Link to="/scholarships" search={directorySearch} className="mt-6">
         <Button variant="neutral" size="lg">
           Browse All Scholarships
         </Button>
@@ -308,16 +296,13 @@ function EligibilityResultsPage() {
   const activeProfile = useMemo(() => {
     // URL params take precedence (for shared links)
     if (search.n || search.d) {
-      const fromUrl = urlParamsToProfile(
-        search as Record<string, string | undefined>,
-      );
+      const fromUrl = urlParamsToProfile(search as Record<string, string | undefined>);
       return { ...profile, ...fromUrl } as StudentProfile;
     }
     return profile as StudentProfile;
   }, [search, profile]);
 
-  const { results, totalCount, isLoading, isReady } =
-    useEligibilityMatching(activeProfile);
+  const { results, totalCount, isLoading, isReady } = useEligibilityMatching(activeProfile);
 
   // Track results_viewed
   useEffect(() => {
@@ -359,9 +344,7 @@ function EligibilityResultsPage() {
     // Apply funding type filter (D-25)
     if (activeFundingType) {
       for (const tier of ["strong", "good", "partial", "possible"] as const) {
-        sorted[tier] = sorted[tier].filter(
-          (s) => s.scholarship.funding_type === activeFundingType,
-        );
+        sorted[tier] = sorted[tier].filter((s) => s.scholarship.funding_type === activeFundingType);
       }
     }
 
@@ -401,8 +384,7 @@ function EligibilityResultsPage() {
             return isNaN(num) ? 0 : num;
           };
           return (
-            parseAmount(b.scholarship.funding_amount) -
-            parseAmount(a.scholarship.funding_amount)
+            parseAmount(b.scholarship.funding_amount) - parseAmount(a.scholarship.funding_amount)
           );
         }
         return 0;
@@ -417,10 +399,7 @@ function EligibilityResultsPage() {
 
   const filteredTotalCount = useMemo(() => {
     if (!sortedResults) return 0;
-    return Object.values(sortedResults).reduce(
-      (sum, arr) => sum + arr.length,
-      0,
-    );
+    return Object.values(sortedResults).reduce((sum, arr) => sum + arr.length, 0);
   }, [sortedResults]);
 
   // Handlers to update sort/filter via URL search params
@@ -442,110 +421,90 @@ function EligibilityResultsPage() {
 
   // Derive available filter options from unfiltered results
   const filterOptions = useMemo(() => {
-    if (!results)
-      return { fundingTypes: [] as string[], scholarshipTypes: [] as string[] };
+    if (!results) return { fundingTypes: [] as string[], scholarshipTypes: [] as string[] };
     const allScholarships = Object.values(results).flat();
     const fundingTypes = [
-      ...new Set(
-        allScholarships
-          .map((s) => s.scholarship.funding_type)
-          .filter(Boolean),
-      ),
+      ...new Set(allScholarships.map((s) => s.scholarship.funding_type).filter(Boolean)),
     ] as string[];
     const scholarshipTypes = [
-      ...new Set(
-        allScholarships
-          .map((s) => s.scholarship.scholarship_type)
-          .filter(Boolean),
-      ),
+      ...new Set(allScholarships.map((s) => s.scholarship.scholarship_type).filter(Boolean)),
     ] as string[];
     return { fundingTypes, scholarshipTypes };
   }, [results]);
 
   return (
-    <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-      <h1 className="text-[28px] font-heading leading-[1.15] text-center mb-2">
-        Your Scholarship Matches
-      </h1>
-      {isReady && (
-        <p className="text-center text-foreground/60 text-sm mb-8">
-          {filteredTotalCount} scholarships matched your profile
-        </p>
-      )}
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
+        <h1 className="text-[28px] font-heading leading-[1.15] text-center mb-2">
+          Your Scholarship Matches
+        </h1>
+        {isReady && (
+          <p className="text-center text-foreground/60 text-sm mb-8">
+            {filteredTotalCount} scholarships matched your profile
+          </p>
+        )}
 
-      {/* Profile summary card (D-26) */}
-      <ProfileSummaryCard
-        profile={activeProfile}
-        onEdit={handleProfileEdit}
-        onStartOver={() => {
-          clearProfile();
-          navigate({ to: "/eligibility" });
-        }}
-      />
+        {/* Profile summary card (D-26) */}
+        <ProfileSummaryCard
+          profile={activeProfile}
+          onEdit={handleProfileEdit}
+          onStartOver={() => {
+            clearProfile();
+            navigate({ to: "/eligibility" });
+          }}
+        />
 
-      {/* Loading skeleton */}
-      {isLoading && <ResultsSkeleton />}
+        {/* Loading skeleton */}
+        {isLoading && <ResultsSkeleton />}
 
-      {/* Empty state (D-27) */}
-      {isReady && totalCount === 0 && (
-        <EmptyResultsState profile={activeProfile} />
-      )}
+        {/* Empty state (D-27) */}
+        {isReady && totalCount === 0 && <EmptyResultsState profile={activeProfile} />}
 
-      {/* Sort and filter controls (D-25) -- above tier sections */}
-      {isReady && totalCount > 0 && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <ResultsSortPills
-            value={activeSort}
-            onChange={handleSortChange}
-          />
-          {filterOptions.fundingTypes.length > 0 && (
-            <ResultsFilterChips
-              label="Funding"
-              options={filterOptions.fundingTypes}
-              active={activeFundingType}
-              onToggle={(val) =>
-                handleFilterChange(
-                  "ft",
-                  val === activeFundingType ? null : val,
-                )
-              }
-            />
-          )}
-          {filterOptions.scholarshipTypes.length > 0 && (
-            <ResultsFilterChips
-              label="Type"
-              options={filterOptions.scholarshipTypes}
-              active={activeScholarshipType}
-              onToggle={(val) =>
-                handleFilterChange(
-                  "st",
-                  val === activeScholarshipType ? null : val,
-                )
-              }
-            />
-          )}
-        </div>
-      )}
+        {/* Sort and filter controls (D-25) -- above tier sections */}
+        {isReady && totalCount > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <ResultsSortPills value={activeSort} onChange={handleSortChange} />
+            {filterOptions.fundingTypes.length > 0 && (
+              <ResultsFilterChips
+                label="Funding"
+                options={filterOptions.fundingTypes}
+                active={activeFundingType}
+                onToggle={(val) => handleFilterChange("ft", val === activeFundingType ? null : val)}
+              />
+            )}
+            {filterOptions.scholarshipTypes.length > 0 && (
+              <ResultsFilterChips
+                label="Type"
+                options={filterOptions.scholarshipTypes}
+                active={activeScholarshipType}
+                onToggle={(val) =>
+                  handleFilterChange("st", val === activeScholarshipType ? null : val)
+                }
+              />
+            )}
+          </div>
+        )}
 
-      {/* Tier sections (D-23) */}
-      {isReady && sortedResults && (
-        <div className="space-y-8 mt-8">
-          {(["strong", "good", "partial", "possible"] as const).map(
-            (tier) =>
-              sortedResults[tier].length > 0 && (
-                <ResultsTierSection
-                  key={tier}
-                  tier={tier}
-                  scholarships={sortedResults[tier]}
-                  defaultOpen={
-                    tier !== "possible" ||
-                    filteredTotalCount === sortedResults.possible.length
-                  }
-                />
-              ),
-          )}
-        </div>
-      )}
+        {/* Tier sections (D-23) */}
+        {isReady && sortedResults && (
+          <div className="space-y-8 mt-8">
+            {(["strong", "good", "partial", "possible"] as const).map(
+              (tier) =>
+                sortedResults[tier].length > 0 && (
+                  <ResultsTierSection
+                    key={tier}
+                    tier={tier}
+                    scholarships={sortedResults[tier]}
+                    defaultOpen={
+                      tier !== "possible" || filteredTotalCount === sortedResults.possible.length
+                    }
+                  />
+                ),
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
