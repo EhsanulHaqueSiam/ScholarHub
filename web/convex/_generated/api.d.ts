@@ -18,6 +18,7 @@ import type * as comparison from "../comparison.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
 import type * as directory from "../directory.js";
+import type * as eligibility from "../eligibility.js";
 import type * as enrichPublish from "../enrichPublish.js";
 import type * as http from "../http.js";
 import type * as maintenance from "../maintenance.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   dashboard: typeof dashboard;
   directory: typeof directory;
+  eligibility: typeof eligibility;
   enrichPublish: typeof enrichPublish;
   http: typeof http;
   maintenance: typeof maintenance;

@@ -14,11 +14,13 @@ import { Route as GuideRouteImport } from './routes/guide'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships/index'
+import { Route as EligibilityIndexRouteImport } from './routes/eligibility/index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ScholarshipsCompareRouteImport } from './routes/scholarships/compare'
 import { Route as ScholarshipsClosingSoonRouteImport } from './routes/scholarships/closing-soon'
 import { Route as ScholarshipsSlugRouteImport } from './routes/scholarships/$slug'
+import { Route as EligibilityResultsRouteImport } from './routes/eligibility/results'
 import { Route as CollectionsSlugRouteImport } from './routes/collections/$slug'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as ApiRobotsDottxtRouteImport } from './routes/api/robots[.]txt'
@@ -51,6 +53,11 @@ const ScholarshipsIndexRoute = ScholarshipsIndexRouteImport.update({
   path: '/scholarships/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EligibilityIndexRoute = EligibilityIndexRouteImport.update({
+  id: '/eligibility/',
+  path: '/eligibility/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
   id: '/collections/',
   path: '/collections/',
@@ -74,6 +81,11 @@ const ScholarshipsClosingSoonRoute = ScholarshipsClosingSoonRouteImport.update({
 const ScholarshipsSlugRoute = ScholarshipsSlugRouteImport.update({
   id: '/scholarships/$slug',
   path: '/scholarships/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EligibilityResultsRoute = EligibilityResultsRouteImport.update({
+  id: '/eligibility/results',
+  path: '/eligibility/results',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
@@ -118,11 +130,13 @@ export interface FileRoutesByFullPath {
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/eligibility/results': typeof EligibilityResultsRoute
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
   '/scholarships/compare': typeof ScholarshipsCompareRoute
   '/admin/': typeof AdminIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/eligibility/': typeof EligibilityIndexRoute
   '/scholarships/': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -135,11 +149,13 @@ export interface FileRoutesByTo {
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/eligibility/results': typeof EligibilityResultsRoute
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
   '/scholarships/compare': typeof ScholarshipsCompareRoute
   '/admin': typeof AdminIndexRoute
   '/collections': typeof CollectionsIndexRoute
+  '/eligibility': typeof EligibilityIndexRoute
   '/scholarships': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -154,11 +170,13 @@ export interface FileRoutesById {
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/eligibility/results': typeof EligibilityResultsRoute
   '/scholarships/$slug': typeof ScholarshipsSlugRoute
   '/scholarships/closing-soon': typeof ScholarshipsClosingSoonRoute
   '/scholarships/compare': typeof ScholarshipsCompareRoute
   '/admin/': typeof AdminIndexRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/eligibility/': typeof EligibilityIndexRoute
   '/scholarships/': typeof ScholarshipsIndexRoute
   '/scholarships/country/$country': typeof ScholarshipsCountryCountryRoute
   '/scholarships/degree/$degree': typeof ScholarshipsDegreeDegreeRoute
@@ -174,11 +192,13 @@ export interface FileRouteTypes {
     | '/api/robots.txt'
     | '/api/sitemap.xml'
     | '/collections/$slug'
+    | '/eligibility/results'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
     | '/scholarships/compare'
     | '/admin/'
     | '/collections/'
+    | '/eligibility/'
     | '/scholarships/'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
@@ -191,11 +211,13 @@ export interface FileRouteTypes {
     | '/api/robots.txt'
     | '/api/sitemap.xml'
     | '/collections/$slug'
+    | '/eligibility/results'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
     | '/scholarships/compare'
     | '/admin'
     | '/collections'
+    | '/eligibility'
     | '/scholarships'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
@@ -209,11 +231,13 @@ export interface FileRouteTypes {
     | '/api/robots.txt'
     | '/api/sitemap.xml'
     | '/collections/$slug'
+    | '/eligibility/results'
     | '/scholarships/$slug'
     | '/scholarships/closing-soon'
     | '/scholarships/compare'
     | '/admin/'
     | '/collections/'
+    | '/eligibility/'
     | '/scholarships/'
     | '/scholarships/country/$country'
     | '/scholarships/degree/$degree'
@@ -228,10 +252,12 @@ export interface RootRouteChildren {
   ApiRobotsDottxtRoute: typeof ApiRobotsDottxtRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
+  EligibilityResultsRoute: typeof EligibilityResultsRoute
   ScholarshipsSlugRoute: typeof ScholarshipsSlugRoute
   ScholarshipsClosingSoonRoute: typeof ScholarshipsClosingSoonRoute
   ScholarshipsCompareRoute: typeof ScholarshipsCompareRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
+  EligibilityIndexRoute: typeof EligibilityIndexRoute
   ScholarshipsIndexRoute: typeof ScholarshipsIndexRoute
   ScholarshipsCountryCountryRoute: typeof ScholarshipsCountryCountryRoute
   ScholarshipsDegreeDegreeRoute: typeof ScholarshipsDegreeDegreeRoute
@@ -274,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScholarshipsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/eligibility/': {
+      id: '/eligibility/'
+      path: '/eligibility'
+      fullPath: '/eligibility/'
+      preLoaderRoute: typeof EligibilityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections/': {
       id: '/collections/'
       path: '/collections'
@@ -307,6 +340,13 @@ declare module '@tanstack/react-router' {
       path: '/scholarships/$slug'
       fullPath: '/scholarships/$slug'
       preLoaderRoute: typeof ScholarshipsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eligibility/results': {
+      id: '/eligibility/results'
+      path: '/eligibility/results'
+      fullPath: '/eligibility/results'
+      preLoaderRoute: typeof EligibilityResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collections/$slug': {
@@ -375,10 +415,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRobotsDottxtRoute: ApiRobotsDottxtRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
+  EligibilityResultsRoute: EligibilityResultsRoute,
   ScholarshipsSlugRoute: ScholarshipsSlugRoute,
   ScholarshipsClosingSoonRoute: ScholarshipsClosingSoonRoute,
   ScholarshipsCompareRoute: ScholarshipsCompareRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
+  EligibilityIndexRoute: EligibilityIndexRoute,
   ScholarshipsIndexRoute: ScholarshipsIndexRoute,
   ScholarshipsCountryCountryRoute: ScholarshipsCountryCountryRoute,
   ScholarshipsDegreeDegreeRoute: ScholarshipsDegreeDegreeRoute,
