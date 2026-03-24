@@ -99,7 +99,7 @@ export const FeaturedRow = memo(function FeaturedRow({ nationalities }: Featured
           )}
         >
           {featured.map((scholarship) => (
-            <div key={scholarship._id} className="w-[300px] h-[380px] flex-shrink-0 snap-center">
+            <div key={scholarship._id} className="w-[300px] h-[460px] flex-shrink-0 snap-center">
               <ScholarshipCard scholarship={scholarship} disableHover />
             </div>
           ))}
