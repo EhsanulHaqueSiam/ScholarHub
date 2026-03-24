@@ -38,6 +38,11 @@ const badgeVariants = cva(
         typeSubjectSpecific:
           "bg-type-subject-specific-badge text-black border-type-subject-specific-border font-heading",
         accent: "bg-accent text-accent-foreground border-accent-foreground/20 font-heading",
+        matchStrong: "bg-match-strong-badge text-white border-match-strong-border font-heading",
+        matchGood: "bg-match-good-badge text-white border-match-good-border font-heading",
+        matchPartial: "bg-match-partial-badge text-black border-match-partial-border font-heading",
+        matchPossible:
+          "bg-match-possible-badge text-white border-match-possible-border font-heading",
       },
     },
     defaultVariants: {

@@ -80,6 +80,25 @@
   --tier-target-bg: oklch(95% 0.06 90);
   --tier-safety-bg: oklch(93% 0.06 140);
 
+  /* Match tier colors */
+  --match-strong-bg: oklch(90% 0.08 150);
+  --match-strong-border: oklch(55% 0.16 150);
+  --match-strong-badge: oklch(62% 0.18 150);
+  --match-good-bg: oklch(92% 0.06 230);
+  --match-good-border: oklch(55% 0.14 230);
+  --match-good-badge: oklch(60% 0.16 230);
+  --match-partial-bg: oklch(93% 0.06 85);
+  --match-partial-border: oklch(60% 0.14 85);
+  --match-partial-badge: oklch(72% 0.16 85);
+  --match-possible-bg: oklch(95% 0.01 0);
+  --match-possible-border: oklch(70% 0.02 0);
+  --match-possible-badge: oklch(65% 0.03 0);
+
+  /* Match indicator colors */
+  --match-check: oklch(62% 0.18 150);
+  --match-cross: oklch(60% 0.20 25);
+  --match-unknown: oklch(65% 0.01 0);
+
   /* Semantic colors */
   --destructive: oklch(52% 0.24 27);
 }
@@ -152,6 +171,25 @@
   --tier-target-bg: oklch(24% 0.05 90);
   --tier-safety-bg: oklch(22% 0.05 140);
 
+  /* Match tier colors - dark mode */
+  --match-strong-bg: oklch(24% 0.06 150);
+  --match-strong-border: oklch(45% 0.14 150);
+  --match-strong-badge: oklch(55% 0.16 150);
+  --match-good-bg: oklch(23% 0.04 230);
+  --match-good-border: oklch(45% 0.12 230);
+  --match-good-badge: oklch(52% 0.14 230);
+  --match-partial-bg: oklch(24% 0.04 85);
+  --match-partial-border: oklch(48% 0.12 85);
+  --match-partial-badge: oklch(60% 0.14 85);
+  --match-possible-bg: oklch(22% 0.01 0);
+  --match-possible-border: oklch(42% 0.02 0);
+  --match-possible-badge: oklch(50% 0.03 0);
+
+  /* Match indicator colors - dark mode */
+  --match-check: oklch(62% 0.18 150);
+  --match-cross: oklch(60% 0.20 25);
+  --match-unknown: oklch(65% 0.01 0);
+
   /* Semantic colors - dark mode */
   --destructive: oklch(60% 0.20 25);
 }
@@ -220,6 +258,22 @@
   --color-tier-dream-bg: var(--tier-dream-bg);
   --color-tier-target-bg: var(--tier-target-bg);
   --color-tier-safety-bg: var(--tier-safety-bg);
+
+  --color-match-strong-bg: var(--match-strong-bg);
+  --color-match-strong-border: var(--match-strong-border);
+  --color-match-strong-badge: var(--match-strong-badge);
+  --color-match-good-bg: var(--match-good-bg);
+  --color-match-good-border: var(--match-good-border);
+  --color-match-good-badge: var(--match-good-badge);
+  --color-match-partial-bg: var(--match-partial-bg);
+  --color-match-partial-border: var(--match-partial-border);
+  --color-match-partial-badge: var(--match-partial-badge);
+  --color-match-possible-bg: var(--match-possible-bg);
+  --color-match-possible-border: var(--match-possible-border);
+  --color-match-possible-badge: var(--match-possible-badge);
+  --color-match-check: var(--match-check);
+  --color-match-cross: var(--match-cross);
+  --color-match-unknown: var(--match-unknown);
 }
 
 @layer base {
