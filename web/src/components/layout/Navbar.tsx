@@ -78,6 +78,12 @@ export function Navbar() {
           <NavLink to="/scholarships/closing-soon" exact>
             Closing Soon
           </NavLink>
+          <NavLink to="/shortlist" exact>
+            Shortlist
+          </NavLink>
+          <NavLink to="/guide" exact>
+            Guide
+          </NavLink>
 
           {/* Dark mode toggle */}
           <Button
@@ -143,6 +149,24 @@ export function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Closing Soon
+            </Link>
+            <Link
+              to="/shortlist"
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
+              onClick={() => setMenuOpen(false)}
+            >
+              Shortlist
+            </Link>
+            <Link
+              to="/guide"
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
+              onClick={() => setMenuOpen(false)}
+            >
+              Guide
             </Link>
           </div>
         </div>
