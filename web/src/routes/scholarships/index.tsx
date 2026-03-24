@@ -126,29 +126,37 @@ function ScholarshipsDirectory() {
     isLoading,
   } = usePaginatedQuery(api.directory.listScholarships, queryArgs, { initialNumItems: PAGE_SIZE });
 
-  // Client-side pagination — desktop replaces content per-page, mobile accumulates
-  const results = useMemo(() => {
-    if (!allResults) return undefined;
-    if (isDesktop) {
-      // Desktop: show only current page's items (e.g., page 2 = items 21-40)
-      return allResults.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-    }
-    // Mobile: accumulative "load more" (e.g., page 2 = items 1-40)
-    return allResults.slice(0, currentPage * PAGE_SIZE);
-  }, [allResults, currentPage, isDesktop]);
-
   const totalAvailable = allResults?.length ?? 0;
   const hasMore = status === "CanLoadMore";
   const loadedPages = Math.max(1, Math.ceil(totalAvailable / PAGE_SIZE));
   const totalPages = hasMore ? loadedPages + 1 : loadedPages;
 
   // Desktop numbered pagination can request additional pages lazily as user advances.
+  const neededForCurrentPage = currentPage * PAGE_SIZE;
+  const isPageDataLoading =
+    isDesktop &&
+    totalAvailable < neededForCurrentPage &&
+    (status === "CanLoadMore" || status === "LoadingMore");
+
   useEffect(() => {
     if (!isDesktop || status !== "CanLoadMore") return;
-    const needed = currentPage * PAGE_SIZE;
-    if (totalAvailable >= needed) return;
-    loadMore(Math.max(PAGE_SIZE, needed - totalAvailable));
-  }, [currentPage, hasMore, isDesktop, loadMore, status, totalAvailable]);
+    if (totalAvailable >= neededForCurrentPage) return;
+    loadMore(Math.max(PAGE_SIZE, neededForCurrentPage - totalAvailable));
+  }, [currentPage, isDesktop, loadMore, status, totalAvailable, neededForCurrentPage]);
+
+  // Client-side pagination — desktop replaces content per-page, mobile accumulates
+  const results = useMemo(() => {
+    if (!allResults) return undefined;
+    if (isDesktop) {
+      // Desktop: show only current page's items (e.g., page 2 = items 21-40)
+      const pageSlice = allResults.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+      // If we're waiting for more data to load for this page, return undefined to show skeletons
+      if (pageSlice.length === 0 && isPageDataLoading) return undefined;
+      return pageSlice;
+    }
+    // Mobile: accumulative "load more" (e.g., page 2 = items 1-40)
+    return allResults.slice(0, currentPage * PAGE_SIZE);
+  }, [allResults, currentPage, isDesktop, isPageDataLoading]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -188,7 +196,7 @@ function ScholarshipsDirectory() {
 
   const isGridView = filters.view === "grid";
   const hasResults = results && results.length > 0;
-  const isInitialLoading = isLoading && !results?.length;
+  const isInitialLoading = (isLoading && !results?.length) || isPageDataLoading;
   const isFilterChanging = status === "LoadingFirstPage" && !!results?.length;
 
   return (
@@ -267,11 +275,13 @@ function ScholarshipsDirectory() {
             className="text-sm font-heading text-accent-foreground border-2 border-border rounded-base px-4 py-2 bg-accent shadow-shadow"
             aria-live="polite"
           >
-            {totalCount !== undefined && !filters.q
-              ? formatResultsCount(totalCount, filters)
-              : hasMore
-                ? formatResultsCount(totalAvailable, filters) + "+"
-                : formatResultsCount(results?.length, filters)}
+            {isPageDataLoading
+              ? formatResultsCount(totalAvailable, filters) + "+"
+              : totalCount !== undefined && !filters.q
+                ? formatResultsCount(totalCount, filters)
+                : hasMore
+                  ? formatResultsCount(totalAvailable, filters) + "+"
+                  : formatResultsCount(results?.length, filters)}
           </p>
         </div>
 
