@@ -26,10 +26,20 @@ function isUnsafeBypassEnabled(): boolean {
   return process.env.CONVEX_ADMIN_BYPASS_UNSAFE === "true";
 }
 
+function isAuthEnforcementEnabled(): boolean {
+  if (typeof process === "undefined" || !process.env) return false;
+
+  // Temporary default: open admin until enforcement is explicitly enabled.
+  // Set ADMIN_ENFORCE_AUTH=true when you're ready to lock this down.
+  return process.env.ADMIN_ENFORCE_AUTH === "true";
+}
+
 /**
  * Authorization guard (D-08).
  *
- * Requires:
+ * Default behavior (temporary): allow access unless ADMIN_ENFORCE_AUTH=true.
+ *
+ * Enforced behavior requires:
  * 1) authenticated Convex identity
  * 2) identity tokenIdentifier OR email present in server-side allowlist env vars
  *
@@ -42,7 +52,7 @@ function isUnsafeBypassEnabled(): boolean {
  * - CONVEX_ADMIN_BYPASS_UNSAFE=true
  */
 export async function isAdmin(ctx: any): Promise<boolean> {
-  if (isUnsafeBypassEnabled()) {
+  if (isUnsafeBypassEnabled() || !isAuthEnforcementEnabled()) {
     return true;
   }
 
