@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TIMEZONE_TO_COUNTRY } from "@/lib/countries";
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -16,20 +16,25 @@ export function useNationalityDetect() {
     "scholarhub_nationality_banner_dismissed",
     false,
   );
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const detectedCountry = useMemo(() => {
-    if (typeof window === "undefined") return null;
+    if (!hydrated || typeof window === "undefined") return null;
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       return TIMEZONE_TO_COUNTRY[tz] ?? null;
     } catch {
       return null;
     }
-  }, []);
+  }, [hydrated]);
 
   return {
     detectedCountry,
-    dismissed,
+    dismissed: hydrated ? dismissed : false,
     dismiss: () => setDismissed(true),
   };
 }

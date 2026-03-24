@@ -2,21 +2,93 @@
  * Admin helper functions for authorization, field validation, and status determination.
  *
  * Exports:
- * - isAdmin: Auth guard stub (always true for Phase 5, future: Clerk check)
+ * - isAdmin: Auth guard for admin queries/mutations
+ * - hasAdminAccess: Non-throwing admin check for UI capability probing
  * - hasRequiredFields: Field completeness check for auto-publish gate
  * - determineStatus: Resolves scholarship status from source trust + completeness
  */
 
 /**
- * Authorization guard stub (D-08).
- * Phase 5: no auth, always returns true.
- * Future: check Clerk token via ctx.auth.getUserIdentity().
+ * Read a comma-separated env list into normalized entries.
  */
-export async function isAdmin(_ctx: any): Promise<boolean> {
-  // Phase 5: no auth, always allow
-  // Future: const identity = await ctx.auth.getUserIdentity();
-  // return identity?.tokenIdentifier === ADMIN_TOKEN;
-  return true;
+function readEnvList(name: string): string[] {
+  if (typeof process === "undefined" || !process.env) return [];
+  const raw = process.env[name];
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function isUnsafeBypassEnabled(): boolean {
+  if (typeof process === "undefined" || !process.env) return false;
+  return process.env.CONVEX_ADMIN_BYPASS_UNSAFE === "true";
+}
+
+/**
+ * Authorization guard (D-08).
+ *
+ * Requires:
+ * 1) authenticated Convex identity
+ * 2) identity tokenIdentifier OR email present in server-side allowlist env vars
+ *
+ * Allowlist env vars (comma-separated):
+ * - ADMIN_TOKEN_IDENTIFIERS
+ * - ADMIN_TOKEN_IDENTIFIER
+ * - ADMIN_EMAILS
+ *
+ * Emergency local bypass (never enable in production):
+ * - CONVEX_ADMIN_BYPASS_UNSAFE=true
+ */
+export async function isAdmin(ctx: any): Promise<boolean> {
+  if (isUnsafeBypassEnabled()) {
+    return true;
+  }
+
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Unauthorized: sign in required for admin access");
+  }
+
+  const allowedTokenIdentifiers = new Set([
+    ...readEnvList("ADMIN_TOKEN_IDENTIFIERS"),
+    ...readEnvList("ADMIN_TOKEN_IDENTIFIER"),
+  ]);
+  const allowedEmails = new Set(
+    readEnvList("ADMIN_EMAILS").map((email) => email.toLowerCase()),
+  );
+
+  if (allowedTokenIdentifiers.size === 0 && allowedEmails.size === 0) {
+    throw new Error(
+      "Unauthorized: admin allowlist is not configured (set ADMIN_TOKEN_IDENTIFIERS or ADMIN_EMAILS)",
+    );
+  }
+
+  const tokenIdentifier =
+    typeof identity.tokenIdentifier === "string" ? identity.tokenIdentifier : "";
+  const email = typeof identity.email === "string" ? identity.email.toLowerCase() : "";
+
+  if (allowedTokenIdentifiers.has(tokenIdentifier)) {
+    return true;
+  }
+  if (email && allowedEmails.has(email)) {
+    return true;
+  }
+
+  throw new Error("Unauthorized: admin access denied");
+}
+
+/**
+ * Non-throwing admin check for UI access probing.
+ */
+export async function hasAdminAccess(ctx: any): Promise<boolean> {
+  try {
+    await isAdmin(ctx);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

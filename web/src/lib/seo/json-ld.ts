@@ -1,9 +1,7 @@
 import { getCountryName } from "@/lib/countries";
 
 const SITE_URL =
-  typeof window !== "undefined"
-    ? window.location.origin
-    : (import.meta.env?.VITE_SITE_URL ?? "https://scholarhub.io");
+  (import.meta.env?.VITE_SITE_URL ?? "https://scholarhub.io").replace(/\/+$/, "");
 
 /**
  * Build Schema.org JSON-LD structured data for a scholarship.

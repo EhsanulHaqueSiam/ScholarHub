@@ -191,7 +191,6 @@ function ScholarshipsDirectory() {
     filters.tier.length === 0 &&
     filters.type.length === 0 &&
     filters.tags.length === 0 &&
-    !filters.showClosed &&
     !filters.closingSoon;
 
   const isGridView = filters.view === "grid";

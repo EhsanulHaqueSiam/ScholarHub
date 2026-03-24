@@ -10,12 +10,7 @@ import {
 } from "./schema";
 import { toScholarshipSummary } from "./scholarshipSummary";
 
-const CACHED_COUNT_STATUSES = [
-  "pending_review",
-  "published",
-  "rejected",
-  "archived",
-] as const;
+const CACHED_COUNT_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
 const HOMEPAGE_FEATURED_CACHE_KEY = "featured_scholarships";
 const HOMEPAGE_FEATURED_CACHE_TTL_MS = 60 * 60 * 1000;
 const STATUS_COUNT_SCAN_CAP = 12000;
@@ -23,7 +18,10 @@ const BATCH_QUERY_SCAN_CAP = 600;
 
 type CachedCountStatus = (typeof CACHED_COUNT_STATUSES)[number];
 
-async function countScholarshipsByStatus(ctx: { db: any }, status: CachedCountStatus): Promise<number> {
+async function countScholarshipsByStatus(
+  ctx: { db: any },
+  status: CachedCountStatus,
+): Promise<number> {
   const rows = await ctx.db
     .query("scholarships")
     .withIndex("by_status", (q: any) => q.eq("status", status))
@@ -147,7 +145,9 @@ export const listScholarships = query({
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
     const sort = args.sort ?? "deadline";
-    const showClosed = args.showClosed ?? false;
+    // Default to all published scholarships (open + closed) unless caller explicitly
+    // opts into "open now" by setting showClosed: false.
+    const showClosed = args.showClosed ?? true;
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
@@ -267,20 +267,11 @@ export const listScholarships = query({
           );
         }
 
+        // NOTE: Deadline filtering moved to post-filter (after pagination) because
+        // Date.now() inside .filter() changes between paginated calls, causing Convex
+        // to reject the continuation cursor as "from a different query".
         if (!showClosed) {
           conditions.push(q.neq(q.field("status"), "archived"));
-          conditions.push(
-            q.or(
-              q.eq(q.field("application_deadline"), undefined),
-              q.gte(q.field("application_deadline"), Date.now()),
-            ),
-          );
-        }
-
-        if (args.closingSoon) {
-          const closingSoonEnd = Date.now() + thirtyDays;
-          conditions.push(q.gt(q.field("application_deadline"), Date.now()));
-          conditions.push(q.lt(q.field("application_deadline"), closingSoonEnd));
         }
 
         if (conditions.length === 0) return true;
@@ -292,8 +283,24 @@ export const listScholarships = query({
     // Paginate the filtered query
     const paginatedResults = await buildFilteredQuery().paginate(args.paginationOpts);
 
-    // Post-filter for nationality eligibility and degree/field (array operations not supported in .filter())
+    // Post-filter: deadline check moved here from .filter() to keep pagination cursor stable.
+    // Also filters nationality eligibility and degree/field (array operations not supported in .filter()).
     let page = paginatedResults.page;
+
+    if (!showClosed) {
+      const nowMs = Date.now();
+      page = page.filter((doc) => !doc.application_deadline || doc.application_deadline >= nowMs);
+    }
+    if (args.closingSoon) {
+      const nowMs = Date.now();
+      const closingSoonEnd = nowMs + thirtyDays;
+      page = page.filter(
+        (doc) =>
+          doc.application_deadline &&
+          doc.application_deadline > nowMs &&
+          doc.application_deadline < closingSoonEnd,
+      );
+    }
 
     if (args.nationalities && args.nationalities.length > 0 && !args.showIneligible) {
       page = page.filter((doc) => {
@@ -349,7 +356,9 @@ export const getFeaturedScholarships = query({
 
       if (cached && Date.now() - cached.updated_at <= HOMEPAGE_FEATURED_CACHE_TTL_MS) {
         const hydrated = (
-          await Promise.all(cached.scholarship_ids.slice(0, limit + 8).map((id: any) => ctx.db.get(id)))
+          await Promise.all(
+            cached.scholarship_ids.slice(0, limit + 8).map((id: any) => ctx.db.get(id)),
+          )
         ).filter(
           (doc): doc is NonNullable<typeof doc> =>
             !!doc &&
@@ -430,9 +439,7 @@ export const refreshScholarshipCountCache = mutation({
     status: v.optional(scholarshipStatusValidator),
   },
   handler: async (ctx, args) => {
-    const statuses = args.status
-      ? [args.status as CachedCountStatus]
-      : [...CACHED_COUNT_STATUSES];
+    const statuses = args.status ? [args.status as CachedCountStatus] : [...CACHED_COUNT_STATUSES];
     const results = await Promise.all(statuses.map((status) => refreshCountCache(ctx, status)));
     return {
       refreshed: results.length,
@@ -449,9 +456,7 @@ export const refreshScholarshipCountCacheInternal = internalMutation({
     status: v.optional(scholarshipStatusValidator),
   },
   handler: async (ctx, args) => {
-    const statuses = args.status
-      ? [args.status as CachedCountStatus]
-      : [...CACHED_COUNT_STATUSES];
+    const statuses = args.status ? [args.status as CachedCountStatus] : [...CACHED_COUNT_STATUSES];
     const results = await Promise.all(statuses.map((status) => refreshCountCache(ctx, status)));
     return {
       refreshed: results.length,
@@ -486,7 +491,9 @@ export const listScholarshipsBatch = query({
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
     const sort = args.sort ?? "deadline";
-    const showClosed = args.showClosed ?? false;
+    // Keep batch endpoint aligned with primary directory default: include all published
+    // scholarships unless explicitly filtered to open-only.
+    const showClosed = args.showClosed ?? true;
     const maxResults = args.limit ?? 200;
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;

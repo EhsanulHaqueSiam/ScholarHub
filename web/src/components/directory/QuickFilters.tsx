@@ -13,7 +13,7 @@ const QUICK_FILTER_OPTIONS = [
 /**
  * Quick filter toggle tabs for common filter presets.
  * Uses Radix ToggleGroup (type="multiple") for AND logic.
- * "Open Now" = default (absence of closing_soon and show_closed).
+ * "Open Now" is an explicit filter (show_closed = false).
  */
 export function QuickFilters() {
   const { filters, setFilter } = useScholarshipFilters();
@@ -34,11 +34,15 @@ export function QuickFilters() {
     const isNowOpenNow = newValues.includes("open_now");
 
     // Handle "Open Now" toggle
-    if (!wasOpenNow && isNowOpenNow) {
-      // Turning on "Open Now" turns off "Closing Soon"
-      setFilter("closing_soon", false);
-      setFilter("show_closed", false);
-      return;
+    if (wasOpenNow !== isNowOpenNow) {
+      if (isNowOpenNow) {
+        // Turning on "Open Now" turns off "Closing Soon" and hides closed items.
+        setFilter("closing_soon", false);
+        setFilter("show_closed", false);
+      } else {
+        // Turning off "Open Now" restores the default "all published" view.
+        setFilter("show_closed", true);
+      }
     }
 
     // Handle "Closing Soon" toggle

@@ -16,7 +16,8 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminDashboard() {
-  const stats = useQuery(api.admin.getAdminStats);
+  const canAccess = useQuery(api.admin.getAdminAccess);
+  const stats = useQuery(api.admin.getAdminStats, canAccess ? {} : "skip");
 
   // EditPanel state
   const [editingScholarship, setEditingScholarship] = useState<{
@@ -26,6 +27,22 @@ function AdminDashboard() {
 
   // Admin view switcher: queue, sources, collections, or tags
   const [adminView, setAdminView] = useState<"queue" | "sources" | "collections" | "tags">("queue");
+
+  if (canAccess === undefined) {
+    return <StatsBar stats={undefined} />;
+  }
+
+  if (!canAccess) {
+    return (
+      <div className="max-w-2xl rounded-base border-2 border-border bg-secondary-background p-6 shadow-shadow">
+        <h1 className="font-heading text-2xl">Admin access required</h1>
+        <p className="mt-3 text-sm text-foreground/80">
+          This dashboard is protected. Sign in with an allowlisted admin account and ensure backend
+          allowlists are configured.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">

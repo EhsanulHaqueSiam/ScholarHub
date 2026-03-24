@@ -19,13 +19,13 @@ import { useLocalStorage } from "./useLocalStorage";
  * - removeFilter(key, value): Removes a specific value from a multi-select filter
  * - activeFilterCount: Number of active filters (for UI display)
  *
- * Persists nationality ("from") to localStorage for returning visitors.
+ * Persists nationality ("from") selection to localStorage for returning visitors.
  * Multi-select fundingTypes are passed as a full array to Convex query.
  */
 export function useScholarshipFilters() {
   const search = useSearch({ strict: false }) as ScholarshipSearch;
   const navigate = useNavigate();
-  const [savedNationality, setSavedNationality] = useLocalStorage<string | undefined>(
+  const [, setSavedNationality] = useLocalStorage<string | undefined>(
     "scholarhub_nationality",
     undefined,
   );
@@ -33,7 +33,7 @@ export function useScholarshipFilters() {
   // Parsed filter state
   const filters = {
     q: search.q,
-    from: parseCommaSeparated(search.from ?? savedNationality),
+    from: parseCommaSeparated(search.from),
     to: parseCommaSeparated(search.to),
     degree: parseCommaSeparated(search.degree),
     field: parseCommaSeparated(search.field),
@@ -43,7 +43,7 @@ export function useScholarshipFilters() {
     tags: parseCommaSeparated(search.tags),
     sort: search.sort ?? "deadline",
     view: search.view ?? "grid",
-    showClosed: search.show_closed ?? false,
+    showClosed: search.show_closed ?? true,
     showIneligible: search.show_ineligible ?? false,
     closingSoon: search.closing_soon ?? false,
   };
@@ -88,7 +88,9 @@ export function useScholarshipFilters() {
           : undefined,
       tags: filters.tags.length > 0 ? filters.tags : undefined,
       sort: filters.sort,
-      showClosed: filters.showClosed || undefined,
+      // Always send explicit boolean so frontend intent does not depend on
+      // Convex-side defaults.
+      showClosed: filters.showClosed,
       closingSoon: filters.closingSoon || undefined,
     }),
     [
@@ -113,10 +115,13 @@ export function useScholarshipFilters() {
     if (key === "from" && typeof value === "string") {
       setSavedNationality(value || undefined);
     }
+    const isBooleanFilter =
+      key === "show_closed" || key === "show_ineligible" || key === "closing_soon";
+    const normalizedValue = isBooleanFilter ? value : value || undefined;
     navigate({
       search: (prev: Record<string, unknown>) => ({
         ...prev,
-        [key]: value || undefined,
+        [key]: normalizedValue,
       }),
       replace: true,
       resetScroll: false,
@@ -128,6 +133,10 @@ export function useScholarshipFilters() {
   }
 
   function removeFilter(key: string, valueToRemove: string) {
+    if (key === "show_closed" || key === "show_ineligible" || key === "closing_soon") {
+      setFilter(key, undefined);
+      return;
+    }
     const current = parseCommaSeparated(search[key as keyof ScholarshipSearch] as string);
     const updated = current.filter((v) => v !== valueToRemove);
     setFilter(key, serializeCommaSeparated(updated));
@@ -143,7 +152,7 @@ export function useScholarshipFilters() {
     filters.type.length > 0,
     filters.tags.length > 0,
     filters.q,
-    filters.showClosed,
+    !filters.showClosed,
     filters.closingSoon,
   ].filter(Boolean).length;
 

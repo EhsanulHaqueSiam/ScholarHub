@@ -21,7 +21,7 @@ import {
   internalMutation as rawInternalMutation,
   mutation as rawMutation,
 } from "./_generated/server";
-import { determineStatus, hasRequiredFields, isAdmin } from "./adminHelpers";
+import { determineStatus, hasAdminAccess, hasRequiredFields, isAdmin } from "./adminHelpers";
 import {
   scholarshipStatusValidator,
   scholarshipTypeValidator,
@@ -104,12 +104,25 @@ async function countPendingScholarshipsForSource(ctx: { db: any }, sourceId: any
 // ---------- Queries ----------
 
 /**
+ * Check whether current viewer can access admin features.
+ * Returns boolean without throwing.
+ */
+export const getAdminAccess = query({
+  args: {},
+  handler: async (ctx) => {
+    return await hasAdminAccess(ctx);
+  },
+});
+
+/**
  * Get admin dashboard statistics.
  * Counts scholarships by status, today's published count, and source health summary.
  */
 export const getAdminStats = query({
   args: {},
   handler: async (ctx) => {
+    await isAdmin(ctx);
+
     const oneDayAgo = Date.now() - 86400000;
     const cachedCounts = await getCachedStatusCounts(ctx);
     const [pending, published, rejected, archived, publishedToday] = await Promise.all([
@@ -174,6 +187,8 @@ export const getReviewQueue = query({
     includePossibleDuplicate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    await isAdmin(ctx);
+
     const limit = Math.max(1, Math.min(args.limit ?? 200, ADMIN_REVIEW_QUEUE_MAX_LIMIT));
     const includePossibleDuplicate = args.includePossibleDuplicate ?? true;
 
@@ -261,6 +276,8 @@ export const getRevisionHistory = query({
     scholarshipId: v.id("scholarships"),
   },
   handler: async (ctx, args) => {
+    await isAdmin(ctx);
+
     return await ctx.db
       .query("scholarship_revisions")
       .withIndex("by_scholarship", (q) => q.eq("scholarship_id", args.scholarshipId))
@@ -275,6 +292,8 @@ export const getRevisionHistory = query({
 export const getScholarshipForEdit = query({
   args: { scholarshipId: v.id("scholarships") },
   handler: async (ctx, args) => {
+    await isAdmin(ctx);
+
     return await ctx.db.get(args.scholarshipId);
   },
 });
@@ -286,6 +305,8 @@ export const getScholarshipForEdit = query({
 export const getAllSources = query({
   args: {},
   handler: async (ctx) => {
+    await isAdmin(ctx);
+
     return await ctx.db.query("sources").collect();
   },
 });
@@ -297,6 +318,8 @@ export const getAllSources = query({
 export const countAffectedScholarships = query({
   args: { sourceId: v.id("sources") },
   handler: async (ctx, args) => {
+    await isAdmin(ctx);
+
     return await countPendingScholarshipsForSource(ctx, args.sourceId);
   },
 });
