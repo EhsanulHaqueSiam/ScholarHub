@@ -173,7 +173,7 @@ function determineTier(score: number, unknownCount: number): MatchTier {
  *
  * Each dimension is scored independently, tracking earned points and possible points.
  * The final score is a percentage (0-100) of earned/possible points.
- * Dimensions with unknown data are excluded from the denominator.
+ * Unknown dimensions still count in the denominator to penalize sparse scholarship data.
  * If 3+ dimensions are unknown, the tier is forced to "possible" per D-19.
  */
 export function scoreScholarship(
