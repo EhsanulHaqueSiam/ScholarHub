@@ -6,10 +6,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import type { Gender, GpaScale, StudentProfile } from "@/lib/eligibility/types";
+import type { StudentProfile } from "@/lib/eligibility/types";
+import { profileToUrlParams } from "@/lib/eligibility/url-params";
+import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import { LiveMatchCount } from "./LiveMatchCount";
 import { StepAboutYou } from "./StepAboutYou";
 import { StepAcademics } from "./StepAcademics";
 import { StepPreferences } from "./StepPreferences";
@@ -20,13 +24,35 @@ const STEPS = [
   { label: "Preferences", shortLabel: "Prefs" },
 ] as const;
 
+const STEP_NAMES = ["about_you", "academics", "preferences"] as const;
+
 type Direction = "forward" | "backward";
 
-export function WizardShell() {
+interface WizardShellProps {
+  profile: Partial<StudentProfile>;
+  onProfileChange: (updates: Partial<StudentProfile>) => void;
+}
+
+/** Count non-undefined, non-empty profile fields for analytics */
+function countFilledFields(profile: Partial<StudentProfile>): number {
+  let count = 0;
+  if (profile.nationalities && profile.nationalities.length > 0) count++;
+  if (profile.age !== undefined) count++;
+  if (profile.gender) count++;
+  if (profile.degreeLevel) count++;
+  if (profile.fieldsOfStudy && profile.fieldsOfStudy.length > 0) count++;
+  if (profile.gpa) count++;
+  if (profile.languageScores) count++;
+  if (profile.destinationCountries && profile.destinationCountries.length > 0) count++;
+  if (profile.fundingPreference) count++;
+  return count;
+}
+
+export function WizardShell({ profile, onProfileChange }: WizardShellProps) {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState<Direction>("forward");
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [profileData, setProfileData] = useState<Partial<StudentProfile>>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const stepContentRef = useRef<HTMLDivElement>(null);
 
@@ -35,25 +61,34 @@ export function WizardShell() {
     new Set(),
   );
 
+  // Fire wizard_started on mount (D-38)
+  const hasTrackedStart = useRef(false);
+  useEffect(() => {
+    if (!hasTrackedStart.current) {
+      analytics.track("wizard_started");
+      hasTrackedStart.current = true;
+    }
+  }, []);
+
   const handleChange = useCallback(
     (updates: Partial<StudentProfile>) => {
-      setProfileData((prev) => ({ ...prev, ...updates }));
+      onProfileChange(updates);
     },
-    [],
+    [onProfileChange],
   );
 
   // Validate step 1: nationality required
   const isStep1Valid = useMemo(
-    () => (profileData.nationalities?.length ?? 0) > 0,
-    [profileData.nationalities],
+    () => (profile.nationalities?.length ?? 0) > 0,
+    [profile.nationalities],
   );
 
   // Validate step 2: degree level and field of study required
   const isStep2Valid = useMemo(
     () =>
-      !!profileData.degreeLevel &&
-      (profileData.fieldsOfStudy?.length ?? 0) > 0,
-    [profileData.degreeLevel, profileData.fieldsOfStudy],
+      !!profile.degreeLevel &&
+      (profile.fieldsOfStudy?.length ?? 0) > 0,
+    [profile.degreeLevel, profile.fieldsOfStudy],
   );
 
   const canAdvance = useMemo(() => {
@@ -96,14 +131,38 @@ export function WizardShell() {
 
   const handleNext = useCallback(() => {
     if (currentStep < 2 && canAdvance) {
+      // Track step completion (D-38)
+      analytics.track("step_completed", {
+        step: STEP_NAMES[currentStep],
+        fieldsFilledCount: countFilledFields(profile),
+      });
       navigateToStep(currentStep + 1);
     } else if (currentStep === 2) {
-      // Final step: navigate to results
-      // For now, mark step as completed
+      // Final step: track completion and navigate to results
       setCompletedSteps((prev) => new Set([...prev, currentStep]));
-      // TODO: Navigate to /eligibility/results with profile params (Plan 07)
+
+      // Track wizard completion (D-38)
+      analytics.track("wizard_completed", {
+        nationalities: profile.nationalities?.length ?? 0,
+        degreeLevel: profile.degreeLevel ?? "unknown",
+        fieldsOfStudy: profile.fieldsOfStudy?.length ?? 0,
+        fieldsFilledCount: countFilledFields(profile),
+      });
+
+      // Navigate to results with compact URL params
+      const fullProfile: StudentProfile = {
+        nationalities: profile.nationalities ?? [],
+        degreeLevel: profile.degreeLevel ?? "bachelor",
+        fieldsOfStudy: profile.fieldsOfStudy ?? [],
+        createdAt: profile.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+        ...profile,
+      } as StudentProfile;
+
+      const params = profileToUrlParams(fullProfile);
+      navigate({ to: "/eligibility/results", search: params });
     }
-  }, [currentStep, canAdvance, navigateToStep]);
+  }, [currentStep, canAdvance, navigateToStep, profile, navigate]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
@@ -184,6 +243,11 @@ export function WizardShell() {
         </div>
       </div>
 
+      {/* Live Match Count (D-07) */}
+      <div className="max-w-2xl mx-auto">
+        <LiveMatchCount profile={profile} />
+      </div>
+
       {/* Card container (desktop) / full-width (mobile) */}
       <Card className="max-w-2xl mx-auto md:shadow-shadow" prestige="unranked">
         <CardContent>
@@ -206,9 +270,9 @@ export function WizardShell() {
               {currentStep === 0 && (
                 <StepAboutYou
                   data={{
-                    nationalities: profileData.nationalities,
-                    age: profileData.age,
-                    gender: profileData.gender,
+                    nationalities: profile.nationalities,
+                    age: profile.age,
+                    gender: profile.gender,
                   }}
                   onChange={handleChange}
                 />
@@ -216,10 +280,10 @@ export function WizardShell() {
               {currentStep === 1 && (
                 <StepAcademics
                   data={{
-                    degreeLevel: profileData.degreeLevel,
-                    fieldsOfStudy: profileData.fieldsOfStudy,
-                    gpa: profileData.gpa,
-                    languageScores: profileData.languageScores,
+                    degreeLevel: profile.degreeLevel,
+                    fieldsOfStudy: profile.fieldsOfStudy,
+                    gpa: profile.gpa,
+                    languageScores: profile.languageScores,
                   }}
                   onChange={handleChange}
                 />
@@ -227,8 +291,8 @@ export function WizardShell() {
               {currentStep === 2 && (
                 <StepPreferences
                   data={{
-                    destinationCountries: profileData.destinationCountries,
-                    fundingPreference: profileData.fundingPreference,
+                    destinationCountries: profile.destinationCountries,
+                    fundingPreference: profile.fundingPreference,
                   }}
                   onChange={handleChange}
                 />
