@@ -30,3 +30,20 @@
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v1.0 MVP | 10 | 45 | Complete | 2026-03-23 |
+
+### Phase 1: Eligibility Analysis Funnel
+
+**Goal:** Multi-step eligibility wizard at /eligibility where students provide their profile and receive matched scholarships grouped by tier (Strong/Good/Partial/Possible) on a results page at /eligibility/results
+**Requirements**: D-01 through D-39 (39 locked decisions from context session)
+**Depends on:** v1.0 MVP
+**Plans:** 8 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Foundation libs: types, GPA scales, profile storage, URL params, analytics
+- [ ] 01-02-PLAN.md — Scoring engine (TDD): point-based tier scoring with tests
+- [ ] 01-03-PLAN.md — Design system: match tier CSS tokens, badge variants, nav link, CTA
+- [ ] 01-04-PLAN.md — Convex eligibility queries + React hooks (useStudentProfile, useEligibilityMatching)
+- [ ] 01-05-PLAN.md — Wizard UI: WizardShell, 3 step components, /eligibility route
+- [ ] 01-06-PLAN.md — Wizard live data: LiveMatchCount, Convex wiring, analytics tracking
+- [ ] 01-07-PLAN.md — Results page: tier sections, match indicators, profile summary card
+- [ ] 01-08-PLAN.md — Welcome back flow, SEO (FAQPage, dynamic titles), visual verification
