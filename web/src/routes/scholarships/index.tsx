@@ -17,6 +17,9 @@ import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { SortPills } from "@/components/directory/SortPills";
 import { ViewToggle } from "@/components/directory/ViewToggle";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { CoverageBreakdown } from "@/components/home/CoverageBreakdown";
+import { HowToApplySteps } from "@/components/home/HowToApplySteps";
+import { ScholarshipTimeline } from "@/components/home/ScholarshipTimeline";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
@@ -382,6 +385,25 @@ function ScholarshipsDirectory() {
           </div>
         </div>
       </div>
+
+      {/* Educational guide — homepage only (no active filters) */}
+      {showHomepageHighlights && (
+        <>
+          <div className="border-t-4 border-border mt-4" />
+          <div className="max-w-[1280px] mx-auto px-4 pt-12 md:pt-16 pb-2 text-center">
+            <p className="font-heading text-[22px] md:text-[32px] leading-[1.2] text-foreground">
+              New to <span className="text-accent-pink">scholarships</span>?
+            </p>
+            <p className="font-base text-foreground/50 text-sm md:text-base mt-2 max-w-lg mx-auto">
+              Everything you need to know about finding, applying for, and planning your scholarship
+              journey.
+            </p>
+          </div>
+          <CoverageBreakdown />
+          <HowToApplySteps />
+          <ScholarshipTimeline />
+        </>
+      )}
 
       <BackToTop />
     </div>
