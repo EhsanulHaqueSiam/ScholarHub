@@ -26,7 +26,7 @@ export function TagBadges({ tags, maxVisible = 5 }: TagBadgesProps) {
   const hiddenCount = tags.length - maxVisible;
 
   return (
-    <Tooltip.Provider delayDuration={200}>
+    <Tooltip.Provider delayDuration={200} skipDelayDuration={0}>
       <div className="flex flex-wrap gap-2">
         {visibleTags.map((tagId) => {
           const label = getTagLabel(tagId);

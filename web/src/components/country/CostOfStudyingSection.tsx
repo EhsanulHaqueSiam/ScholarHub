@@ -53,7 +53,7 @@ function TuitionRow({
           {display}
         </span>
         {covered && (
-          <Badge variant="default" className="text-[10px] px-1.5 py-0">
+          <Badge variant="default" className="text-caption px-1.5 py-0">
             <CheckCircle className="size-3 mr-0.5" />
             Covered
           </Badge>
@@ -86,7 +86,7 @@ export function CostOfStudyingSection({ data, countryName, coverage }: CostOfStu
               <GraduationCap className="size-5" />
               Tuition Fees (per year)
               {tuitionCovered && (
-                <Badge variant="default" className="text-[10px] px-1.5 py-0 ml-auto">
+                <Badge variant="default" className="text-caption px-1.5 py-0 ml-auto">
                   Scholarship covers tuition
                 </Badge>
               )}
@@ -116,7 +116,7 @@ export function CostOfStudyingSection({ data, countryName, coverage }: CostOfStu
               <Home className="size-5" />
               Living Costs (per month)
               {livingCovered && (
-                <Badge variant="default" className="text-[10px] px-1.5 py-0 ml-auto">
+                <Badge variant="default" className="text-caption px-1.5 py-0 ml-auto">
                   Stipend included
                 </Badge>
               )}

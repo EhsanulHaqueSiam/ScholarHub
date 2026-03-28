@@ -19,9 +19,9 @@ function AdminLayout() {
 
       <div className="hidden lg:flex flex-col min-h-screen bg-background">
         <AdminHeader />
-        <main className="flex-1 max-w-[1280px] mx-auto w-full px-6 py-6">
+        <div className="flex-1 max-w-[1280px] mx-auto w-full px-6 py-6">
           <Outlet />
-        </main>
+        </div>
       </div>
     </>
   );

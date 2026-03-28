@@ -11,7 +11,7 @@ export function ViewToggle() {
 
   const itemClass = (isActive: boolean) =>
     cn(
-      "inline-flex items-center justify-center rounded-base border-2 p-2 transition-all min-h-[44px] min-w-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+      "inline-flex items-center justify-center rounded-base border-2 p-2 transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out-expo min-h-[44px] min-w-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
       isActive
         ? "bg-main text-main-foreground border-border"
         : "bg-secondary-background text-foreground border-border",

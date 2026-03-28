@@ -30,7 +30,7 @@ export function SuggestedTagReview({ scholarshipId, suggestedTags }: SuggestedTa
   if (suggestedTags.length === 0) return null;
 
   return (
-    <Tooltip.Provider delayDuration={200}>
+    <Tooltip.Provider delayDuration={200} skipDelayDuration={0}>
       <div className="flex flex-wrap gap-2">
         {suggestedTags.map((suggested) => (
           <Tooltip.Root key={suggested.tag}>

@@ -100,8 +100,8 @@ export function RelatedScholarships({ scholarshipId }: RelatedScholarshipsProps)
                     <div
                       className={cn(
                         "border-2 border-border rounded-base p-4 bg-secondary-background",
-                        "shadow-shadow transition-all h-full",
-                        "hover:translate-x-[var(--box-shadow-x)] hover:translate-y-[var(--box-shadow-y)] hover:shadow-none",
+                        "shadow-shadow transition-[transform,box-shadow] duration-150 ease-out-expo h-full",
+                        "active:scale-[0.98] hover:translate-x-[var(--box-shadow-x)] hover:translate-y-[var(--box-shadow-y)] hover:shadow-none",
                       )}
                     >
                       {/* Title */}
@@ -119,19 +119,19 @@ export function RelatedScholarships({ scholarshipId }: RelatedScholarshipsProps)
                       <div className="flex flex-wrap gap-1.5">
                         {/* Deadline urgency */}
                         {scholarship.application_deadline && (
-                          <Badge variant={urgencyVariantMap[urgency]} className="text-[10px] px-1.5 py-0">
+                          <Badge variant={urgencyVariantMap[urgency]} className="text-caption px-1.5 py-0">
                             {urgencyLabelMap[urgency]}
                           </Badge>
                         )}
 
                         {/* Funding type */}
-                        <Badge variant="neutral" className="text-[10px] px-1.5 py-0">
+                        <Badge variant="neutral" className="text-caption px-1.5 py-0">
                           {formatFundingType(scholarship.funding_type)}
                         </Badge>
 
                         {/* Prestige tier */}
                         {prestigeTier !== "unranked" && (
-                          <Badge variant={prestigeTier} className="text-[10px] px-1.5 py-0">
+                          <Badge variant={prestigeTier} className="text-caption px-1.5 py-0">
                             {getPrestigeLabel(prestigeTier)}
                           </Badge>
                         )}

@@ -144,7 +144,7 @@ export function QueueRow({
         role="row"
         aria-expanded={isExpanded}
         className={cn(
-          "flex items-center min-h-14 bg-secondary-background cursor-pointer transition-all duration-150",
+          "flex items-center min-h-14 bg-secondary-background cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out-expo",
           "hover:-translate-y-0.5 hover:shadow-shadow",
           isSelected && "bg-accent/10 border-l-4 border-l-main",
         )}
@@ -214,7 +214,7 @@ export function QueueRow({
         {/* Status badge + expand chevron */}
         <div className="shrink-0 px-2 hidden lg:flex items-center gap-3" onClick={onToggleExpand}>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-          <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Provider delayDuration={200} skipDelayDuration={0}>
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
                 <button
@@ -399,7 +399,7 @@ export function QueueRow({
                       <span className="text-sm">{source.name}</span>
                       <Badge
                         variant={TRUST_BADGE_MAP[source.trust_level] ?? "neutral"}
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-caption px-1.5 py-0"
                       >
                         {source.trust_level}
                       </Badge>

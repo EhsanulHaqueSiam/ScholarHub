@@ -43,9 +43,9 @@ export function EditPanel({ open, scholarshipId, scholarshipTitle, onClose }: Ed
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-overlay data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content
-          className="fixed inset-y-0 right-0 z-50 w-[40%] min-w-[480px] max-w-[640px] bg-secondary-background border-l-2 border-border shadow-[-4px_4px_0_0_var(--border)] flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300"
+          className="fixed inset-y-0 right-0 z-50 w-[40%] min-w-[480px] max-w-[640px] bg-secondary-background border-l-2 border-border shadow-[-4px_4px_0_0_var(--border)] flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300 ease-out-expo"
           aria-label={`Edit ${scholarshipTitle}`}
         >
           {/* Sticky header */}

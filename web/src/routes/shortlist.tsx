@@ -153,7 +153,7 @@ function ShortlistPage() {
               <TabTrigger value="universities" icon={<Star className="size-3.5" />}>
                 Universities
                 {safeData.universities.length > 0 && (
-                  <span className="ml-1 text-[11px] opacity-60">
+                  <span className="ml-1 text-caption opacity-60">
                     ({safeData.universities.length})
                   </span>
                 )}
@@ -161,7 +161,7 @@ function ShortlistPage() {
               <TabTrigger value="countries" icon={<Target className="size-3.5" />}>
                 Countries
                 {safeData.countries.length > 0 && (
-                  <span className="ml-1 text-[11px] opacity-60">
+                  <span className="ml-1 text-caption opacity-60">
                     ({safeData.countries.length})
                   </span>
                 )}
@@ -203,7 +203,7 @@ function TabTrigger({
     <Tabs.Trigger
       value={value}
       className={cn(
-        "font-heading text-sm border-2 border-border rounded-base px-4 py-2 transition-all",
+        "font-heading text-sm border-2 border-border rounded-base px-4 py-2 transition-[transform,box-shadow,background-color] duration-150 ease-out-expo",
         "flex items-center gap-1.5",
         "hover:shadow-shadow hover:-translate-x-0.5 hover:-translate-y-0.5",
         "data-[state=active]:bg-main data-[state=active]:text-main-foreground data-[state=active]:shadow-shadow",
@@ -393,7 +393,7 @@ function UniversityPanel({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop(tier)}
             className={cn(
-              "border-3 border-border rounded-base p-4 transition-all min-h-[100px]",
+              "border-3 border-border rounded-base p-4 transition-[border-color,box-shadow] duration-150 min-h-[100px]",
               meta.bgClass,
               isOver && "border-dashed ring-2 ring-offset-2",
             )}
@@ -407,14 +407,14 @@ function UniversityPanel({
             <div className="flex items-center gap-2 mb-3">
               <span
                 className="font-heading text-xs uppercase tracking-wider px-2.5 py-1 border-2 border-border inline-flex items-center gap-1.5"
-                style={{ backgroundColor: meta.cssColor, color: "#000" }}
+                style={{ backgroundColor: meta.cssColor, color: "var(--accent-foreground)" }}
               >
                 <meta.Icon className="size-3" />
                 {meta.label}
               </span>
-              <span className="text-[11px] text-foreground/50">{meta.sublabel}</span>
+              <span className="text-caption text-foreground/50">{meta.sublabel}</span>
               {unis.length > 0 && (
-                <Badge variant="neutral" className="ml-auto text-[11px]">
+                <Badge variant="neutral" className="ml-auto text-caption">
                   {unis.length}
                 </Badge>
               )}
@@ -471,7 +471,7 @@ function UniCard({
         "px-3 py-2 flex items-center gap-2",
         "cursor-grab active:cursor-grabbing",
         "hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
-        "transition-all select-none",
+        "transition-[transform,box-shadow] duration-150 ease-out-expo select-none",
       )}
     >
       <GripVertical className="size-3.5 opacity-30 shrink-0 hidden sm:block" />
@@ -483,7 +483,7 @@ function UniCard({
             <span key={c}>{getCountryFlag(c)}</span>
           ))}
           {uni.countries.length > 2 && (
-            <span className="text-[10px] text-foreground/50">+{uni.countries.length - 2}</span>
+            <span className="text-caption text-foreground/50">+{uni.countries.length - 2}</span>
           )}
         </span>
       )}
@@ -494,11 +494,11 @@ function UniCard({
 
       {/* Badges */}
       {uni.isCustom ? (
-        <Badge variant="accent" className="text-[10px] px-1.5 py-0 shrink-0">
+        <Badge variant="accent" className="text-caption px-1.5 py-0 shrink-0">
           Custom
         </Badge>
       ) : (
-        <Badge variant="neutral" className="text-[10px] px-1.5 py-0 shrink-0">
+        <Badge variant="neutral" className="text-caption px-1.5 py-0 shrink-0">
           {uni.scholarshipCount}
         </Badge>
       )}
@@ -512,7 +512,7 @@ function UniCard({
               e.stopPropagation();
               onMoveTier(t);
             }}
-            className="size-5 border-2 border-border rounded-sm flex items-center justify-center text-[9px] font-heading hover:shadow-[2px_2px_0_0_var(--border)] hover:-translate-x-px hover:-translate-y-px transition-all"
+            className="size-5 border-2 border-border rounded-base flex items-center justify-center text-caption font-heading hover:shadow-[2px_2px_0_0_var(--border)] hover:-translate-x-px hover:-translate-y-px transition-[transform,box-shadow] duration-150 ease-out-expo"
             style={{ backgroundColor: TIER_META[t].cssColor }}
             title={`Move to ${TIER_META[t].label}`}
           >
@@ -609,7 +609,7 @@ function UniSearchInput({
             "bg-secondary-background text-foreground font-base text-sm",
             "placeholder:text-foreground/40",
             "focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2",
-            "transition-all",
+            "transition-[box-shadow] duration-150",
           )}
         />
       </div>
@@ -636,7 +636,7 @@ function UniSearchInput({
                 </span>
               )}
               <span className="font-heading text-sm truncate">{s.name}</span>
-              <Badge variant="neutral" className="ml-auto text-[10px] shrink-0">
+              <Badge variant="neutral" className="ml-auto text-caption shrink-0">
                 {s.count} scholarship{s.count !== 1 ? "s" : ""}
               </Badge>
             </button>
@@ -764,7 +764,7 @@ function CountryPanel({
               "bg-secondary-background text-foreground font-base text-sm",
               "placeholder:text-foreground/40",
               "focus:outline-none focus:ring-2 focus:ring-main focus:ring-offset-2",
-              "transition-all",
+              "transition-[box-shadow] duration-150",
             )}
           />
         </div>
@@ -781,7 +781,7 @@ function CountryPanel({
                 <span className="text-lg">{c.flag}</span>
                 <span className="font-heading text-sm">{c.name}</span>
                 {countryCounts && countryCounts[c.code] && (
-                  <Badge variant="neutral" className="ml-auto text-[10px]">
+                  <Badge variant="neutral" className="ml-auto text-caption">
                     {countryCounts[c.code]} scholarships
                   </Badge>
                 )}
@@ -797,7 +797,7 @@ function CountryPanel({
           {data.countries.map((country, i) => (
             <div
               key={country.code}
-              className="bg-secondary-background border-2 border-border shadow-shadow rounded-base px-4 py-3 flex items-center gap-3 transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none"
+              className="bg-secondary-background border-2 border-border shadow-shadow rounded-base px-4 py-3 flex items-center gap-3 transition-[transform,box-shadow] duration-150 ease-out-expo hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none"
             >
               <span className="font-heading text-lg w-8 text-center text-foreground/60">
                 {i + 1}
@@ -806,7 +806,7 @@ function CountryPanel({
               <span className="font-heading text-sm flex-1">{country.name}</span>
 
               {countryCounts && countryCounts[country.code] && (
-                <Badge variant="neutral" className="text-[10px] shrink-0">
+                <Badge variant="neutral" className="text-caption shrink-0">
                   {countryCounts[country.code]}
                 </Badge>
               )}

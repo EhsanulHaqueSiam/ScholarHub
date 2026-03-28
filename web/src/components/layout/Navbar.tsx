@@ -34,7 +34,7 @@ function NavLink({
     <Link
       to={to}
       activeOptions={{ exact: exact ?? false }}
-      className="font-heading text-sm border-2 border-transparent rounded-base px-3 py-1.5 transition-all hover:border-border hover:shadow-shadow hover:-translate-y-0.5"
+      className="font-heading text-sm border-2 border-transparent rounded-base px-3 py-1.5 transition-[transform,box-shadow,border-color] duration-150 ease-out-expo hover:border-border hover:shadow-shadow hover:-translate-y-0.5 active:scale-[0.97]"
       activeProps={{
         className: "border-border bg-main text-main-foreground",
       }}
@@ -61,7 +61,7 @@ export function Navbar() {
         {/* Logo */}
         <Link
           to="/"
-          className="font-heading text-xl shrink-0 border-2 border-transparent rounded-base px-2 py-1 hover:border-border hover:shadow-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+          className="font-heading text-xl shrink-0 border-2 border-transparent rounded-base px-2 py-1 hover:border-border hover:shadow-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
           aria-label="ScholarHub home"
         >
           ScholarHub
@@ -129,7 +129,7 @@ export function Navbar() {
             <Link
               to="/scholarships"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
@@ -138,7 +138,7 @@ export function Navbar() {
             <Link
               to="/collections"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
@@ -147,7 +147,7 @@ export function Navbar() {
             <Link
               to="/scholarships/closing-soon"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
@@ -156,7 +156,7 @@ export function Navbar() {
             <Link
               to="/shortlist"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
@@ -165,7 +165,7 @@ export function Navbar() {
             <Link
               to="/guide"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >
@@ -174,7 +174,7 @@ export function Navbar() {
             <Link
               to="/eligibility"
               activeOptions={{ exact: true }}
-              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-all"
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
               activeProps={{ className: "border-border bg-main text-main-foreground" }}
               onClick={() => setMenuOpen(false)}
             >

@@ -104,7 +104,7 @@ export function CompareCheckbox({ slug, title, variant }: CompareCheckboxProps) 
         )}
       >
         {disabled ? (
-          <Tooltip.Provider delayDuration={200}>
+          <Tooltip.Provider delayDuration={200} skipDelayDuration={0}>
             <Tooltip.Root>
               <Tooltip.Trigger asChild>{checkboxButton}</Tooltip.Trigger>
               <Tooltip.Portal>
@@ -133,7 +133,7 @@ export function CompareCheckbox({ slug, title, variant }: CompareCheckboxProps) 
       onKeyDown={(e) => e.stopPropagation()}
     >
       {disabled ? (
-        <Tooltip.Provider delayDuration={200}>
+        <Tooltip.Provider delayDuration={200} skipDelayDuration={0}>
           <Tooltip.Root>
             <Tooltip.Trigger asChild>{checkboxButton}</Tooltip.Trigger>
             <Tooltip.Portal>

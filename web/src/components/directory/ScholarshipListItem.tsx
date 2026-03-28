@@ -123,8 +123,8 @@ export const ScholarshipListItem = memo(function ScholarshipListItem({
       <Card
         prestige={prestigeTier}
         className={cn(
-          "relative overflow-hidden transition-transform",
-          "motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
+          "relative overflow-hidden transition-[transform,box-shadow] duration-150 ease-out-expo",
+          "active:scale-[0.98] motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
         )}
       >
         <div className="flex flex-col gap-4 md:flex-row md:items-start">

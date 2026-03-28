@@ -865,7 +865,7 @@ function TagsSection({ scholarshipId }: { scholarshipId: Id<"scholarships"> }) {
           <div className="flex flex-wrap gap-1.5">
             {suggestedTags.map((suggested) => (
               <span key={suggested.tag} className="inline-flex items-center gap-0.5">
-                <Badge variant="tagSuggested" className="text-[11px]">
+                <Badge variant="tagSuggested" className="text-caption">
                   {getTagLabel(suggested.tag)}
                 </Badge>
                 <button

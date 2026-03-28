@@ -64,7 +64,7 @@ function AdminDashboard() {
             type="button"
             onClick={() => setAdminView(tab.key)}
             className={cn(
-              "px-4 py-2 text-sm font-heading border-2 border-border rounded-base transition-all",
+              "px-4 py-2 text-sm font-heading border-2 border-border rounded-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo active:scale-[0.97]",
               adminView === tab.key
                 ? "bg-main text-main-foreground shadow-shadow"
                 : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none",

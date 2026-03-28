@@ -73,8 +73,9 @@ function EditableField({
           sideOffset={8}
           align="start"
           className="z-50 border-2 border-border bg-secondary-background shadow-shadow p-4 rounded-base min-w-[240px] max-w-[320px]"
+          style={{ transformOrigin: 'var(--radix-popover-content-transform-origin)' }}
         >
-          <p className="text-[13px] font-base text-foreground/60 mb-2">
+          <p className="text-caption font-base text-foreground/60 mb-2">
             {label}
           </p>
           {editor}
@@ -176,7 +177,7 @@ function FieldsEditor({
           );
         })}
       </div>
-      <p className="text-[11px] text-foreground/50 mt-1.5">
+      <p className="text-caption text-foreground/50 mt-1.5">
         {selected.length}/3 selected
       </p>
     </div>
@@ -380,7 +381,7 @@ export function ProfileSummaryCard({
       </CardContent>
 
       <CardFooter className="flex items-center justify-between">
-        <p className="text-[13px] text-foreground/50">
+        <p className="text-caption text-foreground/50">
           Edit your profile to update results
         </p>
         <Button

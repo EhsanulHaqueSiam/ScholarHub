@@ -38,8 +38,8 @@ export const CollectionCard = memo(function CollectionCard({
       <Card
         prestige="unranked"
         className={cn(
-          "h-full transition-all",
-          "motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
+          "h-full transition-[transform,box-shadow] duration-150 ease-out-expo",
+          "active:scale-[0.98] motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
         )}
       >
         <CardContent className="p-6 flex flex-col items-center text-center gap-4">

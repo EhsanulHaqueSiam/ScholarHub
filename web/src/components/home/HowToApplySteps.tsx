@@ -72,7 +72,7 @@ export function HowToApplySteps() {
         <div className="mb-10">
           <h2
             id="how-to-apply-heading"
-            className="font-heading text-[28px] md:text-[40px] leading-[1.1] text-foreground mb-3"
+            className="font-heading text-heading md:text-display-sm leading-[1.1] text-foreground mb-3"
           >
             How to <span className="text-accent-pink">Apply</span>
           </h2>

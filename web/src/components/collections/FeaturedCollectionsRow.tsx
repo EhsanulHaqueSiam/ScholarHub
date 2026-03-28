@@ -69,7 +69,7 @@ export const FeaturedCollectionsRow = memo(function FeaturedCollectionsRow() {
             className={cn(
               "absolute -left-5 top-1/2 -translate-y-1/2 z-10",
               "bg-secondary-background border-2 border-border rounded-base p-2 shadow-[2px_2px_0px_0px_var(--border)]",
-              "hover:shadow-none transition-all",
+              "hover:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.98]",
               "hidden md:flex items-center justify-center",
             )}
           >
@@ -95,12 +95,12 @@ export const FeaturedCollectionsRow = memo(function FeaturedCollectionsRow() {
                 "w-[200px] flex-shrink-0 snap-center",
                 "flex items-center gap-3 p-4",
                 "rounded-base border-2 border-border bg-secondary-background shadow-shadow",
-                "transition-all",
-                "motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
+                "transition-[transform,box-shadow] duration-150 ease-out-expo",
+                "active:scale-[0.98] motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none",
                 "focus-visible:ring-2 focus-visible:ring-main focus-visible:ring-offset-2 focus-visible:outline-none",
               )}
             >
-              <span className="text-[32px] shrink-0" role="img" aria-hidden="true">
+              <span className="text-title shrink-0" role="img" aria-hidden="true">
                 {collection.emoji}
               </span>
               <div className="min-w-0 flex-1">
@@ -135,7 +135,7 @@ export const FeaturedCollectionsRow = memo(function FeaturedCollectionsRow() {
             className={cn(
               "absolute -right-5 top-1/2 -translate-y-1/2 z-10",
               "bg-secondary-background border-2 border-border rounded-base p-2 shadow-[2px_2px_0px_0px_var(--border)]",
-              "hover:shadow-none transition-all",
+              "hover:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.98]",
               "hidden md:flex items-center justify-center",
             )}
           >

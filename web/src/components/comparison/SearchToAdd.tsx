@@ -62,6 +62,7 @@ export function SearchToAdd({ onSelect }: SearchToAddProps) {
           className="z-50 w-[300px] rounded-base border-2 border-border bg-secondary-background p-3 shadow-shadow"
           sideOffset={8}
           align="start"
+          style={{ transformOrigin: 'var(--radix-popover-content-transform-origin)' }}
         >
           <div className="relative mb-2">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50" />

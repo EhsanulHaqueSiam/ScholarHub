@@ -65,7 +65,7 @@ export function CoverageBreakdown() {
         <div className="mb-10">
           <h2
             id="coverage-heading"
-            className="font-heading text-[28px] md:text-[40px] leading-[1.1] text-foreground mb-3"
+            className="font-heading text-heading md:text-display-sm leading-[1.1] text-foreground mb-3"
           >
             What Scholarships <span className="text-accent">Cover</span>
           </h2>
@@ -81,7 +81,7 @@ export function CoverageBreakdown() {
             return (
               <div
                 key={item.title}
-                className="group border-2 border-border bg-secondary-background rounded-base shadow-shadow overflow-hidden transition-all motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY motion-safe:hover:shadow-none"
+                className="group border-2 border-border bg-secondary-background rounded-base shadow-shadow overflow-hidden transition-[transform,box-shadow] duration-150 ease-out-expo motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY motion-safe:hover:shadow-none"
               >
                 {/* Colored top stripe */}
                 <div className={`h-2 ${item.color}`} />

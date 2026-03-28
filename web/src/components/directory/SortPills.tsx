@@ -30,7 +30,7 @@ export function SortPills() {
             value={option.value}
             aria-label={`Sort by ${option.label}${isActive ? ", currently active" : ""}`}
             className={cn(
-              "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+              "inline-flex items-center rounded-base border-2 px-3 py-2 text-sm font-base transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out-expo min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
               isActive
                 ? "bg-main text-main-foreground border-border"
                 : "bg-secondary-background text-foreground border-border",

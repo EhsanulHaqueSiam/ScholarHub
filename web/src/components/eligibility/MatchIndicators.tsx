@@ -108,7 +108,7 @@ export function MatchIndicators({ breakdown, className }: MatchIndicatorsProps) 
                 className={cn("size-5", colorClass)}
                 aria-label={`${label}: ${ariaLabel}`}
               />
-              <span className="text-[13px] text-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-caption text-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">
                 {label}
               </span>
             </div>
@@ -143,7 +143,7 @@ export function MatchIndicators({ breakdown, className }: MatchIndicatorsProps) 
                 <Icon className={cn("size-5 shrink-0 mt-0.5", colorClass)} />
                 <div>
                   <p className="text-sm font-heading">{label}</p>
-                  <p className="text-[13px] text-foreground/60">{statusText}</p>
+                  <p className="text-caption text-foreground/60">{statusText}</p>
                 </div>
               </div>
             );

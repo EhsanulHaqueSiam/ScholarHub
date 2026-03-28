@@ -75,7 +75,7 @@ export function EligibilityFilterBar() {
           <button
             type="button"
             onClick={() => setForceExpanded(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-heading text-main hover:underline shrink-0 min-h-[44px] border-2 border-border rounded-base px-3 bg-secondary-background hover:translate-x-boxShadowX hover:translate-y-boxShadowY shadow-shadow hover:shadow-none transition-all"
+            className="inline-flex items-center gap-1.5 text-sm font-heading text-main hover:underline shrink-0 min-h-[44px] border-2 border-border rounded-base px-3 bg-secondary-background hover:translate-x-boxShadowX hover:translate-y-boxShadowY shadow-shadow hover:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.97]"
             aria-label="Edit nationality and destination filters"
             aria-expanded={false}
           >
@@ -148,7 +148,7 @@ export function EligibilityFilterBar() {
                 type="button"
                 onClick={() => handlePopularDestinationClick(code)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-base border-2 border-border px-2.5 py-1.5 text-xs font-base transition-all min-h-[36px]",
+                  "inline-flex items-center gap-1.5 rounded-base border-2 border-border px-2.5 py-1.5 text-xs font-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[36px] active:scale-[0.97]",
                   isSelected
                     ? "bg-main text-main-foreground shadow-shadow translate-x-0 translate-y-0"
                     : "bg-secondary-background text-foreground hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none shadow-shadow",

@@ -79,8 +79,8 @@ function CountryLandingPage() {
         <div className="max-w-5xl mx-auto">
           {/* Hero */}
           <div className="text-center mt-8 mb-8">
-            <h1 className="font-heading text-[32px] md:text-[40px] leading-[1.1] mb-3">
-              <span className="text-[48px]">{flag}</span>
+            <h1 className="font-heading text-title md:text-display-sm leading-[1.1] mb-3">
+              <span className="text-display-sm">{flag}</span>
               <br />
               Study in {countryName}
             </h1>

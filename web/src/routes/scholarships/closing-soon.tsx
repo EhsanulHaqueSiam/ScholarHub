@@ -57,7 +57,7 @@ function ClosingSoonPage() {
       {/* Header (no hero section for closing-soon) */}
       <section className="pt-20 pb-8 md:pt-24 md:pb-10 px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="font-heading text-[32px] md:text-[40px] leading-[1.1] text-foreground">
+          <h1 className="font-heading text-title md:text-display-sm leading-[1.1] text-foreground">
             Closing Soon
           </h1>
           <p className="font-base text-base text-foreground/80 mt-3">

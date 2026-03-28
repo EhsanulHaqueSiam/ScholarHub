@@ -213,7 +213,7 @@ function ScholarshipsDirectory() {
       {/* Hero Section */}
       <section className="pt-20 pb-12 md:pt-24 md:pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-4">
-          <h1 className="font-heading text-[36px] md:text-[56px] leading-[1.1] text-foreground">
+          <h1 className="font-heading text-title md:text-display leading-[1.1] text-foreground">
             Browse {totalCount !== undefined && <>{totalCount.toLocaleString()}+ </>}
             <span className="text-accent-pink">International</span>{" "}
             <span className="text-accent">Scholarships</span>

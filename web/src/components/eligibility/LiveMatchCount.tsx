@@ -91,7 +91,7 @@ export function LiveMatchCount({ profile }: LiveMatchCountProps) {
           <span
             className={cn(
               "inline-flex items-center bg-accent text-accent-foreground border-2 border-border px-3 py-1 font-heading text-xl",
-              "motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out",
+              "motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out-expo",
               animating && "motion-safe:scale-110",
             )}
           >

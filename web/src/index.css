@@ -101,6 +101,8 @@
 
   /* Semantic colors */
   --destructive: oklch(52% 0.24 27);
+  --success: oklch(60% 0.19 150);
+  --warning: oklch(68% 0.16 75);
 }
 
 .dark {
@@ -192,11 +194,14 @@
 
   /* Semantic colors - dark mode */
   --destructive: oklch(60% 0.20 25);
+  --success: oklch(62% 0.16 148);
+  --warning: oklch(65% 0.14 78);
 }
 
 @theme inline {
   --font-heading: "Archivo Black", ui-sans-serif, system-ui, sans-serif;
   --font-base: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-weight-heading: var(--heading-font-weight);
   --font-weight-base: var(--base-font-weight);
 
@@ -217,6 +222,30 @@
   --radius-base: var(--border-radius);
 
   --shadow-shadow: var(--shadow);
+
+  /* Custom easing curves — stronger than CSS defaults */
+  --ease-out-expo: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-expo: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Type scale: 13/15/17/21/27/35 + display extensions 44/56/72 */
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-body-sm: 0.9375rem;
+  --text-body-sm--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.5;
+  --text-subhead: 1.3125rem;
+  --text-subhead--line-height: 1.35;
+  --text-heading: 1.6875rem;
+  --text-heading--line-height: 1.25;
+  --text-title: 2.1875rem;
+  --text-title--line-height: 1.2;
+  --text-display-sm: 2.75rem;
+  --text-display-sm--line-height: 1.1;
+  --text-display: 3.5rem;
+  --text-display--line-height: 1.1;
+  --text-display-lg: 4.5rem;
+  --text-display-lg--line-height: 1;
 
   --color-prestige-gold-bg: var(--prestige-gold-bg);
   --color-prestige-gold-border: var(--prestige-gold-border);
@@ -248,6 +277,8 @@
   --color-type-subject-specific-badge: var(--type-subject-specific-badge);
   --color-type-subject-specific-border: var(--type-subject-specific-border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -308,7 +339,9 @@ input[type="checkbox"] {
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.15s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.15s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 input[type="checkbox"]:checked {
@@ -336,6 +369,11 @@ input[type="checkbox"]:focus-visible {
 input[type="checkbox"]:hover:not(:disabled) {
   box-shadow: 2px 2px 0px 0px var(--border);
   transform: translate(-1px, -1px);
+}
+
+input[type="checkbox"]:active:not(:disabled) {
+  transform: scale(0.9);
+  box-shadow: none;
 }
 
 input[type="checkbox"]:indeterminate {

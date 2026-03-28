@@ -106,6 +106,7 @@ export function CountrySelector({
           sideOffset={4}
           align="start"
           className="z-50 w-72 max-h-80 border-2 border-border rounded-base bg-secondary-background shadow-shadow overflow-hidden flex flex-col"
+          style={{ transformOrigin: 'var(--radix-popover-content-transform-origin)' }}
           onOpenAutoFocus={() => {
             // Focus the search input when opened
             setTimeout(() => searchInputRef.current?.focus(), 0);

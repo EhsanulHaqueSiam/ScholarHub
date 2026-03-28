@@ -84,7 +84,7 @@ export function ScholarshipTimeline() {
             </div>
             <h2
               id="timeline-heading"
-              className="font-heading text-[28px] md:text-[40px] leading-[1.1] text-foreground"
+              className="font-heading text-heading md:text-display-sm leading-[1.1] text-foreground"
             >
               Scholarship <span className="text-accent-lime">Timeline</span>
             </h2>

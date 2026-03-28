@@ -135,7 +135,7 @@ export function ResultsTierSection({
 
       {/* Possible matches explanatory note */}
       {tier === "possible" && isOpen && (
-        <p className="text-foreground/50 text-[13px] mt-2 px-1">
+        <p className="text-foreground/50 text-caption mt-2 px-1">
           Eligibility not confirmed -- these scholarships may match but we
           couldn't verify all criteria.
         </p>
@@ -200,7 +200,7 @@ function ResultScholarshipCard({
     >
       <Card
         prestige={prestigeTier}
-        className="relative h-full transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none motion-safe:hover:rotate-[-0.5deg]"
+        className="relative h-full transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.98] motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none motion-safe:hover:rotate-[-0.5deg]"
       >
         {/* Host country flags -- top right */}
         <div className="absolute top-3 end-3 z-10">

@@ -196,12 +196,12 @@ export function WizardShell({ profile, onProfileChange }: WizardShellProps) {
   return (
     <div className="pt-20 pb-24 md:pb-8 px-4">
       {/* Page Title */}
-      <h1 className="text-[28px] font-heading leading-[1.15] text-center mb-2">
+      <h1 className="text-heading font-heading leading-[1.15] text-center mb-2">
         Check Your Scholarship Eligibility
       </h1>
 
       {/* Privacy Note (D-15) */}
-      <p className="text-foreground/50 text-[13px] text-center mb-8 flex items-center justify-center gap-1">
+      <p className="text-foreground/50 text-caption text-center mb-8 flex items-center justify-center gap-1">
         <Lock className="size-3" /> Your data stays in your browser. Nothing is
         sent to our servers.
       </p>
@@ -219,7 +219,7 @@ export function WizardShell({ profile, onProfileChange }: WizardShellProps) {
                 <button
                   type="button"
                   className={cn(
-                    "flex items-center justify-center gap-1.5 w-full py-3 px-2 border-2 text-[13px] font-base transition-colors min-h-[44px]",
+                    "flex items-center justify-center gap-1.5 w-full py-3 px-2 border-2 text-caption font-base transition-[transform,color,background-color] duration-150 ease-out-expo min-h-[44px] active:scale-[0.97]",
                     index === 0 && "border-r-0",
                     index === 1 && "border-r-0",
                     isActive &&

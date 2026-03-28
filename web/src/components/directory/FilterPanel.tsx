@@ -16,17 +16,17 @@ const PRESTIGE_TIERS = [
   {
     value: "gold",
     label: "Gold",
-    colorClass: "bg-prestige-gold-badge text-black border-prestige-gold-border",
+    colorClass: "bg-prestige-gold-badge text-accent-foreground border-prestige-gold-border",
   },
   {
     value: "silver",
     label: "Silver",
-    colorClass: "bg-prestige-silver-badge text-black border-prestige-silver-border",
+    colorClass: "bg-prestige-silver-badge text-accent-foreground border-prestige-silver-border",
   },
   {
     value: "bronze",
     label: "Bronze",
-    colorClass: "bg-prestige-bronze-badge text-black border-prestige-bronze-border",
+    colorClass: "bg-prestige-bronze-badge text-accent-foreground border-prestige-bronze-border",
   },
 ] as const;
 
@@ -48,12 +48,12 @@ export function MobileFilterTrigger() {
         <Dialog.Trigger asChild>
           <button
             type="button"
-            className="fixed bottom-6 left-4 z-30 flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-4 py-3 border-2 border-border rounded-base shadow-shadow transition-all active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
+            className="fixed bottom-6 left-4 z-30 flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-4 py-3 border-2 border-border rounded-base shadow-shadow transition-[transform,box-shadow] duration-150 ease-out-expo active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none active:scale-[0.97]"
           >
             <SlidersHorizontal className="size-5" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
-              <span className="bg-black text-white text-xs font-bold rounded-base size-5 flex items-center justify-center -mr-1">
+              <span className="bg-foreground text-background text-xs font-bold rounded-base size-5 flex items-center justify-center -mr-1">
                 {activeFilterCount}
               </span>
             )}
@@ -61,7 +61,7 @@ export function MobileFilterTrigger() {
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-overlay z-40" />
-          <Dialog.Content className="fixed bottom-0 inset-x-0 z-50 bg-secondary-background border-t-2 border-border rounded-t-base max-h-[85vh] overflow-y-auto p-4 animate-in slide-in-from-bottom">
+          <Dialog.Content className="fixed bottom-0 inset-x-0 z-50 bg-secondary-background border-t-2 border-border rounded-t-base max-h-[85vh] overflow-y-auto p-4 animate-in slide-in-from-bottom duration-200 ease-out-expo">
             <div className="flex items-center justify-between mb-4">
               <Dialog.Title className="font-heading text-lg">Filters</Dialog.Title>
               <Dialog.Close asChild>
@@ -155,7 +155,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${type.label}`}
                 onClick={() => toggleMultiFilter("type", type.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
                   isActive
                     ? "bg-main text-main-foreground"
                     : "bg-secondary-background text-foreground",
@@ -182,7 +182,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${level.label}`}
                 onClick={() => toggleMultiFilter("degree", level.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
                   isActive
                     ? "bg-main text-main-foreground"
                     : "bg-secondary-background text-foreground",
@@ -240,7 +240,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 onClick={() => toggleFieldOfStudy(field)}
                 className={cn(
                   "flex items-center w-full text-start px-2 py-2 text-sm rounded-base min-h-[40px]",
-                  "border-2 transition-all",
+                  "border-2 transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out-expo",
                   isActive
                     ? "bg-main/10 font-heading border-border shadow-shadow"
                     : "border-transparent hover:bg-main/10 hover:border-border hover:shadow-shadow hover:translate-x-[-1px] hover:translate-y-[-1px]",
@@ -287,7 +287,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${type.label}`}
                 onClick={() => toggleMultiFilter("funding", type.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
                   isActive
                     ? "bg-main text-main-foreground"
                     : "bg-secondary-background text-foreground",
@@ -314,7 +314,7 @@ function FilterContent({ filters, setFilter }: FilterContentProps) {
                 aria-label={`Filter by ${tier.label} prestige`}
                 onClick={() => toggleMultiFilter("tier", tier.value)}
                 className={cn(
-                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-all min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+                  "inline-flex items-center rounded-base border-2 border-border px-3 py-2 text-sm font-base transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[44px] shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
                   isActive ? tier.colorClass : "bg-secondary-background text-foreground",
                 )}
               >

@@ -30,7 +30,7 @@ function GuidePage() {
           <p className="font-heading text-xs uppercase tracking-[0.25em] text-foreground/60">
             Scholarship guide
           </p>
-          <h1 className="font-heading text-[32px] md:text-[52px] leading-[1.1] text-foreground">
+          <h1 className="font-heading text-title md:text-display leading-[1.1] text-foreground">
             New to <span className="text-accent-pink">scholarships</span>?
           </h1>
           <p className="font-base text-foreground/60 text-base md:text-lg max-w-lg mx-auto">

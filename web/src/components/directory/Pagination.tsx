@@ -32,10 +32,10 @@ export function DesktopPagination({
         }}
         aria-label="Previous page"
         className={cn(
-          "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
+          "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-[transform,box-shadow] duration-150 ease-out-expo",
           currentPage <= 1
             ? "bg-secondary-background text-foreground/30 cursor-not-allowed"
-            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
         )}
       >
         <ChevronLeft className="size-4" />
@@ -68,10 +68,10 @@ export function DesktopPagination({
             aria-label={`Page ${page}`}
             aria-current={isCurrent ? "page" : undefined}
             className={cn(
-              "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
+              "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-[transform,box-shadow] duration-150 ease-out-expo",
               isCurrent
                 ? "bg-main text-main-foreground shadow-shadow scale-110"
-                : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none hover:rotate-[-1deg]",
+                : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none hover:rotate-[-1deg] active:scale-[0.97]",
             )}
           >
             {page}
@@ -89,10 +89,10 @@ export function DesktopPagination({
         }}
         aria-label="Next page"
         className={cn(
-          "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-all",
+          "inline-flex items-center justify-center size-10 rounded-base border-2 border-border font-heading text-sm transition-[transform,box-shadow] duration-150 ease-out-expo",
           currentPage >= totalPages
             ? "bg-secondary-background text-foreground/30 cursor-not-allowed"
-            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
+            : "bg-secondary-background text-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none active:scale-[0.97]",
         )}
       >
         <ChevronRight className="size-4" />

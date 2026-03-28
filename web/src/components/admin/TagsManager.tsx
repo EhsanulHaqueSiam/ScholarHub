@@ -545,7 +545,7 @@ export function TagsManager() {
                     <td className="p-2">
                       <div className="flex flex-wrap gap-1">
                         {(scholarship.tags ?? []).map((tag: string) => (
-                          <Badge key={tag} variant="tag" className="text-[10px] px-1.5 py-0">
+                          <Badge key={tag} variant="tag" className="text-caption px-1.5 py-0">
                             {getTagLabel(tag)}
                           </Badge>
                         ))}

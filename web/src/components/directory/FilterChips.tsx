@@ -142,7 +142,7 @@ export function FilterChips() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {chips.map((chip) => (
-        <Badge key={chip.key} variant="neutral" className="gap-1 pe-1">
+        <Badge key={chip.key} variant="neutral" className="gap-1 pe-1 active:scale-[0.97] transition-[transform] duration-150 ease-out-expo">
           <span className="text-xs">{chip.label}</span>
           <button
             type="button"
@@ -165,7 +165,7 @@ export function FilterChips() {
                 removeFilter(chip.filterKey, chip.value);
               }
             }}
-            className="ms-0.5 p-0.5 rounded hover:bg-foreground/10 min-h-[20px] min-w-[20px] flex items-center justify-center"
+            className="ms-0.5 p-0.5 rounded hover:bg-foreground/10 min-h-[20px] min-w-[20px] flex items-center justify-center active:scale-[0.97] transition-[transform] duration-150 ease-out-expo"
           >
             <X className="size-3" />
           </button>

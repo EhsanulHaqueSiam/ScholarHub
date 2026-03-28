@@ -120,13 +120,13 @@ function ScholarshipDetailPage() {
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-3xl mx-auto text-center py-16">
-            <h1 className="font-heading text-[32px] mb-4">Scholarship Not Found</h1>
+            <h1 className="font-heading text-title mb-4">Scholarship Not Found</h1>
             <p className="text-foreground/70 mb-8">
               The scholarship you're looking for doesn't exist or has been removed.
             </p>
             <Link
               to="/scholarships"
-              className="inline-flex items-center justify-center rounded-base border-2 border-border bg-main px-6 py-3 text-sm font-base text-white shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
+              className="inline-flex items-center justify-center rounded-base border-2 border-border bg-main px-6 py-3 text-sm font-base text-main-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo"
             >
               Browse All Scholarships
             </Link>

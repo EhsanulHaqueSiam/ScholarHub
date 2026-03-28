@@ -31,11 +31,11 @@ export function StepPreferences({ data, onChange }: StepPreferencesProps) {
 
       {/* Destination Countries (optional, D-13) */}
       <div className="space-y-2">
-        <label className="text-[13px] font-base block">
+        <label className="text-caption font-base block">
           Destination Countries{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
-        <p className="text-foreground/50 text-[13px]">
+        <p id="destination-helper" className="text-foreground/50 text-caption">
           Where do you want to study? Pick up to 5 countries.
         </p>
         <CountrySelector
@@ -44,14 +44,15 @@ export function StepPreferences({ data, onChange }: StepPreferencesProps) {
           placeholder="Select destination countries"
           popularList={POPULAR_DESTINATIONS}
           maxSelections={5}
+          aria-describedby="destination-helper"
         />
       </div>
 
       {/* Funding Type (optional) */}
       <div className="space-y-2">
-        <label htmlFor={fundingId} className="text-[13px] font-base block">
+        <label htmlFor={fundingId} className="text-caption font-base block">
           Funding Preference{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
         <select
           id={fundingId}
@@ -63,7 +64,7 @@ export function StepPreferences({ data, onChange }: StepPreferencesProps) {
                 undefined,
             })
           }
-          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-full min-h-[44px] outline-none appearance-none cursor-pointer"
+          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-full min-h-[44px] outline-none appearance-none cursor-pointer"
         >
           <option value="">No preference</option>
           {FUNDING_TYPES.map((ft) => (

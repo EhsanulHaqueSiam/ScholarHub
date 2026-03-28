@@ -52,7 +52,7 @@ export function StepAboutYou({ data, onChange }: StepAboutYouProps) {
 
       {/* Nationality (required, D-09) */}
       <div className="space-y-2">
-        <label className="text-[13px] font-base block">
+        <label className="text-caption font-base block">
           Nationality{" "}
           <span className="font-heading text-destructive">*</span>
         </label>
@@ -62,18 +62,20 @@ export function StepAboutYou({ data, onChange }: StepAboutYouProps) {
           placeholder="Select your nationality"
           popularList={POPULAR_NATIONALITIES}
           maxSelections={3}
+          aria-describedby="nationality-helper"
         />
-        <p className="text-foreground/50 text-[13px]">
+        <p id="nationality-helper" className="text-foreground/50 text-caption">
           Supports dual citizens -- select up to 3 nationalities.
         </p>
       </div>
 
       {/* Age (optional, D-08) */}
       <div className="space-y-2">
-        <label htmlFor={ageId} className="text-[13px] font-base block">
+        <label htmlFor={ageId} className="text-caption font-base block">
           Age{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
+        <p id="age-helper" className="sr-only">Age is optional</p>
         <input
           id={ageId}
           type="number"
@@ -87,24 +89,26 @@ export function StepAboutYou({ data, onChange }: StepAboutYouProps) {
             });
           }}
           placeholder="e.g. 22"
-          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-full max-w-[200px] min-h-[44px] outline-none"
+          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-full max-w-[200px] min-h-[44px] outline-none"
           aria-required="false"
+          aria-describedby="age-helper"
         />
       </div>
 
       {/* Gender (optional, D-14) */}
       <div className="space-y-2">
-        <label id={genderGroupId} className="text-[13px] font-base block">
+        <label id={genderGroupId} className="text-caption font-base block">
           Gender{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
-        <p className="text-foreground/50 text-[13px]">
+        <p id="gender-helper" className="text-foreground/50 text-caption">
           Some scholarships target specific groups -- answering helps us find
           more matches for you.
         </p>
         <div
           role="radiogroup"
           aria-labelledby={genderGroupId}
+          aria-describedby="gender-helper"
           aria-label="Gender"
           className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3"
         >
@@ -116,7 +120,7 @@ export function StepAboutYou({ data, onChange }: StepAboutYouProps) {
                 key={option.value}
                 htmlFor={radioId}
                 className={cn(
-                  "flex items-center gap-2 border-2 border-border px-4 py-3 cursor-pointer transition-all min-h-[44px] text-sm font-base select-none",
+                  "flex items-center gap-2 border-2 border-border px-4 py-3 cursor-pointer transition-[transform,box-shadow,background-color] duration-150 ease-out-expo min-h-[44px] text-sm font-base select-none",
                   isSelected
                     ? "bg-main text-main-foreground shadow-none translate-x-boxShadowX translate-y-boxShadowY"
                     : "bg-secondary-background shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none",
@@ -134,14 +138,14 @@ export function StepAboutYou({ data, onChange }: StepAboutYouProps) {
                 />
                 <span
                   className={cn(
-                    "size-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                    "size-4 rounded-base border-2 flex items-center justify-center shrink-0",
                     isSelected
                       ? "border-main-foreground"
                       : "border-border",
                   )}
                 >
                   {isSelected && (
-                    <span className="size-2 rounded-full bg-main-foreground" />
+                    <span className="size-2 rounded-base bg-main-foreground" />
                   )}
                 </span>
                 {option.label}

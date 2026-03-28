@@ -79,7 +79,7 @@ export const ScholarshipCard = memo(function ScholarshipCard({
           "relative h-full",
           disableHover && "overflow-hidden",
           !disableHover &&
-            "transition-transform motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none motion-safe:hover:rotate-[-0.5deg]",
+            "transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.98] motion-safe:hover:translate-x-boxShadowX motion-safe:hover:translate-y-boxShadowY hover:shadow-none motion-safe:hover:rotate-[-0.5deg]",
         )}
       >
         {/* Compare checkbox - top left */}

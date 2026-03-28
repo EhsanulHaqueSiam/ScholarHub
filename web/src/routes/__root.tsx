@@ -55,7 +55,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap",
       },
       { rel: "alternate", hrefLang: "en", href: "https://scholarhub.io" },
     ],
@@ -224,7 +224,15 @@ function RootComponent() {
           dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
         />
         <CompareProvider>
-          <Outlet />
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-main focus:text-main-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-border focus:shadow-shadow focus:font-heading focus:text-sm"
+          >
+            Skip to main content
+          </a>
+          <main id="main-content">
+            <Outlet />
+          </main>
           <CompareBar />
         </CompareProvider>
         <Scripts />

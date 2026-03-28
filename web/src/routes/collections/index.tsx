@@ -122,7 +122,7 @@ function CollectionsBrowsePage() {
             <p className="text-sm mt-3 max-w-md">Browse all scholarships instead.</p>
             <Link
               to="/scholarships"
-              className="mt-6 inline-flex items-center justify-center rounded-base border-2 border-border bg-main px-6 py-3 text-sm font-base text-main-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all"
+              className="mt-6 inline-flex items-center justify-center rounded-base border-2 border-border bg-main px-6 py-3 text-sm font-base text-main-foreground shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo active:scale-[0.97]"
             >
               Browse Scholarships
             </Link>

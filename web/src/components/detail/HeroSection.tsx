@@ -73,7 +73,7 @@ export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function
           </div>
 
           {/* Title */}
-          <h1 className="font-heading text-2xl md:text-[32px] leading-[1.2]">{title}</h1>
+          <h1 className="font-heading text-2xl md:text-title leading-[1.2]">{title}</h1>
 
           {/* Provider */}
           <p className="text-sm text-foreground/70 font-base">{providerOrganization}</p>

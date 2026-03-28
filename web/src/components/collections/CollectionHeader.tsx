@@ -48,7 +48,7 @@ export function CollectionHeader({ collection }: CollectionHeaderProps) {
     <header className="flex flex-col items-center text-center gap-4">
       {/* Emoji with accent circle */}
       <div className="w-20 h-20 rounded-base bg-main/10 flex items-center justify-center">
-        <span className="text-[64px] leading-none" role="img" aria-hidden="true">
+        <span className="text-display-lg leading-none" role="img" aria-hidden="true">
           {collection.emoji}
         </span>
       </div>

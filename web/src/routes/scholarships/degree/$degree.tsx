@@ -107,7 +107,7 @@ function DegreeLandingPage() {
         <div className="max-w-5xl mx-auto">
           {/* Hero */}
           <div className="text-center mt-8 mb-8">
-            <h1 className="font-heading text-[32px] md:text-[40px] leading-[1.1] mb-3">
+            <h1 className="font-heading text-title md:text-display-sm leading-[1.1] mb-3">
               {degreeName} Scholarships
             </h1>
             <p className="text-foreground/70 text-sm max-w-xl mx-auto">

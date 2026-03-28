@@ -136,7 +136,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
 
       {/* Degree Level (required, D-08) */}
       <div className="space-y-2">
-        <label htmlFor={degreeId} className="text-[13px] font-base block">
+        <label htmlFor={degreeId} className="text-caption font-base block">
           Degree Level{" "}
           <span className="font-heading text-destructive">*</span>
         </label>
@@ -148,7 +148,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
               degreeLevel: e.target.value as StudentProfile["degreeLevel"],
             })
           }
-          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-full min-h-[44px] outline-none appearance-none cursor-pointer"
+          className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-full min-h-[44px] outline-none appearance-none cursor-pointer"
           aria-required="true"
         >
           <option value="" disabled>
@@ -164,7 +164,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
 
       {/* Field of Study (required, D-10) -- Searchable Multi-select */}
       <div className="space-y-2">
-        <label id={fieldId} className="text-[13px] font-base block">
+        <label id={fieldId} className="text-caption font-base block">
           Field of Study{" "}
           <span className="font-heading text-destructive">*</span>
         </label>
@@ -182,7 +182,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
               aria-labelledby={fieldId}
               aria-expanded={fieldPopoverOpen}
               className={cn(
-                "flex items-center justify-between w-full border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all min-h-[44px] outline-none text-left",
+                "flex items-center justify-between w-full border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo min-h-[44px] outline-none text-left",
                 selectedFields.length === 0 && "text-foreground/50",
               )}
             >
@@ -200,6 +200,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
               sideOffset={4}
               align="start"
               className="z-50 w-[var(--radix-popover-trigger-width)] max-h-80 border-2 border-border bg-secondary-background shadow-shadow overflow-hidden flex flex-col"
+              style={{ transformOrigin: 'var(--radix-popover-content-transform-origin)' }}
               onOpenAutoFocus={() => {
                 setTimeout(() => fieldSearchRef.current?.focus(), 0);
               }}
@@ -293,9 +294,9 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
 
       {/* GPA (optional, D-12) */}
       <div className="space-y-2">
-        <label className="text-[13px] font-base block">
+        <label className="text-caption font-base block">
           GPA{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
         <div className="flex gap-3 flex-wrap">
           {/* GPA Scale selector */}
@@ -305,7 +306,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
               value={data.gpa?.scale ?? ""}
               onChange={(e) => handleGpaScaleChange(e.target.value)}
               aria-label="Grading system"
-              className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-full min-h-[44px] outline-none appearance-none cursor-pointer"
+              className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-full min-h-[44px] outline-none appearance-none cursor-pointer"
             >
               <option value="" disabled>
                 Select grading system
@@ -331,7 +332,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
                 onChange={(e) => handleGpaValueChange(e.target.value)}
                 placeholder={`${currentGpaScale.min} - ${currentGpaScale.max}`}
                 aria-label="GPA value"
-                className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-full min-h-[44px] outline-none"
+                className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-full min-h-[44px] outline-none"
               />
             </div>
           )}
@@ -340,16 +341,16 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
 
       {/* Language Scores (optional, D-11) */}
       <div className="space-y-3">
-        <label className="text-[13px] font-base block">
+        <label className="text-caption font-base block">
           Language Scores{" "}
-          <span className="text-foreground/50 text-[13px]">(optional)</span>
+          <span className="text-foreground/50 text-caption">(optional)</span>
         </label>
-        <p className="text-foreground/50 text-[13px]">
+        <p id="language-helper" className="text-foreground/50 text-caption">
           Select which test(s) you have taken.
         </p>
 
         {/* Test checkboxes */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3" aria-describedby="language-helper">
           {LANGUAGE_TESTS.map((test) => {
             const isChecked = selectedTests.has(test.key);
             const testCheckboxId = `lang-test-${test.key}`;
@@ -358,7 +359,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
                 key={test.key}
                 htmlFor={testCheckboxId}
                 className={cn(
-                  "flex items-center gap-2 border-2 border-border px-4 py-3 cursor-pointer transition-all min-h-[44px] text-sm font-base select-none",
+                  "flex items-center gap-2 border-2 border-border px-4 py-3 cursor-pointer transition-colors min-h-[44px] text-sm font-base select-none",
                   isChecked
                     ? "bg-main/10 border-border"
                     : "bg-secondary-background border-border hover:bg-main/5",
@@ -387,7 +388,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
                   <div key={test.key} className="space-y-1">
                     <label
                       htmlFor={scoreId}
-                      className="text-[13px] font-base block"
+                      className="text-caption font-base block"
                     >
                       {test.label} Score
                     </label>
@@ -408,7 +409,7 @@ export function StepAcademics({ data, onChange }: StepAcademicsProps) {
                         handleScoreChange(test.key, e.target.value)
                       }
                       placeholder={`${test.min}-${test.max}`}
-                      className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-all w-[140px] min-h-[44px] outline-none"
+                      className="border-[3px] border-border bg-secondary-background h-14 px-4 text-base font-base shadow-shadow focus:translate-x-boxShadowX focus:translate-y-boxShadowY focus:shadow-none transition-[transform,box-shadow] duration-150 ease-out-expo w-[140px] min-h-[44px] outline-none"
                     />
                   </div>
                 );

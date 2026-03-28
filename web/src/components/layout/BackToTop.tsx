@@ -33,7 +33,7 @@ export function BackToTop() {
       onClick={scrollToTop}
       aria-label="Scroll back to top"
       className={cn(
-        "fixed bottom-4 end-4 z-40 motion-safe:transition-opacity motion-safe:duration-300",
+        "fixed bottom-4 end-4 z-40 motion-safe:transition-[opacity,transform] motion-safe:duration-300 ease-out-expo active:scale-[0.97]",
         visible ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
     >
