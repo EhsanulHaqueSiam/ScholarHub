@@ -5,7 +5,9 @@ import {
   Outlet,
   ScriptOnce,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { CompareBar } from "@/components/comparison/CompareBar";
 import { CompareProvider } from "@/components/comparison/CompareContext";
 import { buildOrganizationJsonLd } from "@/lib/seo/json-ld";
@@ -21,6 +23,7 @@ const linkedinPartnerId = import.meta.env.VITE_LINKEDIN_PARTNER_ID ?? "";
 const pinterestTagId = import.meta.env.VITE_PINTEREST_TAG_ID ?? "";
 const snapchatPixelId = import.meta.env.VITE_SNAPCHAT_PIXEL_ID ?? "";
 const bingUetId = import.meta.env.VITE_BING_UET_ID ?? "";
+const clarityId = import.meta.env.VITE_CLARITY_ID ?? "";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -218,9 +221,22 @@ function RootComponent() {
             }
           `}</ScriptOnce>
         )}
-        {/* Organization JSON-LD -- static, trusted content for SEO structured data */}
+        {/* Microsoft Clarity */}
+        {clarityId && (
+          <ScriptOnce>{`
+            if (typeof window !== 'undefined') {
+              (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)}
+              )(window,document,"clarity","script","${clarityId}");
+            }
+          `}</ScriptOnce>
+        )}
+        {/* Organization JSON-LD -- static, trusted content for SEO structured data.
+            Content is hardcoded at module scope (line 14), not user-supplied. */}
         <script
           type="application/ld+json"
+          // biome-ignore lint: static trusted content from buildOrganizationJsonLd()
           dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
         />
         <CompareProvider>
@@ -235,8 +251,57 @@ function RootComponent() {
           </main>
           <CompareBar />
         </CompareProvider>
+        <SpaPageviewTracker />
         <Scripts />
       </body>
     </html>
   );
+}
+
+/**
+ * SPA pageview tracker — fires pageview events on every client-side route change.
+ * Without this, GA4/Meta/TikTok/etc. only see the initial page load.
+ */
+function SpaPageviewTracker() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const prevPath = useRef(pathname);
+
+  useEffect(() => {
+    if (pathname === prevPath.current) return;
+    prevPath.current = pathname;
+
+    if (typeof window === "undefined") return;
+
+    // GA4
+    if (ga4Id && typeof window.gtag === "function") {
+      window.gtag("config", ga4Id, { page_path: pathname });
+    }
+
+    // Meta Pixel
+    if (metaPixelId && typeof window.fbq === "function") {
+      window.fbq("track", "PageView");
+    }
+
+    // TikTok
+    if (tiktokPixelId && typeof window.ttq !== "undefined") {
+      window.ttq.page();
+    }
+
+    // Twitter
+    if (twitterPixelId && typeof window.twq === "function") {
+      window.twq("track", "PageView");
+    }
+
+    // Pinterest
+    if (pinterestTagId && typeof window.pintrk === "function") {
+      window.pintrk("page");
+    }
+
+    // Snapchat
+    if (snapchatPixelId && typeof window.snaptr === "function") {
+      window.snaptr("track", "PAGE_VIEW");
+    }
+  }, [pathname]);
+
+  return null;
 }

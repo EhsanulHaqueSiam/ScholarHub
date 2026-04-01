@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { z } from "zod";
+import { analytics } from "@/lib/analytics";
 import { AdmissionVisaSection } from "@/components/country/AdmissionVisaSection";
 import { CostOfStudyingSection } from "@/components/country/CostOfStudyingSection";
 import { IntakePeriodsSection } from "@/components/country/IntakePeriodsSection";
@@ -100,6 +101,19 @@ function ScholarshipDetailPage() {
     api.collections.getScholarshipCollections,
     scholarship ? { scholarshipId: scholarship._id } : "skip",
   );
+
+  // Track scholarship detail view
+  useEffect(() => {
+    if (scholarship) {
+      analytics.track("scholarship_viewed", {
+        slug,
+        title: scholarship.title,
+        country: scholarship.host_country,
+        funding_type: scholarship.funding_type,
+        prestige_tier: scholarship.prestige_tier,
+      });
+    }
+  }, [scholarship, slug]);
 
   // Loading state
   if (scholarship === undefined) {

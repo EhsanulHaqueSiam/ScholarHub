@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Info } from "lucide-react";
+import { useEffect } from "react";
+import { analytics } from "@/lib/analytics";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,6 +45,10 @@ function CountryLandingPage() {
   const countryName = getCountryName(country);
   const flag = getCountryFlag(country);
   const countryData = getCountryData(country);
+
+  useEffect(() => {
+    analytics.track("country_page_viewed", { country, country_name: countryName });
+  }, [country, countryName]);
 
   // SEO data query (combined to reduce Convex call count)
   const landingData = useQuery(api.seo.getCountryLandingData, { countryCode: country });

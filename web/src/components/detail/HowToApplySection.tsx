@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { analytics } from "@/lib/analytics";
 import { useCountdown, formatDeadlineDisplay } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import { urgencyLabelMap, urgencyVariantMap } from "@/lib/shared";
@@ -120,6 +121,7 @@ export function HowToApplySection({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Apply now (opens in new tab)"
+                onClick={() => analytics.track("scholarship_apply_clicked", { url: applicationUrl })}
               >
                 Apply Now
               </a>

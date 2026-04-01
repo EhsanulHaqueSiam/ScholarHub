@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { LayoutGrid, List } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { analytics } from "@/lib/analytics";
 import { CollectionHeader } from "@/components/collections/CollectionHeader";
 import { DesktopPagination } from "@/components/directory/Pagination";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
@@ -54,6 +55,12 @@ function CollectionDetailPage() {
 
   // Collection metadata
   const collection = useQuery(api.collections.getCollectionBySlug, { slug });
+
+  useEffect(() => {
+    if (collection) {
+      analytics.track("collection_viewed", { slug, name: collection.name });
+    }
+  }, [collection, slug]);
 
   // Local state
   const [sort, setSort] = useState<string | null>(null);

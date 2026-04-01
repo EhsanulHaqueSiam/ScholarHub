@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { ArrowRight } from "lucide-react";
+import { useEffect } from "react";
+import { analytics } from "@/lib/analytics";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { BackToTop } from "@/components/layout/BackToTop";
@@ -56,6 +58,10 @@ function DegreeLandingPage() {
   const { degree } = Route.useParams();
   const normalizedDegree = normalizeDegreeSlug(degree);
   const degreeName = formatDegreeName(normalizedDegree);
+
+  useEffect(() => {
+    analytics.track("degree_page_viewed", { degree: normalizedDegree, degree_name: degreeName });
+  }, [normalizedDegree, degreeName]);
 
   // SEO data query (combined to reduce Convex call count)
   const landingData = useQuery(api.seo.getDegreeLandingData, { degreeLevel: normalizedDegree });

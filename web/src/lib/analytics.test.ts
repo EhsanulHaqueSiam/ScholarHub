@@ -32,7 +32,7 @@ describe("analytics", () => {
     );
   });
 
-  it("fires for all 7 event names without errors", () => {
+  it("fires for all event names without errors", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     const events: EventName[] = [
       "wizard_started",
@@ -42,6 +42,17 @@ describe("analytics", () => {
       "scholarship_clicked_from_results",
       "profile_edited",
       "profile_cleared",
+      "scholarship_viewed",
+      "scholarship_apply_clicked",
+      "scholarship_shared",
+      "scholarship_compared",
+      "search_performed",
+      "filter_applied",
+      "collection_viewed",
+      "country_page_viewed",
+      "degree_page_viewed",
+      "eligibility_check_completed",
+      "shortlist_added",
     ];
     for (const event of events) {
       expect(() => analytics.track(event, {})).not.toThrow();

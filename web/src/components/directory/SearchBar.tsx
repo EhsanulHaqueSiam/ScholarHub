@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { analytics } from "@/lib/analytics";
 import { getCountryFlag } from "@/lib/countries";
 import { FIELDS_OF_STUDY, parseCommaSeparated, serializeCommaSeparated } from "@/lib/filters";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,7 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
   function handleSuggestionClick(suggestion: (typeof combinedSuggestions)[number]) {
     setIsOpen(false);
     setActiveIndex(-1);
+    analytics.track("search_performed", { query: query, suggestion_type: suggestion.type });
     if (suggestion.type === "scholarship") {
       navigate({ to: `/scholarships/${suggestion.slug}` });
     } else {
