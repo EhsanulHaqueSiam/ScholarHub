@@ -4,10 +4,8 @@
  *
  * Run: node scripts/export-static-data.mjs
  *
- * This is called during build (prebuild) or via GitHub Actions after scrape runs.
- * Produces a single JSON file that the frontend loads instead of querying Convex.
- *
- * Convex cost: exactly 1 function call per export.
+ * Uses paginated queries to stay under Convex's return-value field limit.
+ * Total Convex calls: ~10-12 (1 metadata + ~9 scholarship pages for 1700 records).
  */
 
 import { ConvexHttpClient } from "convex/browser";
@@ -41,36 +39,66 @@ async function main() {
   const client = new ConvexHttpClient(CONVEX_URL);
 
   try {
-    // Single Convex call to get everything
-    const data = await client.query("export:getAllPublicData", {});
+    // 1. Fetch metadata (collections + SEO caches) — 1 call
+    const metadata = await client.query("export:getMetadata", {});
+    console.log(`   Metadata: ${metadata.collections.length} collections, ${metadata.countryCaches.length} countries`);
 
-    // Ensure output directory exists
+    // 2. Fetch scholarships in pages — ~9 calls for 1700 records
+    const allScholarships = [];
+    const allSummaries = [];
+    let page = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const result = await client.query("export:getScholarshipsPage", { page });
+      allScholarships.push(...result.scholarships);
+      allSummaries.push(...result.summaries);
+      hasMore = result.hasMore;
+      page++;
+      process.stdout.write(`   Page ${page}: ${allScholarships.length} scholarships\r`);
+    }
+    console.log(`   Fetched ${allScholarships.length} scholarships in ${page} pages`);
+
+    // 3. Build slug index client-side
+    const slugIndex = {};
+    for (let i = 0; i < allScholarships.length; i++) {
+      const slug = allScholarships[i].slug;
+      if (slug) slugIndex[slug] = i;
+    }
+
+    // 4. Assemble final data
+    const data = {
+      scholarships: allScholarships,
+      summaries: allSummaries,
+      slugIndex,
+      collections: metadata.collections,
+      taxonomy: metadata.taxonomy,
+      countryCaches: metadata.countryCaches,
+      degreeCaches: metadata.degreeCaches,
+      exportedAt: Date.now(),
+    };
+
+    // 5. Write output
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-
-    // Write the full dataset
     const jsonStr = JSON.stringify(data);
     const outputPath = path.join(OUTPUT_DIR, "scholarships.json");
     fs.writeFileSync(outputPath, jsonStr);
 
     const sizeMB = (Buffer.byteLength(jsonStr) / 1024 / 1024).toFixed(2);
-    console.log(`✅ Exported ${data.summaries?.length ?? 0} scholarships (${sizeMB} MB)`);
-    console.log(`   Collections: ${data.collections?.length ?? 0}`);
-    console.log(`   Countries: ${Object.keys(data.countryCaches ?? {}).length}`);
-    console.log(`   Degrees: ${Object.keys(data.degreeCaches ?? {}).length}`);
+    console.log(`✅ Exported ${allSummaries.length} scholarships (${sizeMB} MB)`);
     console.log(`   Output: ${outputPath}`);
 
-    // Also write a timestamp file for cache busting
     fs.writeFileSync(
       path.join(OUTPUT_DIR, "export-meta.json"),
       JSON.stringify({
         exportedAt: data.exportedAt,
-        scholarshipCount: data.summaries?.length ?? 0,
-        collectionCount: data.collections?.length ?? 0,
+        scholarshipCount: allSummaries.length,
+        collectionCount: metadata.collections.length,
+        pages: page,
       }),
     );
   } catch (err) {
     console.error("❌ Export failed:", err.message);
-    // Don't fail the build — write empty fallback so the app still works
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     fs.writeFileSync(
       path.join(OUTPUT_DIR, "scholarships.json"),
@@ -80,12 +108,12 @@ async function main() {
         slugIndex: {},
         collections: [],
         taxonomy: { topCountries: [], allDegrees: [] },
-        countryCaches: {},
-        degreeCaches: {},
+        countryCaches: [],
+        degreeCaches: [],
         exportedAt: Date.now(),
       }),
     );
-    console.log("⚠️  Wrote empty fallback data — app will use Convex queries as fallback");
+    console.log("⚠️  Wrote empty fallback — app will use Convex queries as fallback");
   }
 }
 

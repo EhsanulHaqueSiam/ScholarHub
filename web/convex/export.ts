@@ -1,80 +1,81 @@
 /**
- * Single bulk export query for static JSON generation.
+ * Bulk export queries for static JSON generation.
  *
- * Returns ALL public-facing data in one Convex call so the build-time
- * export script only needs 1 function call total. The exported JSON
- * replaces ~20 useQuery hooks on public pages.
+ * Split into separate queries to stay under Convex's 1024-field return limit.
+ * The export script calls these sequentially (3 calls total).
  */
 
+import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { toScholarshipSummary } from "./scholarshipSummary";
 
 const EXPORT_SCAN_CAP = 8000;
 
-export const getAllPublicData = query({
-  args: {},
-  handler: async (ctx) => {
-    // 1. All published scholarships (full documents for detail pages + summaries for lists)
+/**
+ * Export published scholarships in pages (avoids field-count limit).
+ * Call with page=0, page=1, etc. until result.hasMore is false.
+ */
+export const getScholarshipsPage = query({
+  args: { page: v.number() },
+  handler: async (ctx, { page }) => {
+    const PAGE_SIZE = 200;
+    const offset = page * PAGE_SIZE;
+
     const published = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(EXPORT_SCAN_CAP);
+      .take(offset + PAGE_SIZE);
 
-    // 2. All active collections
-    const collections = await ctx.db
-      .query("collections")
-      .withIndex("by_sort_order", (q) => q.eq("status", "active"))
-      .collect();
+    const slice = published.slice(offset, offset + PAGE_SIZE);
 
-    // 3. SEO taxonomy cache
-    const taxonomyCache = await ctx.db
-      .query("seo_taxonomy_cache")
-      .withIndex("by_key", (q: any) => q.eq("key", "global"))
-      .first();
-
-    // 4. Country caches
-    const countryCaches = await ctx.db.query("seo_country_cache").collect();
-
-    // 5. Degree caches
-    const degreeCaches = await ctx.db.query("seo_degree_cache").collect();
-
-    // 6. Resolve sources for attribution (lean: just name + url)
+    // Resolve sources for this page
     const sourceIds = new Set<string>();
-    for (const s of published) {
-      for (const id of s.source_ids) {
-        sourceIds.add(String(id));
-      }
+    for (const s of slice) {
+      for (const id of s.source_ids) sourceIds.add(String(id));
     }
     const sourceMap: Record<string, { name: string; url: string }> = {};
     for (const id of sourceIds) {
       const source = await ctx.db.get(id as any);
-      if (source) {
-        sourceMap[id] = { name: source.name, url: source.url };
-      }
+      if (source) sourceMap[id] = { name: source.name, url: source.url };
     }
 
-    // Build scholarship detail records (full data for slug-based lookup)
-    const scholarshipDetails = published.map((s) => ({
+    const scholarships = slice.map((s) => ({
       ...s,
       resolved_sources: s.source_ids
         .map((id) => sourceMap[String(id)])
         .filter(Boolean),
     }));
 
-    // Build summaries for list pages
-    const summaries = published.map((s) => toScholarshipSummary(s));
-
-    // Build slug index for O(1) detail lookup
-    const slugIndex: Record<string, number> = {};
-    for (let i = 0; i < published.length; i++) {
-      const slug = published[i].slug;
-      if (slug) slugIndex[slug] = i;
-    }
+    const summaries = slice.map((s) => toScholarshipSummary(s));
 
     return {
-      scholarships: scholarshipDetails,
+      scholarships,
       summaries,
-      slugIndex,
+      hasMore: slice.length === PAGE_SIZE,
+    };
+  },
+});
+
+/**
+ * Export collections + SEO caches (small, fits in one call).
+ */
+export const getMetadata = query({
+  args: {},
+  handler: async (ctx) => {
+    const collections = await ctx.db
+      .query("collections")
+      .withIndex("by_sort_order", (q) => q.eq("status", "active"))
+      .take(200);
+
+    const taxonomyCache = await ctx.db
+      .query("seo_taxonomy_cache")
+      .withIndex("by_key", (q: any) => q.eq("key", "global"))
+      .first();
+
+    const countryCaches = await ctx.db.query("seo_country_cache").take(200);
+    const degreeCaches = await ctx.db.query("seo_degree_cache").take(50);
+
+    return {
       collections: collections.map((c) => ({
         _id: c._id,
         name: c.name,
@@ -102,30 +103,21 @@ export const getAllPublicData = query({
             allDegrees: taxonomyCache.all_degrees,
           }
         : { topCountries: [], allDegrees: [] },
-      countryCaches: Object.fromEntries(
-        countryCaches.map((c) => [
-          c.country_code,
-          {
-            total: c.total,
-            fullyFunded: c.fully_funded,
-            degreeLevels: c.degree_levels,
-            topFields: c.top_fields,
-            closingSoon: c.closing_soon,
-          },
-        ]),
-      ),
-      degreeCaches: Object.fromEntries(
-        degreeCaches.map((c) => [
-          c.degree_level,
-          {
-            total: c.total,
-            fullyFunded: c.fully_funded,
-            topCountries: c.top_countries,
-            topFields: c.top_fields,
-          },
-        ]),
-      ),
-      exportedAt: Date.now(),
+      countryCaches: countryCaches.map((c) => ({
+        code: c.country_code,
+        total: c.total,
+        fullyFunded: c.fully_funded,
+        degreeLevels: c.degree_levels,
+        topFields: c.top_fields,
+        closingSoon: c.closing_soon,
+      })),
+      degreeCaches: degreeCaches.map((c) => ({
+        level: c.degree_level,
+        total: c.total,
+        fullyFunded: c.fully_funded,
+        topCountries: c.top_countries,
+        topFields: c.top_fields,
+      })),
     };
   },
 });

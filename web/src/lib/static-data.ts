@@ -23,25 +23,21 @@ export interface StaticData {
     topCountries: Array<{ code: string; count: number }>;
     allDegrees: Array<{ level: string; count: number }>;
   };
-  countryCaches: Record<
-    string,
-    {
-      total: number;
-      fullyFunded: number;
-      degreeLevels: string[];
-      topFields: string[];
-      closingSoon: number;
-    }
-  >;
-  degreeCaches: Record<
-    string,
-    {
-      total: number;
-      fullyFunded: number;
-      topCountries: string[];
-      topFields: string[];
-    }
-  >;
+  countryCaches: Array<{
+    code: string;
+    total: number;
+    fullyFunded: number;
+    degreeLevels: string[];
+    topFields: string[];
+    closingSoon: number;
+  }>;
+  degreeCaches: Array<{
+    level: string;
+    total: number;
+    fullyFunded: number;
+    topCountries: string[];
+    topFields: string[];
+  }>;
   exportedAt: number;
 }
 
@@ -172,8 +168,9 @@ export function getCollectionBySlug(data: StaticData, slug: string): StaticColle
 
 /** Get country landing data */
 export function getCountryLandingData(data: StaticData, countryCode: string) {
+  const cached = data.countryCaches.find((c) => c.code === countryCode);
   return {
-    stats: data.countryCaches[countryCode] ?? {
+    stats: cached ?? {
       total: 0,
       fullyFunded: 0,
       degreeLevels: [],
@@ -187,8 +184,9 @@ export function getCountryLandingData(data: StaticData, countryCode: string) {
 
 /** Get degree landing data */
 export function getDegreeLandingData(data: StaticData, degreeLevel: string) {
+  const cached = data.degreeCaches.find((c) => c.level === degreeLevel);
   return {
-    stats: data.degreeCaches[degreeLevel] ?? {
+    stats: cached ?? {
       total: 0,
       fullyFunded: 0,
       topCountries: [],
