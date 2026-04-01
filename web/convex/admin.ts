@@ -32,40 +32,32 @@ import { wrapDB } from "./triggers";
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(wrapDB));
 const ADMIN_COUNT_PAGE_SIZE = 256;
-const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 300;
-const ADMIN_STATUS_FALLBACK_SCAN_CAP = 10000;
-const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 5000;
-const ADMIN_PENDING_SOURCE_SCAN_CAP = 5000;
-const ADMIN_POSSIBLE_DUP_SCAN_CAP = 6000;
+const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 100;
+const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 2000;
+const ADMIN_PENDING_SOURCE_SCAN_CAP = 2000;
+const ADMIN_POSSIBLE_DUP_SCAN_CAP = 2000;
 const ADMIN_DASHBOARD_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
 type AdminDashboardStatus = (typeof ADMIN_DASHBOARD_STATUSES)[number];
 
 async function getCachedStatusCounts(
   ctx: { db: any },
 ): Promise<Record<AdminDashboardStatus, number | null>> {
-  const counts: Record<AdminDashboardStatus, number | null> = {
-    pending_review: null,
-    published: null,
-    rejected: null,
-    archived: null,
+  const rows = await Promise.all(
+    ADMIN_DASHBOARD_STATUSES.map(async (status) => {
+      const row = await ctx.db
+        .query("scholarship_counts")
+        .withIndex("by_status", (q: any) => q.eq("status", status))
+        .first();
+      return [status, row?.count ?? null] as const;
+    }),
+  );
+
+  return {
+    pending_review: rows[0][1],
+    published: rows[1][1],
+    rejected: rows[2][1],
+    archived: rows[3][1],
   };
-
-  const rows = await ctx.db.query("scholarship_counts").collect();
-  for (const row of rows) {
-    if ((ADMIN_DASHBOARD_STATUSES as readonly string[]).includes(row.status)) {
-      counts[row.status as AdminDashboardStatus] = row.count;
-    }
-  }
-
-  return counts;
-}
-
-async function countStatusFallback(ctx: { db: any }, status: AdminDashboardStatus): Promise<number> {
-  const rows = await ctx.db
-    .query("scholarships")
-    .withIndex("by_status", (q: any) => q.eq("status", status))
-    .take(ADMIN_STATUS_FALLBACK_SCAN_CAP);
-  return rows.length;
 }
 
 async function countPublishedSince(ctx: { db: any }, sinceTs: number): Promise<number> {
@@ -125,13 +117,13 @@ export const getAdminStats = query({
 
     const oneDayAgo = Date.now() - 86400000;
     const cachedCounts = await getCachedStatusCounts(ctx);
-    const [pending, published, rejected, archived, publishedToday] = await Promise.all([
-      cachedCounts.pending_review ?? countStatusFallback(ctx, "pending_review"),
-      cachedCounts.published ?? countStatusFallback(ctx, "published"),
-      cachedCounts.rejected ?? countStatusFallback(ctx, "rejected"),
-      cachedCounts.archived ?? countStatusFallback(ctx, "archived"),
-      countPublishedSince(ctx, oneDayAgo),
-    ]);
+    const [publishedToday] = await Promise.all([countPublishedSince(ctx, oneDayAgo)]);
+
+    // Cache-only status totals: avoid full-table fallback scans in this hot query.
+    const pending = cachedCounts.pending_review ?? 0;
+    const published = cachedCounts.published ?? 0;
+    const rejected = cachedCounts.rejected ?? 0;
+    const archived = cachedCounts.archived ?? 0;
 
     const total = pending + published + rejected + archived;
 

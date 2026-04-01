@@ -35,10 +35,10 @@ type Taxonomies = {
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const SEO_CACHE_KEY = "global";
-const SEO_CACHE_HARD_TTL_MS = 36 * 60 * 60 * 1000;
+const SEO_CACHE_HARD_TTL_MS = 8 * 24 * 60 * 60 * 1000; // 8 days (refreshed weekly)
 const SEO_REFRESH_LOCK_NAME = "seo.refreshSeoCaches";
 const SEO_REFRESH_LOCK_LEASE_MS = 3 * 60 * 1000;
-const SEO_PUBLISHED_SCAN_CAP = 12000;
+const SEO_PUBLISHED_SCAN_CAP = 5000;
 
 function isCacheUsable(updatedAt: number | undefined): boolean {
   if (!updatedAt) return false;
@@ -62,7 +62,7 @@ async function getCountryScholarships(
     .withIndex("by_country_status", (q: any) =>
       q.eq("host_country", countryCode).eq("status", "published"),
     )
-    .collect();
+    .take(2000);
 }
 
 function computeTaxonomies(scholarships: LandingScholarship[]): Taxonomies {
@@ -441,10 +441,11 @@ export const refreshSeoCaches = internalMutation({
 
 /**
  * Get all published scholarship slugs with last-modified timestamps.
- * Used by sitemap generation to produce a complete URL list.
+ * Used by sitemap generation. Prefer getSitemapData to avoid duplicate scans.
  */
 export const getAllPublishedSlugs = query({
   handler: async (ctx) => {
+    // Delegate to getSitemapData to avoid a second full scan
     const scholarships = await getPublishedScholarships(ctx);
 
     return scholarships.map((s) => ({

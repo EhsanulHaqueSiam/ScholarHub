@@ -42,6 +42,11 @@ def scrape(ctx: click.Context, json_logs: bool) -> None:
     is_flag=True,
     help="Force full scrape for selected sources (disable incremental mode)",
 )
+@click.option(
+    "--direct",
+    is_flag=True,
+    help="Direct mode: enrich locally and write to scholarships table (skip raw_records)",
+)
 @click.pass_context
 def run(
     ctx: click.Context,
@@ -49,6 +54,7 @@ def run(
     source: str | None,
     wave: int | None,
     full_refresh: bool,
+    direct: bool,
 ) -> None:
     """Run scraping pipeline."""
     from scholarhub_pipeline.pipeline.runner import PipelineRunner
@@ -66,6 +72,7 @@ def run(
         wave_filter=wave,
         full_refresh=full_refresh,
         json_logs=ctx.obj.get("json_logs", False),
+        direct_mode=direct,
     )
     stats = asyncio.run(runner.run())
     if not ctx.obj.get("json_logs"):

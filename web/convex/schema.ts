@@ -127,12 +127,8 @@ export default defineSchema({
     has_api: v.optional(v.boolean()),
     estimated_volume: v.optional(v.string()),
   })
-    .index("by_category", ["category"])
-    .index("by_trust_level", ["trust_level"])
     .index("by_active_category", ["is_active", "category"])
     .index("by_url", ["url"])
-    .index("by_wave", ["wave"])
-    .index("by_active_wave", ["is_active", "wave"])
     .index("by_name", ["name"]),
 
   // Raw scraped records -- staging area before aggregation
@@ -171,9 +167,7 @@ export default defineSchema({
     .index("by_source", ["source_id"])
     .index("by_canonical", ["canonical_id"])
     .index("by_match_status", ["match_status"])
-    .index("by_canonical_match", ["canonical_id", "match_status"])
-    .index("by_source_external", ["source_id", "external_id"])
-    .index("by_scrape_run", ["scrape_run_id"]),
+    .index("by_source_external", ["source_id", "external_id"]),
 
   // Canonical scholarships -- merged, deduplicated, publishable
   scholarships: defineTable({
@@ -250,14 +244,13 @@ export default defineSchema({
   })
     .index("by_status", ["status"])
     .index("by_country_status", ["host_country", "status"])
-    .index("by_funding_status", ["funding_type", "status"])
-    .index("by_deadline", ["application_deadline"])
     .index("by_status_deadline", ["status", "application_deadline"])
-    .index("by_country_deadline", ["host_country", "application_deadline"])
     .index("by_slug", ["slug"])
-    .index("by_prestige_status", ["prestige_tier", "status"])
     .index("by_match_key", ["match_key"])
     .index("by_status_prestige_deadline", ["status", "prestige_tier", "application_deadline"])
+    // NOTE: Remove this search index once all public pages use static JSON + client-side search.
+    // It costs write amplification on every scholarship mutation.
+    // Queries using it: directory.ts (listScholarships search path, listScholarshipsBatch, searchSuggestions), shortlist.ts
     .searchIndex("search_scholarships", {
       searchField: "search_text",
       filterFields: ["status", "host_country", "funding_type", "prestige_tier", "scholarship_type"],

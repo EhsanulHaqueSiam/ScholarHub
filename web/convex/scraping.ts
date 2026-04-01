@@ -61,16 +61,13 @@ export const completeRun = mutation({
     if (args.status === "completed" && args.records_inserted > 0) {
       await runAfterSafe(ctx, 0, internal.aggregation.aggregateBatch, {
         cursor: null,
-        batchSize: 10,
+        batchSize: 6,
         runId: args.run_id,
       });
     }
 
-    // Refresh SEO caches after successful scrape runs with any data movement.
-    if (args.status === "completed" && args.records_inserted + args.records_updated > 0) {
-      await runAfterSafe(ctx, 15 * 1000, internal.seo.refreshSeoCaches, {});
-      await runAfterSafe(ctx, 20 * 1000, internal.directory.refreshHomepageCache, {});
-    }
+    // SEO + homepage cache refreshes removed to save function calls.
+    // Weekly crons handle cache refresh instead.
   },
 });
 
@@ -479,6 +476,136 @@ export const updateLastScraped = mutation({
     await ctx.db.patch(args.source_id, {
       last_scraped: Date.now(),
     });
+  },
+});
+
+/**
+ * Complete a run AND batch-update all source telemetry in a single mutation.
+ * Replaces: completeRun + N×recordSourceResult + N×updateSourceHealth + N×updateLastScraped.
+ * Reduces per-run function calls from ~300+ to 1.
+ */
+export const completeRunBatch = mutation({
+  args: {
+    run_id: v.id("scrape_runs"),
+    status: scrapeRunStatusValidator,
+    sources_completed: v.number(),
+    sources_failed: v.number(),
+    records_inserted: v.number(),
+    records_updated: v.number(),
+    records_unchanged: v.number(),
+    duration_seconds: v.number(),
+    source_results: v.array(
+      v.object({
+        source_id: v.id("sources"),
+        status: sourceResultStatusValidator,
+        method_used: scrapeMethodValidator,
+        records_found: v.number(),
+        records_new: v.number(),
+        duration_seconds: v.number(),
+        bytes_downloaded: v.optional(v.number()),
+        error_type: v.optional(v.string()),
+        error_message: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // 1. Complete the run
+    await ctx.db.patch(args.run_id, {
+      completed_at: now,
+      status: args.status,
+      sources_completed: args.sources_completed,
+      sources_failed: args.sources_failed,
+      records_inserted: args.records_inserted,
+      records_updated: args.records_updated,
+      records_unchanged: args.records_unchanged,
+      duration_seconds: args.duration_seconds,
+    });
+
+    // 2. Batch-process all source results
+    for (const sr of args.source_results) {
+      // Record per-source telemetry
+      await ctx.db.insert("scrape_run_sources", {
+        run_id: args.run_id,
+        source_id: sr.source_id,
+        status: sr.status,
+        method_used: sr.method_used,
+        records_found: sr.records_found,
+        records_new: sr.records_new,
+        records_updated: 0,
+        records_unchanged: 0,
+        duration_seconds: sr.duration_seconds,
+        bytes_downloaded: sr.bytes_downloaded,
+        error_type: sr.error_type,
+        error_message: sr.error_message,
+      });
+
+      // Update last_scraped
+      await ctx.db.patch(sr.source_id, { last_scraped: now });
+
+      // Update source_health
+      const existing = await ctx.db
+        .query("source_health")
+        .withIndex("by_source", (q) => q.eq("source_id", sr.source_id))
+        .first();
+
+      if (sr.status === "success") {
+        const currentYield = sr.records_found;
+        if (existing) {
+          const prevAvg = existing.avg_yield ?? currentYield;
+          const newAvg = Math.round((prevAvg * 0.7 + currentYield * 0.3) * 100) / 100;
+          await ctx.db.patch(existing._id, {
+            status: currentYield >= newAvg * 0.5 ? "healthy" : "degraded",
+            consecutive_failures: 0,
+            last_success: now,
+            last_yield: currentYield,
+            avg_yield: newAvg,
+            last_error_type: undefined,
+            last_error_message: undefined,
+          });
+        } else {
+          await ctx.db.insert("source_health", {
+            source_id: sr.source_id,
+            status: "healthy",
+            consecutive_failures: 0,
+            last_success: now,
+            last_yield: currentYield,
+            avg_yield: currentYield,
+            yield_trend: "stable",
+          });
+        }
+      } else {
+        if (existing) {
+          const newFailures = existing.consecutive_failures + 1;
+          await ctx.db.patch(existing._id, {
+            status: newFailures >= 5 ? "failing" : existing.status,
+            consecutive_failures: newFailures,
+            last_failure: now,
+            last_error_type: sr.error_type,
+            last_error_message: sr.error_message,
+          });
+        } else {
+          await ctx.db.insert("source_health", {
+            source_id: sr.source_id,
+            status: "degraded",
+            consecutive_failures: 1,
+            last_failure: now,
+            last_error_type: sr.error_type,
+            last_error_message: sr.error_message,
+          });
+        }
+      }
+    }
+
+    // 3. Trigger aggregation if records were inserted
+    if (args.status === "completed" && args.records_inserted > 0) {
+      await runAfterSafe(ctx, 0, internal.aggregation.aggregateBatch, {
+        cursor: null,
+        batchSize: 6,
+        runId: args.run_id,
+      });
+    }
   },
 });
 

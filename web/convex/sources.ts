@@ -12,6 +12,22 @@ export const getByName = query({
   },
 });
 
+/**
+ * Get all sources as a name→{_id, last_scraped, is_active} map in one call.
+ * Replaces N individual getByName queries during pipeline cache priming.
+ */
+export const getAllSourceMap = query({
+  args: {},
+  handler: async (ctx) => {
+    const sources = await ctx.db.query("sources").take(500);
+    const map: Record<string, { _id: string; last_scraped?: number; is_active: boolean; url: string }> = {};
+    for (const s of sources) {
+      map[s.name] = { _id: s._id, last_scraped: s.last_scraped, is_active: s.is_active, url: s.url };
+    }
+    return map;
+  },
+});
+
 export const getByUrl = query({
   args: { url: v.string() },
   handler: async (ctx, args) => {

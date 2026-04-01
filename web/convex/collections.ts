@@ -25,8 +25,8 @@ import {
 } from "./schema";
 import { toScholarshipSummary } from "./scholarshipSummary";
 
-const COLLECTION_SCAN_CAP = 12000;
-const COLLECTION_PAGE_SCAN_CAP = 6000;
+const COLLECTION_SCAN_CAP = 5000;
+const COLLECTION_PAGE_SCAN_CAP = 3000;
 
 // ---- Helper: Check if a scholarship matches a collection's filter criteria ----
 

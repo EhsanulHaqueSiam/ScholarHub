@@ -45,7 +45,7 @@ export const suggestUniversities = query({
 
 export const countryScholarshipCounts = query({
   handler: async (ctx) => {
-    const caches = await ctx.db.query("seo_country_cache").collect();
+    const caches = await ctx.db.query("seo_country_cache").take(200);
     const counts: Record<string, number> = {};
     for (const c of caches) {
       counts[c.country_code] = c.total;

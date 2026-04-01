@@ -2,7 +2,7 @@ name: Scrape Scholarships
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Daily at 04:00 UTC
+    - cron: '0 4 * * 0' # Weekly on Sunday at 04:00 UTC (saves Convex calls)
   workflow_dispatch:
     inputs:
       source:
@@ -100,6 +100,7 @@ jobs:
           if [ "$INPUT_FULL_REFRESH" == "true" ]; then
             ARGS="$ARGS --full-refresh"
           fi
+          ARGS="$ARGS --direct"
           cd scraping && uv run scrape --json-logs run $ARGS
 
       - name: Upload buffer on failure

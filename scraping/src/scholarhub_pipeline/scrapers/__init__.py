@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from scholarhub_pipeline.scrapers.api_scraper import ApiScraper
 from scholarhub_pipeline.scrapers.base import BaseScraper
+from scholarhub_pipeline.scrapers.github_scraper import GitHubScraper
 from scholarhub_pipeline.scrapers.html_scraper import HtmlScraper
 from scholarhub_pipeline.scrapers.jsonld_extractor import JsonLdExtractor
 from scholarhub_pipeline.scrapers.rss_scraper import RssScraper
@@ -27,6 +28,7 @@ SCRAPER_MAP: dict[str, type[BaseScraper]] = {
     "scrape": HtmlScraper,
     "scrapling": StealthyScraper,
     "inertia": InertiaScraper,
+    "github": GitHubScraper,
 }
 
 
@@ -55,6 +57,7 @@ def get_scraper(config: SourceConfig, method: str | None = None) -> BaseScraper:
 __all__ = [
     "ApiScraper",
     "BaseScraper",
+    "GitHubScraper",
     "HtmlScraper",
     "InertiaScraper",
     "JsonLdExtractor",

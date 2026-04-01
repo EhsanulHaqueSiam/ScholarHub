@@ -24,6 +24,7 @@ import {
   toSlug,
 } from "./aggregationHelpers";
 import { classifyScholarshipType } from "./classification";
+import { runAfterSafe } from "./scheduler";
 import { wrapDB } from "./triggers";
 
 // Trigger-wrapped internalMutation so scholarship writes fire prestige/search_text triggers
@@ -36,6 +37,9 @@ const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "sti
 const DEFAULT_AGGREGATION_BATCH_SIZE = 6;
 const MAX_CANDIDATES_PER_MATCH_KEY = 12;
 const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 12;
+const ARCHIVE_EXPIRED_BATCH_SIZE = 50;
+const ARCHIVE_GRACE_MS = 30 * 24 * 60 * 60 * 1000;
+const MIN_VALID_DEADLINE_MS = 0;
 const AGGREGATION_LOCK_NAME = "aggregation.aggregateBatch";
 const AGGREGATION_LOCK_LEASE_MS = 2 * 60 * 1000;
 const AGGREGATION_RETRY_DELAY_MS = 3 * 1000;
@@ -131,7 +135,8 @@ export const aggregateBatch = triggeredInternalMutation({
       for (const record of unpromoted) {
         // Skip records with empty titles
         if (!record.title || !record.title.trim()) {
-          await ctx.db.patch(record._id, { match_status: "new" as const });
+          // Delete invalid rows so they don't get re-selected forever as "unpromoted".
+          await ctx.db.delete(record._id);
           continue;
         }
 
@@ -303,37 +308,43 @@ export const archiveExpired = triggeredInternalMutation({
   args: {
     cursor: v.union(v.string(), v.null()),
   },
-  handler: async (ctx, args) => {
-    const batchSize = 50;
+  handler: async (ctx) => {
+    const archiveBefore = Date.now() - ARCHIVE_GRACE_MS;
     let archived = 0;
 
-    // Query published scholarships
-    const scholarships = await ctx.db
+    // Repeatedly archive from the oldest expired published slice.
+    // We re-query from the start each batch because we mutate `status`.
+    const expiredPublished = await ctx.db
       .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(batchSize);
+      .withIndex("by_status_deadline", (q) =>
+        q.eq("status", "published")
+          .gte("application_deadline", MIN_VALID_DEADLINE_MS)
+          .lt("application_deadline", archiveBefore),
+      )
+      .take(ARCHIVE_EXPIRED_BATCH_SIZE);
 
-    for (const scholarship of scholarships) {
-      // application_deadline on scholarships is stored as number (epoch ms)
-      if (shouldArchive(scholarship.application_deadline)) {
-        const reopenMonth = scholarship.application_deadline
-          ? computeExpectedReopenMonth([scholarship.application_deadline])
-          : null;
+    for (const scholarship of expiredPublished) {
+      const reopenMonth = scholarship.application_deadline
+        ? computeExpectedReopenMonth([scholarship.application_deadline])
+        : null;
 
-        await ctx.db.patch(scholarship._id, {
-          status: "archived",
-          ...(reopenMonth !== null ? { expected_reopen_month: reopenMonth } : {}),
-        });
-        archived++;
-      }
+      await ctx.db.patch(scholarship._id, {
+        status: "archived",
+        ...(reopenMonth !== null ? { expected_reopen_month: reopenMonth } : {}),
+      });
+      archived++;
     }
 
-    // Self-schedule next batch if we found any to check
-    if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.aggregation.archiveExpired, { cursor: null });
+    const complete = expiredPublished.length < ARCHIVE_EXPIRED_BATCH_SIZE;
+    if (!complete) {
+      await runAfterSafe(ctx, 0, internal.aggregation.archiveExpired, { cursor: null });
     }
 
-    return { archived };
+    return {
+      archived,
+      processed: expiredPublished.length,
+      complete,
+    };
   },
 });
 

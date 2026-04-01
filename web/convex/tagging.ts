@@ -8,6 +8,7 @@
 import { v } from "convex/values";
 import { internalMutation as rawInternalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { runAfterSafe } from "./scheduler";
 import { getRegion } from "../src/lib/regions";
 
 // ---- Tag Rule Definitions ----
@@ -199,19 +200,19 @@ export function computeAutoTags(
  */
 export const backfillSuggestedTags = rawInternalMutation({
   args: {
-    cursor: v.optional(v.string()),
+    cursor: v.optional(v.union(v.string(), v.null())),
     batchSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const batchSize = args.batchSize ?? 50;
     let processed = 0;
 
-    const scholarships = await ctx.db
+    const page = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(batchSize);
+      .paginate({ cursor: args.cursor ?? null, numItems: batchSize });
 
-    for (const scholarship of scholarships) {
+    for (const scholarship of page.page) {
       const newSuggestions = computeSuggestedTags({
         title: scholarship.title,
         description: scholarship.description,
@@ -236,13 +237,18 @@ export const backfillSuggestedTags = rawInternalMutation({
       }
     }
 
-    // If batch was full, schedule next batch
-    if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.tagging.backfillSuggestedTags, {
+    // Continue with the returned cursor to avoid reprocessing the first page forever.
+    if (!page.isDone) {
+      await runAfterSafe(ctx, 0, internal.tagging.backfillSuggestedTags, {
+        cursor: page.continueCursor,
         batchSize,
       });
     }
 
-    return { processed };
+    return {
+      processed,
+      complete: page.isDone,
+      nextCursor: page.isDone ? null : page.continueCursor,
+    };
   },
 });

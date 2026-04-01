@@ -44,15 +44,16 @@ describe("Directory count cache", () => {
     await insertScholarship(t, sourceId, "published");
     await insertScholarship(t, sourceId, "published");
 
-    // Fallback path (no cache yet) still returns accurate count.
+    // Warm cache explicitly.
+    await t.mutation(anyApi.directory.refreshScholarshipCountCacheInternal, {
+      status: "published",
+    });
+
+    // Should return warmed cached value.
     const initial = await t.query(anyApi.directory.getScholarshipCount, {
       status: "published",
     });
     expect(initial).toBe(2);
-
-    await t.mutation(anyApi.directory.refreshScholarshipCountCache, {
-      status: "published",
-    });
 
     // Add one more published record after cache warmup.
     await insertScholarship(t, sourceId, "published");
@@ -64,7 +65,7 @@ describe("Directory count cache", () => {
     expect(cached).toBe(2);
 
     // After explicit refresh, cache reflects latest total.
-    await t.mutation(anyApi.directory.refreshScholarshipCountCache, {
+    await t.mutation(anyApi.directory.refreshScholarshipCountCacheInternal, {
       status: "published",
     });
     const refreshed = await t.query(anyApi.directory.getScholarshipCount, {
@@ -73,4 +74,3 @@ describe("Directory count cache", () => {
     expect(refreshed).toBe(3);
   });
 });
-

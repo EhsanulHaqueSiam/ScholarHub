@@ -21,9 +21,9 @@ export const DEFAULT_RELATED_WEIGHTS = {
 };
 
 export type RelatedWeights = typeof DEFAULT_RELATED_WEIGHTS;
-const MAX_COUNTRY_CANDIDATES = 40;
-const MAX_GLOBAL_CANDIDATES = 30;
-const RELATED_REFRESH_BATCH_SIZE = 60;
+const MAX_COUNTRY_CANDIDATES = 20;
+const MAX_GLOBAL_CANDIDATES = 15;
+const RELATED_REFRESH_BATCH_SIZE = 30;
 
 // ---- Pure Functions ----
 
@@ -190,18 +190,34 @@ export async function computeRelatedIds(
 
 /**
  * Get related scholarships for a given scholarship.
- * Reads precomputed related_ids and fetches each document.
+ * Uses precomputed related_ids when available, otherwise computes on-demand.
  */
 export const getRelatedScholarships = query({
   args: { scholarshipId: v.id("scholarships") },
   handler: async (ctx, args) => {
     const scholarship = await ctx.db.get(args.scholarshipId);
-    if (!scholarship || !scholarship.related_ids) return [];
+    if (!scholarship) return [];
 
+    // Use precomputed IDs if available
+    if (scholarship.related_ids && scholarship.related_ids.length > 0) {
+      const related = await Promise.all(
+        scholarship.related_ids.map(async (id) => {
+          const doc = await ctx.db.get(id);
+          if (!doc || doc.status !== "published") return null;
+          if (doc.application_deadline && doc.application_deadline < Date.now()) return null;
+          return doc;
+        }),
+      );
+
+      const valid = related.filter((r): r is NonNullable<typeof r> => r !== null);
+      if (valid.length >= 3) return valid;
+    }
+
+    // On-demand computation (lightweight: only same-country candidates)
+    const relatedIds = await computeRelatedIds(ctx, scholarship);
     const related = await Promise.all(
-      scholarship.related_ids.map(async (id) => {
+      relatedIds.map(async (id) => {
         const doc = await ctx.db.get(id);
-        // Only return published, non-expired scholarships
         if (!doc || doc.status !== "published") return null;
         if (doc.application_deadline && doc.application_deadline < Date.now()) return null;
         return doc;

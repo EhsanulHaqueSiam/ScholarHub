@@ -1,6 +1,6 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import {
   degreeLevelValidator,
   fundingTypeValidator,
@@ -12,9 +12,9 @@ import { toScholarshipSummary } from "./scholarshipSummary";
 
 const CACHED_COUNT_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
 const HOMEPAGE_FEATURED_CACHE_KEY = "featured_scholarships";
-const HOMEPAGE_FEATURED_CACHE_TTL_MS = 60 * 60 * 1000;
-const STATUS_COUNT_SCAN_CAP = 12000;
-const BATCH_QUERY_SCAN_CAP = 600;
+const HOMEPAGE_FEATURED_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h (was 1h)
+const STATUS_COUNT_SCAN_CAP = 5000;
+const BATCH_QUERY_SCAN_CAP = 400;
 
 type CachedCountStatus = (typeof CACHED_COUNT_STATUSES)[number];
 
@@ -183,8 +183,7 @@ export const listScholarships = query({
 
       // Search index doesn't support .filter() or pagination natively the same way,
       // so we take a capped set and post-filter then manually paginate.
-      // Cap at 1000 to avoid reading the entire table on broad searches.
-      const allResults = await searchQuery.take(1000);
+      const allResults = await searchQuery.take(500);
       const filtered = applyPostFilters(allResults, {
         hostCountries:
           args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
@@ -381,37 +380,6 @@ export const getFeaturedScholarships = query({
 });
 
 /**
- * Refresh homepage featured scholarship cache.
- * Called by cron and scrape-complete hooks.
- */
-export const refreshHomepageCache = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const docs = await computeFeaturedScholarshipsDocs(ctx, { limit: 12 });
-    const scholarship_ids = docs.slice(0, 12).map((doc) => doc._id);
-    const existing = await ctx.db
-      .query("homepage_cache")
-      .withIndex("by_key", (q: any) => q.eq("key", HOMEPAGE_FEATURED_CACHE_KEY))
-      .first();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        scholarship_ids,
-        updated_at: Date.now(),
-      });
-    } else {
-      await ctx.db.insert("homepage_cache", {
-        key: HOMEPAGE_FEATURED_CACHE_KEY,
-        scholarship_ids,
-        updated_at: Date.now(),
-      });
-    }
-
-    return { refreshed: true, featuredCount: scholarship_ids.length };
-  },
-});
-
-/**
  * Get total count of published (or specified status) scholarships.
  */
 export const getScholarshipCount = query({
@@ -425,26 +393,9 @@ export const getScholarshipCount = query({
       .withIndex("by_status", (q) => q.eq("status", status))
       .first();
 
-    if (cached) return cached.count;
-    return await countScholarshipsByStatus(ctx, status);
-  },
-});
-
-/**
- * Refresh cached scholarship counts by status.
- * If status is omitted, refreshes all statuses used by the directory.
- */
-export const refreshScholarshipCountCache = mutation({
-  args: {
-    status: v.optional(scholarshipStatusValidator),
-  },
-  handler: async (ctx, args) => {
-    const statuses = args.status ? [args.status as CachedCountStatus] : [...CACHED_COUNT_STATUSES];
-    const results = await Promise.all(statuses.map((status) => refreshCountCache(ctx, status)));
-    return {
-      refreshed: results.length,
-      results,
-    };
+    // Cache-only read path: avoid expensive fallback scans in hot queries.
+    // A missing row is treated as zero until the next refresh pass.
+    return cached?.count ?? 0;
   },
 });
 

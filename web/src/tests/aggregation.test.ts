@@ -452,6 +452,67 @@ describe("archiveExpired", () => {
     expect(scholarships).toHaveLength(1);
     expect(scholarships[0].status).toBe("published");
   });
+
+  it("archives across paginated batches without reprocessing the first page", async () => {
+    const t = convexTest(schema, modules);
+    const fortyFiveDaysAgo = Date.now() - 45 * 24 * 60 * 60 * 1000;
+    const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
+
+    await t.run(async (ctx: any) => {
+      for (let i = 0; i < 65; i++) {
+        await ctx.db.insert("scholarships", {
+          title: `Expired Scholarship ${i}`,
+          slug: `expired-scholarship-${i}`,
+          description: "Expired",
+          provider_organization: "TestOrg",
+          host_country: "US",
+          degree_levels: ["master"],
+          funding_type: "fully_funded",
+          status: "published",
+          source_ids: [],
+          application_deadline: fortyFiveDaysAgo - i,
+        });
+      }
+
+      for (let i = 0; i < 65; i++) {
+        await ctx.db.insert("scholarships", {
+          title: `Recent Scholarship ${i}`,
+          slug: `recent-scholarship-${i}`,
+          description: "Recent",
+          provider_organization: "TestOrg",
+          host_country: "US",
+          degree_levels: ["master"],
+          funding_type: "fully_funded",
+          status: "published",
+          source_ids: [],
+          application_deadline: tenDaysAgo - i,
+        });
+      }
+    });
+
+    let totalArchived = 0;
+    let iterations = 0;
+
+    while (true) {
+      const result = await t.mutation(anyApi.aggregation.archiveExpired, { cursor: null });
+      totalArchived += result.archived;
+      iterations += 1;
+
+      if (result.complete) break;
+
+      // Guard in test to fail fast if bounded progress regresses.
+      expect(iterations).toBeLessThan(10);
+    }
+
+    expect(iterations).toBeGreaterThan(1);
+    expect(totalArchived).toBe(65);
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships.filter((s: any) => s.status === "archived")).toHaveLength(65);
+    expect(scholarships.filter((s: any) => s.status === "published")).toHaveLength(65);
+  });
 });
 
 describe("auto-publish (ADMN-06)", () => {

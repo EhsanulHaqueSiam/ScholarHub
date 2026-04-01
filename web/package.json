@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/export-static-data.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "export-data": "node scripts/export-static-data.mjs"
   },
   "dependencies": {
     "@convex-dev/react-query": "^0.1.0",

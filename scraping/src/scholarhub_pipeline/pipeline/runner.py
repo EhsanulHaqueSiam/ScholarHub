@@ -2,7 +2,10 @@
 
 Ties together config discovery, scraper instantiation, ingestion batching,
 health tracking, and heartbeat monitoring into a single run lifecycle:
-startRun -> scrape sources -> completeRun.
+startRun -> scrape sources -> completeRunBatch.
+
+Optimized for Convex free-plan: uses bulk source query + batch completion
+to minimize function calls (~8 per run instead of ~400).
 """
 
 from __future__ import annotations
@@ -16,9 +19,6 @@ import structlog
 from scholarhub_pipeline.configs import discover_configs
 from scholarhub_pipeline.ingestion.batch import BatchAccumulator
 from scholarhub_pipeline.ingestion.dedup import SourceDeduplicator
-from scholarhub_pipeline.monitoring.health import HealthTracker
-from scholarhub_pipeline.monitoring.heartbeat import HeartbeatMonitor
-from scholarhub_pipeline.monitoring.rot_detector import RotDetector
 from scholarhub_pipeline.pipeline.buffer import LocalBuffer
 from scholarhub_pipeline.pipeline.scheduler import SourceScheduler
 from scholarhub_pipeline.scrapers import get_scraper
@@ -64,6 +64,11 @@ class PipelineRunner:
     Discovers source configs, filters by schedule/method/source, executes
     scraping with batched ingestion, tracks health per source, and records
     run lifecycle in Convex.
+
+    Optimized for Convex free-plan:
+    - 1 query to load all sources (replaces N getByName calls)
+    - Larger batch sizes (200 instead of 50) for record ingestion
+    - 1 completeRunBatch mutation at end (replaces N per-source telemetry calls)
     """
 
     def __init__(
@@ -74,27 +79,19 @@ class PipelineRunner:
         wave_filter: int | None = None,
         full_refresh: bool = False,
         json_logs: bool = False,
+        direct_mode: bool = False,
     ) -> None:
-        """Initialize the pipeline runner.
-
-        Args:
-            convex_client: PipelineConvexClient instance, or None for dry-run.
-            dry_run: If True, write results to local JSON instead of Convex.
-            source_filter: Only run a specific source by name or source_id.
-            wave_filter: Only run sources in a specific wave number.
-            full_refresh: If True, force full (non-incremental) scraping behavior.
-            json_logs: If True, configure structlog for JSON output.
-        """
         self.dry_run = dry_run
         self.source_filter = source_filter
         self.wave_filter = wave_filter
         self.full_refresh = full_refresh
+        self.direct_mode = direct_mode
         self.convex = convex_client
         self.buffer = LocalBuffer()
-        self._source_cache: dict[str, dict[str, Any] | None] = {}
-        self._source_id_cache: dict[str, dict[str, Any] | None] = {}
-        self._source_url_cache: dict[str, dict[str, Any] | None] = {}
-        self._supports_get_by_url: bool = True
+        # Bulk source map: name -> {_id, last_scraped, is_active, url}
+        self._source_map: dict[str, dict[str, Any]] = {}
+        # Per-source results accumulated during the run for batch completion
+        self._source_results: list[dict[str, Any]] = []
         self.stats: dict[str, int] = {
             "sources_targeted": 0,
             "sources_completed": 0,
@@ -104,17 +101,37 @@ class PipelineRunner:
             "records_unchanged": 0,
         }
 
-    def _query_source_by_url(self, url: str) -> dict[str, Any] | None:
-        if not self.convex or not self._supports_get_by_url:
-            return None
+    def _load_source_map(self) -> None:
+        """Load all sources in a single Convex query (replaces N getByName calls)."""
+        if not self.convex:
+            return
         try:
-            return self.convex.query(
-                "sources:getByUrl",
-                {"url": url},
-            )
-        except Exception:  # noqa: BLE001 - Convex query errors vary by runtime
-            self._supports_get_by_url = False
-            return None
+            self._source_map = self.convex.query("sources:getAllSourceMap", {})
+            logger.info("source_map_loaded", count=len(self._source_map))
+        except Exception as e:
+            logger.warning("source_map_load_failed", error=str(e))
+            self._source_map = {}
+
+    def _resolve_convex_id(self, config: SourceConfig) -> str | None:
+        """Resolve a source config's name to its Convex document _id using the bulk map."""
+        source = self._source_map.get(config.name)
+        if source:
+            return str(source["_id"])
+        # Fallback: try by URL match
+        for _name, info in self._source_map.items():
+            if info.get("url") == config.url:
+                return str(info["_id"])
+        return None
+
+    def _is_source_active(self, config: SourceConfig) -> bool:
+        """Check if source is active using the bulk map."""
+        source = self._source_map.get(config.name)
+        return bool(source and source.get("is_active", True))
+
+    def _get_last_scraped(self, config: SourceConfig) -> int | None:
+        """Get last_scraped timestamp from the bulk map."""
+        source = self._source_map.get(config.name)
+        return source.get("last_scraped") if source else None
 
     @staticmethod
     def _truncate_text(value: Any, max_len: int) -> str | None:
@@ -156,7 +173,6 @@ class PipelineRunner:
             if v is not None and k in CONVEX_RAW_RECORD_FIELDS
         }
 
-        # Required fields and canonical source identifier.
         title = self._truncate_text(cleaned.get("title"), MAX_TEXT_LENGTHS["title"])
         if not title:
             return None
@@ -169,7 +185,6 @@ class PipelineRunner:
         if not cleaned["source_url"]:
             return None
 
-        # Keep writes lean: trim long strings before sending to Convex.
         for field, max_len in MAX_TEXT_LENGTHS.items():
             if field in ("title", "source_url"):
                 continue
@@ -180,7 +195,6 @@ class PipelineRunner:
                 else:
                     cleaned[field] = trimmed
 
-        # Normalize list fields to dedup and cap payload size.
         for field, (max_items, max_item_len) in LIST_FIELD_LIMITS.items():
             if field in cleaned:
                 normalized_list = self._normalize_list_field(
@@ -198,20 +212,19 @@ class PipelineRunner:
     async def run(self) -> dict[str, int]:
         """Execute full pipeline run.
 
-        Discovers configs, filters by schedule and method, scrapes each source,
-        ingests records, and records the run in Convex.
-
         Returns:
-            Dict of yield metrics: sources_targeted, sources_completed,
-            sources_failed, records_inserted, records_updated, records_unchanged.
+            Dict of yield metrics.
         """
         start_time = time.time()
 
+        # Load all sources in one query (replaces N getByName calls)
+        if self.convex and not self.dry_run:
+            self._load_source_map()
+
         # Discover and filter configs
         all_configs = discover_configs()
-        scheduler = SourceScheduler(self.convex) if self.convex else None
-
         configs = all_configs
+
         if self.source_filter:
             configs = [
                 c
@@ -220,12 +233,13 @@ class PipelineRunner:
             ]
         if self.wave_filter is not None:
             configs = [c for c in configs if getattr(c, "wave", None) == self.wave_filter]
-        if scheduler and not self.dry_run:
-            self._prime_source_cache(configs)
-            configs = scheduler.filter_active(configs, source_lookup=self._source_id_cache)
-            # Manual single-source runs should execute immediately even if not yet due.
+
+        # Filter inactive sources using the bulk map
+        if self.convex and not self.dry_run:
+            configs = [c for c in configs if self._is_source_active(c)]
+            # Filter due sources (skip if single-source manual run)
             if not self.source_filter:
-                configs = scheduler.filter_due_sources(configs, source_lookup=self._source_id_cache)
+                configs = self._filter_due_sources(configs)
 
         self.stats["sources_targeted"] = len(configs)
         logger.info(
@@ -235,7 +249,7 @@ class PipelineRunner:
             full_refresh=self.full_refresh,
         )
 
-        # Start run in Convex
+        # Start run in Convex (1 mutation)
         run_id = None
         if self.convex and not self.dry_run:
             run_id = self.convex.mutation(
@@ -246,99 +260,60 @@ class PipelineRunner:
                 },
             )
 
-        # Group by method and execute in order
+        # Group by method and execute
         if configs:
-            grouped = SourceScheduler(self.convex).group_by_method(configs) if self.convex else {}
-            if not self.convex:
-                # Without Convex client, group manually
-                grouped = self._group_configs(configs)
-
-            for method in ["api", "jsonld", "ajax", "rss", "inertia", "scrape", "scrapling"]:
+            grouped = self._group_configs(configs)
+            for method in ["github", "api", "jsonld", "ajax", "rss", "inertia", "scrape", "scrapling"]:
                 method_configs = grouped.get(method, [])
                 for config in method_configs:
                     await self._scrape_source(config, run_id)
 
-        # Complete run
+        # Complete run with batched telemetry (1 mutation replaces ~300)
         duration = time.time() - start_time
         if self.convex and run_id and not self.dry_run:
             complete_stats = {k: v for k, v in self.stats.items() if k != "sources_targeted"}
-            self.convex.mutation(
-                "scraping:completeRun",
-                {
-                    "run_id": run_id,
-                    "status": "completed",
-                    **complete_stats,
-                    "duration_seconds": int(duration),
-                },
-            )
             try:
-                HeartbeatMonitor(self.convex).update()
-            except Exception:
-                logger.debug("heartbeat_update_skipped", reason="mutation not deployed")
+                self.convex.mutation(
+                    "scraping:completeRunBatch",
+                    {
+                        "run_id": run_id,
+                        "status": "completed",
+                        **complete_stats,
+                        "duration_seconds": int(duration),
+                        "source_results": self._source_results,
+                    },
+                )
+            except Exception as e:
+                # Fallback to legacy completeRun if completeRunBatch not deployed yet
+                logger.warning("batch_complete_failed_fallback", error=str(e))
+                self.convex.mutation(
+                    "scraping:completeRun",
+                    {
+                        "run_id": run_id,
+                        "status": "completed",
+                        **complete_stats,
+                        "duration_seconds": int(duration),
+                    },
+                )
 
         logger.info("pipeline_complete", duration=round(duration, 1), **self.stats)
         return self.stats
 
-    def _resolve_convex_id(self, config: SourceConfig) -> str | None:
-        """Resolve a source config's name to its Convex document _id.
-
-        Args:
-            config: SourceConfig with name field.
-
-        Returns:
-            Convex document _id string, or None if not found.
-        """
-        if not self.convex:
-            return None
-        source = self._source_id_cache.get(config.source_id)
-
-        if source is None:
-            if config.name not in self._source_cache:
-                self._source_cache[config.name] = self.convex.query(
-                    "sources:getByName",
-                    {"name": config.name},
-                )
-            source = self._source_cache.get(config.name)
-        if source is None:
-            if config.url not in self._source_url_cache:
-                self._source_url_cache[config.url] = self._query_source_by_url(config.url)
-            source = self._source_url_cache.get(config.url)
-
-        if source:
-            self._source_id_cache[config.source_id] = source
-            self._source_cache[config.name] = source
-            self._source_url_cache[config.url] = source
-
-        source_id = source.get("_id") if source else None
-        return str(source_id) if source_id else None
-
-    def _prime_source_cache(self, configs: list[SourceConfig]) -> None:
-        """Warm a local cache of source records to reduce repeated Convex queries."""
-        if not self.convex:
-            return
+    def _filter_due_sources(self, configs: list[SourceConfig]) -> list[SourceConfig]:
+        """Filter to sources that are due for scraping based on frequency."""
+        now = time.time() * 1000  # JS-compatible timestamp
+        due: list[SourceConfig] = []
         for config in configs:
-            if config.source_id in self._source_id_cache:
-                continue
-            source = self.convex.query(
-                "sources:getByName",
-                {"name": config.name},
-            )
-            if source is None:
-                source = self._query_source_by_url(config.url)
-            self._source_id_cache[config.source_id] = source
-            self._source_cache[config.name] = source
-            if source and config.url not in self._source_url_cache:
-                self._source_url_cache[config.url] = source
+            last_scraped = self._get_last_scraped(config)
+            freq_hours = getattr(config, "scrape_frequency_hours", 168) or 168
+            freq_ms = freq_hours * 3600 * 1000
+            if last_scraped is None or (now - last_scraped) >= freq_ms:
+                due.append(config)
+        return due
 
     @staticmethod
     def _resolve_method_chain(config: SourceConfig) -> list[str]:
-        """Resolve ordered method attempts for a source.
-
-        Order of preference:
-        1. Explicit config methods (primary then secondary).
-        2. Runtime fallbacks for JS/AJAX-heavy pages.
-        3. Structured-data fallback for sparse HTML pages.
-        """
+        """Resolve ordered method attempts for a source."""
         chain: list[str] = []
 
         def add(method: str | None) -> None:
@@ -351,39 +326,26 @@ class PipelineRunner:
         selectors = config.selectors or {}
         primary = config.primary_method
 
-        # Inertia.js endpoints expose props/items_key and require protocol headers.
         if selectors.get("items_key"):
             add("inertia")
-
-        # AJAX/API-style selectors indicate a JSON payload shape.
         if (
             (selectors.get("items_path") or selectors.get("cursor_path"))
             and "api" not in chain
             and "ajax" not in chain
         ):
             add("ajax")
-
-        # For JS-rendered and anti-bot pages, always try Scrapling as fallback.
         if primary in {"scrape", "jsonld", "inertia"}:
             add("scrapling")
         elif primary == "scrapling":
             add("scrape")
-
-        # If CSS selectors fail but page exposes schema.org payloads, JSON-LD can recover data.
         if primary in {"scrape", "scrapling"}:
             add("jsonld")
 
         return chain
 
     async def _scrape_source(self, config: SourceConfig, run_id: str | None) -> None:
-        """Scrape a single source, handle errors, update health.
-
-        Args:
-            config: SourceConfig for the source to scrape.
-            run_id: Convex run ID for telemetry, or None in dry-run mode.
-        """
+        """Scrape a single source, accumulate results for batch completion."""
         source_start = time.time()
-        # Resolve Convex document _id for this source (needed by all mutations)
         convex_source_id = self._resolve_convex_id(config) if not self.dry_run else None
         if self.convex and not self.dry_run and not convex_source_id:
             self.stats["sources_failed"] += 1
@@ -391,21 +353,14 @@ class PipelineRunner:
                 "source_missing_in_convex",
                 source=config.name,
                 source_id=config.source_id,
-                source_url=config.url,
             )
             return
 
-        source_meta = (
-            self._source_id_cache.get(config.source_id)
-            or self._source_url_cache.get(config.url)
-            or self._source_cache.get(config.name)
-        )
         config.incremental_mode = bool(
             self.convex
             and not self.dry_run
             and not self.full_refresh
-            and source_meta
-            and source_meta.get("last_scraped"),
+            and self._get_last_scraped(config),
         )
         method_chain = self._resolve_method_chain(config)
         method_timeout = float(getattr(config, "method_timeout_seconds", 45.0) or 45.0)
@@ -443,7 +398,6 @@ class PipelineRunner:
                             "source_method_fallback_success",
                             source=config.name,
                             method=method,
-                            attempted_methods=method_chain[: index + 1],
                             records=len(records),
                         )
                     break
@@ -470,8 +424,23 @@ class PipelineRunner:
             if self.dry_run:
                 self.buffer.save(records, config.source_id)
                 self.stats["records_inserted"] += len(records)
+            elif self.convex and convex_source_id and self.direct_mode:
+                # Direct mode: enrich locally, write to scholarships table
+                from scholarhub_pipeline.ingestion.direct_batch import DirectBatchAccumulator
+                dbatch = DirectBatchAccumulator(self.convex, batch_size=50)
+                dedup = SourceDeduplicator()
+                for record in records:
+                    if not dedup.is_duplicate(record, config.source_id):
+                        record["source_id"] = convex_source_id
+                        dbatch.add(record)
+                        records_for_ingest += 1
+                dbatch.flush_remaining()
+                cumulative = dbatch.stats
+                self.stats["records_inserted"] += cumulative.get("inserted", 0)
+                self.stats["records_updated"] += cumulative.get("updated", 0)
             elif self.convex and run_id and convex_source_id:
-                batch = BatchAccumulator(self.convex, run_id)
+                # Legacy mode: write to raw_records (larger batches)
+                batch = BatchAccumulator(self.convex, run_id, batch_size=200)
                 dedup = SourceDeduplicator()
                 for record in records:
                     if not dedup.is_duplicate(record, config.source_id):
@@ -493,58 +462,17 @@ class PipelineRunner:
             duration = time.time() - source_start
             self.stats["sources_completed"] += 1
 
-            # Update health and telemetry. These should never fail the source scrape.
-            if self.convex and not self.dry_run and convex_source_id and run_id:
-                try:
-                    health_after_success = HealthTracker(self.convex).record_success(
-                        convex_source_id,
-                        records_for_ingest,
-                    )
-                    # Auto-close GitHub Issue if source recovered
-                    issue_num = (
-                        health_after_success.get("github_issue_number")
-                        if health_after_success
-                        else None
-                    )
-                    if issue_num is not None:
-                        from scholarhub_pipeline.monitoring.github_issues import (
-                            GitHubIssueManager,
-                        )
-
-                        mgr = GitHubIssueManager(self.convex)
-                        if mgr.close_issue(issue_num, config.name):
-                            self.convex.mutation(
-                                "scraping:clearGitHubIssueNumber",
-                                {"source_id": convex_source_id},
-                            )
-
-                    self.convex.mutation(
-                        "scraping:updateLastScraped",
-                        {
-                            "source_id": convex_source_id,
-                        },
-                    )
-                    self.convex.mutation(
-                        "scraping:recordSourceResult",
-                        {
-                            "run_id": run_id,
-                            "source_id": convex_source_id,
-                            "status": "success",
-                            "method_used": method_used,
-                            "records_found": scraper.records_found,
-                            "records_new": records_for_ingest,
-                            "records_updated": 0,
-                            "records_unchanged": 0,
-                            "duration_seconds": int(duration),
-                            "bytes_downloaded": bytes_downloaded,
-                        },
-                    )
-                except Exception as telemetry_error:
-                    logger.warning(
-                        "source_postprocess_failed",
-                        source=config.name,
-                        error=str(telemetry_error),
-                    )
+            # Accumulate result for batch completion (no per-source Convex calls)
+            if convex_source_id:
+                self._source_results.append({
+                    "source_id": convex_source_id,
+                    "status": "success",
+                    "method_used": method_used,
+                    "records_found": scraper.records_found if scraper else 0,
+                    "records_new": records_for_ingest,
+                    "duration_seconds": int(duration),
+                    "bytes_downloaded": bytes_downloaded,
+                })
 
             logger.info(
                 "source_complete",
@@ -556,7 +484,10 @@ class PipelineRunner:
         except Exception as e:
             duration = time.time() - source_start
             self.stats["sources_failed"] += 1
+
+            from scholarhub_pipeline.monitoring.rot_detector import RotDetector
             error_type = RotDetector().classify_error(None, e)
+
             logger.error(
                 "source_failed",
                 source=config.name,
@@ -564,113 +495,23 @@ class PipelineRunner:
                 error_type=error_type,
             )
 
-            if self.convex and not self.dry_run and convex_source_id:
-                try:
-                    # Record failure in per-run telemetry stream.
-                    if run_id:
-                        try:
-                            self.convex.mutation(
-                                "scraping:recordSourceResult",
-                                {
-                                    "run_id": run_id,
-                                    "source_id": convex_source_id,
-                                    "status": "failed",
-                                    "method_used": method_used,
-                                    "records_found": 0,
-                                    "records_new": 0,
-                                    "records_updated": 0,
-                                    "records_unchanged": 0,
-                                    "duration_seconds": int(duration),
-                                    "bytes_downloaded": bytes_downloaded,
-                                    "error_type": error_type,
-                                    "error_message": str(e)[:500],
-                                },
-                            )
-                        except Exception as source_result_error:
-                            logger.warning(
-                                "source_result_record_failed",
-                                source=config.name,
-                                error=str(source_result_error),
-                            )
-
-                    health_result = HealthTracker(self.convex).record_failure(
-                        convex_source_id, error_type, str(e),
-                    )
-                    # Mark attempt time so consistently failing sources do not run again
-                    # immediately on every manual/scheduled trigger.
-                    self.convex.mutation(
-                        "scraping:updateLastScraped",
-                        {"source_id": convex_source_id},
-                    )
-                    rot = RotDetector()
-                    failures = health_result.get("consecutive_failures", 0) if health_result else 0
-
-                    # Create GitHub Issue if alert threshold reached and no existing issue
-                    if rot.should_alert(failures):
-                        from scholarhub_pipeline.monitoring.github_issues import (
-                            GitHubIssueManager,
-                        )
-
-                        existing_issue = (
-                            health_result.get("github_issue_number")
-                            if health_result
-                            else None
-                        )
-                        if existing_issue is None:
-                            mgr = GitHubIssueManager(self.convex)
-                            issue_number = mgr.create_rot_issue(
-                                source_name=config.name,
-                                source_url=config.url,
-                                error_type=error_type,
-                                consecutive_failures=failures,
-                                last_success=None,
-                                suggested_fix=mgr.suggest_fix(error_type, config.url),
-                            )
-                            if issue_number is not None:
-                                self.convex.mutation(
-                                    "scraping:storeGitHubIssueNumber",
-                                    {
-                                        "source_id": convex_source_id,
-                                        "issue_number": issue_number,
-                                    },
-                                )
-
-                    # Auto-deactivation check
-                    if rot.should_deactivate(failures, error_type):
-                        reason = (
-                            f"Auto-deactivated: {failures} consecutive failures, "
-                            f"last error: {error_type}"
-                        )
-                        self.convex.mutation(
-                            "scraping:deactivateSource",
-                            {
-                                "source_id": convex_source_id,
-                                "reason": reason,
-                            },
-                        )
-                        logger.warning(
-                            "source_deactivated",
-                            source=config.name,
-                            failures=failures,
-                            error_type=error_type,
-                        )
-                except Exception as telemetry_error:
-                    logger.warning(
-                        "source_failure_postprocess_failed",
-                        source=config.name,
-                        error=str(telemetry_error),
-                    )
+            # Accumulate failure for batch completion (no per-source Convex calls)
+            if convex_source_id:
+                self._source_results.append({
+                    "source_id": convex_source_id,
+                    "status": "failed",
+                    "method_used": method_used,
+                    "records_found": 0,
+                    "records_new": 0,
+                    "duration_seconds": int(duration),
+                    "bytes_downloaded": bytes_downloaded,
+                    "error_type": error_type,
+                    "error_message": str(e)[:500],
+                })
 
     @staticmethod
     def _group_configs(configs: list[SourceConfig]) -> dict[str, list[SourceConfig]]:
-        """Group configs by primary_method without a scheduler instance.
-
-        Args:
-            configs: List of source configs to group.
-
-        Returns:
-            Dict mapping method name to list of configs.
-        """
+        """Group configs by primary_method."""
         groups: dict[str, list[SourceConfig]] = {}
         for config in configs:
             method = config.primary_method
