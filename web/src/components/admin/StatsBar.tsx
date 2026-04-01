@@ -7,7 +7,7 @@ interface AdminStats {
   published: number;
   rejected: number;
   publishedToday: number;
-  sourceHealth: { healthy: number; degraded: number; failing: number };
+  sourceHealth: { healthy: number; degraded: number; failing: number; total: number };
 }
 
 export function StatsBar({ stats }: { stats: AdminStats | undefined }) {
@@ -24,9 +24,7 @@ export function StatsBar({ stats }: { stats: AdminStats | undefined }) {
     );
   }
 
-  const totalSources =
-    stats.sourceHealth.healthy + stats.sourceHealth.degraded + stats.sourceHealth.failing;
-  const sourceHealthLabel = `${stats.sourceHealth.healthy}/${totalSources} healthy`;
+  const sourceHealthLabel = `${stats.sourceHealth.healthy}/${stats.sourceHealth.total} healthy`;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">

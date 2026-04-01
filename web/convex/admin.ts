@@ -127,7 +127,10 @@ export const getAdminStats = query({
 
     const total = pending + published + rejected + archived;
 
-    const healthRecords = await ctx.db.query("source_health").collect();
+    const [healthRecords, allSources] = await Promise.all([
+      ctx.db.query("source_health").collect(),
+      ctx.db.query("sources").collect(),
+    ]);
     let healthy = 0;
     let degraded = 0;
     let failing = 0;
@@ -155,6 +158,7 @@ export const getAdminStats = query({
       healthy,
       degraded,
       failing: failing + deactivated,
+      total: allSources.length,
     };
 
     return {
