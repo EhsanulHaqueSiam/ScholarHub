@@ -64,12 +64,13 @@ function DegreeLandingPage() {
   }, [normalizedDegree, degreeName]);
 
   // SEO data query (combined to reduce Convex call count)
-  const landingData = useQuery(api.seo.getDegreeLandingData, { degreeLevel: normalizedDegree });
-  const degreeStats = landingData?.stats;
-  const scholarships = useQuery(api.directory.listScholarshipsBatch, {
-    degreeLevels: [normalizedDegree],
-    limit: 12,
+  const landingData = useQuery(api.seo.getDegreeLandingData, {
+    degreeLevel: normalizedDegree,
+    includeScholarships: true,
+    scholarshipLimit: 12,
   });
+  const degreeStats = landingData?.stats;
+  const scholarships = landingData?.scholarships;
 
   // Generate SEO content when stats are loaded
   const statsForContent = degreeStats
@@ -103,8 +104,8 @@ function DegreeLandingPage() {
     { name: `${degreeName} Scholarships`, url: `${SITE_URL}/scholarships/degree/${degree}` },
   ];
 
-  const isLoadingScholarships = scholarships === undefined;
-  const hasScholarships = scholarships && scholarships.length > 0;
+  const isLoadingScholarships = landingData === undefined;
+  const hasScholarships = (scholarships?.length ?? 0) > 0;
 
   return (
     <div className="min-h-screen">

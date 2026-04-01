@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
+import { toScholarshipSummary } from "./scholarshipSummary";
 
 type LandingScholarship = {
   _id: string;
@@ -39,6 +40,10 @@ const SEO_CACHE_HARD_TTL_MS = 8 * 24 * 60 * 60 * 1000; // 8 days (refreshed week
 const SEO_REFRESH_LOCK_NAME = "seo.refreshSeoCaches";
 const SEO_REFRESH_LOCK_LEASE_MS = 3 * 60 * 1000;
 const SEO_PUBLISHED_SCAN_CAP = 5000;
+const LANDING_SCHOLARSHIP_LIMIT_DEFAULT = 12;
+const LANDING_SCHOLARSHIP_LIMIT_MAX = 24;
+const COUNTRY_LANDING_SCAN_CAP = 400;
+const DEGREE_LANDING_SCAN_CAP = 500;
 
 function isCacheUsable(updatedAt: number | undefined): boolean {
   if (!updatedAt) return false;
@@ -63,6 +68,64 @@ async function getCountryScholarships(
       q.eq("host_country", countryCode).eq("status", "published"),
     )
     .take(2000);
+}
+
+function clampLandingScholarshipLimit(limit: number | undefined): number {
+  if (!limit || Number.isNaN(limit)) return LANDING_SCHOLARSHIP_LIMIT_DEFAULT;
+  return Math.max(1, Math.min(Math.floor(limit), LANDING_SCHOLARSHIP_LIMIT_MAX));
+}
+
+function sortByDeadlineAsc<
+  T extends {
+    application_deadline?: number | null;
+  },
+>(a: T, b: T): number {
+  const aDeadline = a.application_deadline ?? Number.POSITIVE_INFINITY;
+  const bDeadline = b.application_deadline ?? Number.POSITIVE_INFINITY;
+  return aDeadline - bDeadline;
+}
+
+function toLandingScholarshipSummaries(
+  scholarships: Array<LandingScholarship | any>,
+  limit: number,
+) {
+  return [...scholarships]
+    .sort(sortByDeadlineAsc)
+    .slice(0, limit)
+    .map((s) => toScholarshipSummary(s));
+}
+
+async function getCountryLandingScholarshipSummaries(
+  ctx: { db: any },
+  countryCode: string,
+  limit: number,
+) {
+  const scanCap = Math.min(COUNTRY_LANDING_SCAN_CAP, Math.max(limit * 8, limit));
+  const countryScholarships = await ctx.db
+    .query("scholarships")
+    .withIndex("by_country_status", (q: any) =>
+      q.eq("host_country", countryCode).eq("status", "published"),
+    )
+    .take(scanCap);
+
+  return toLandingScholarshipSummaries(countryScholarships, limit);
+}
+
+async function getDegreeLandingScholarshipSummaries(
+  ctx: { db: any },
+  degreeLevel: string,
+  limit: number,
+) {
+  const scanCap = Math.min(DEGREE_LANDING_SCAN_CAP, Math.max(limit * 20, 80));
+  const candidates = await ctx.db
+    .query("scholarships")
+    .withIndex("by_status_deadline", (q: any) => q.eq("status", "published"))
+    .take(scanCap);
+
+  const degreeScholarships = candidates.filter((s: any) =>
+    Array.isArray(s.degree_levels) ? s.degree_levels.includes(degreeLevel) : false,
+  );
+  return toLandingScholarshipSummaries(degreeScholarships, limit);
 }
 
 function computeTaxonomies(scholarships: LandingScholarship[]): Taxonomies {
@@ -545,8 +608,15 @@ export const getLandingTaxonomies = query({
  * Combines country stats with shared cross-link taxonomies.
  */
 export const getCountryLandingData = query({
-  args: { countryCode: v.string() },
-  handler: async (ctx, { countryCode }) => {
+  args: {
+    countryCode: v.string(),
+    includeScholarships: v.optional(v.boolean()),
+    scholarshipLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, { countryCode, includeScholarships, scholarshipLimit }) => {
+    const withScholarships = includeScholarships ?? false;
+    const cardLimit = clampLandingScholarshipLimit(scholarshipLimit);
+
     const [countryCache, taxonomyCache] = await Promise.all([
       ctx.db
         .query("seo_country_cache")
@@ -555,10 +625,14 @@ export const getCountryLandingData = query({
       getTaxonomyCacheDoc(ctx),
     ]);
 
-    const stats =
-      countryCache && isCacheUsable(countryCache.updated_at)
-        ? countryStatsFromCache(countryCache)
-        : computeCountryStats(await getCountryScholarships(ctx, countryCode));
+    let countryScholarships: LandingScholarship[] | undefined;
+    let stats: CountryStats;
+    if (countryCache && isCacheUsable(countryCache.updated_at)) {
+      stats = countryStatsFromCache(countryCache);
+    } else {
+      countryScholarships = await getCountryScholarships(ctx, countryCode);
+      stats = computeCountryStats(countryScholarships);
+    }
 
     let taxonomies: Taxonomies;
     if (taxonomyCache && isCacheUsable(taxonomyCache.updated_at)) {
@@ -567,10 +641,17 @@ export const getCountryLandingData = query({
       taxonomies = computeTaxonomies(await getPublishedScholarships(ctx));
     }
 
+    const scholarships = withScholarships
+      ? countryScholarships
+        ? toLandingScholarshipSummaries(countryScholarships, cardLimit)
+        : await getCountryLandingScholarshipSummaries(ctx, countryCode, cardLimit)
+      : undefined;
+
     return {
       stats,
       topCountries: taxonomies.topCountries,
       allDegrees: taxonomies.allDegrees,
+      scholarships,
     };
   },
 });
@@ -580,8 +661,15 @@ export const getCountryLandingData = query({
  * Combines degree stats with shared cross-link taxonomies.
  */
 export const getDegreeLandingData = query({
-  args: { degreeLevel: v.string() },
-  handler: async (ctx, { degreeLevel }) => {
+  args: {
+    degreeLevel: v.string(),
+    includeScholarships: v.optional(v.boolean()),
+    scholarshipLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, { degreeLevel, includeScholarships, scholarshipLimit }) => {
+    const withScholarships = includeScholarships ?? false;
+    const cardLimit = clampLandingScholarshipLimit(scholarshipLimit);
+
     const [degreeCache, taxonomyCache] = await Promise.all([
       ctx.db
         .query("seo_degree_cache")
@@ -590,24 +678,44 @@ export const getDegreeLandingData = query({
       getTaxonomyCacheDoc(ctx),
     ]);
 
+    const canUseDegreeCache = !!(degreeCache && isCacheUsable(degreeCache.updated_at));
+    const canUseTaxonomyCache = !!(taxonomyCache && isCacheUsable(taxonomyCache.updated_at));
+    let publishedScholarships: LandingScholarship[] | null = null;
+
+    async function ensurePublishedScholarships(): Promise<LandingScholarship[]> {
+      if (publishedScholarships) return publishedScholarships;
+      publishedScholarships = await getPublishedScholarships(ctx);
+      return publishedScholarships;
+    }
+
     let stats: DegreeStats;
-    if (degreeCache && isCacheUsable(degreeCache.updated_at)) {
+    if (canUseDegreeCache) {
       stats = degreeStatsFromCache(degreeCache);
     } else {
-      stats = computeDegreeStats(await getPublishedScholarships(ctx), degreeLevel);
+      stats = computeDegreeStats(await ensurePublishedScholarships(), degreeLevel);
     }
 
     let taxonomies: Taxonomies;
-    if (taxonomyCache && isCacheUsable(taxonomyCache.updated_at)) {
+    if (canUseTaxonomyCache) {
       taxonomies = taxonomiesFromCache(taxonomyCache);
     } else {
-      taxonomies = computeTaxonomies(await getPublishedScholarships(ctx));
+      taxonomies = computeTaxonomies(await ensurePublishedScholarships());
     }
+
+    const scholarships = withScholarships
+      ? publishedScholarships
+        ? toLandingScholarshipSummaries(
+            publishedScholarships.filter((s) => s.degree_levels.includes(degreeLevel)),
+            cardLimit,
+          )
+        : await getDegreeLandingScholarshipSummaries(ctx, degreeLevel, cardLimit)
+      : undefined;
 
     return {
       stats,
       topCountries: taxonomies.topCountries,
       allDegrees: taxonomies.allDegrees,
+      scholarships,
     };
   },
 });

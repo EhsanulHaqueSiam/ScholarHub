@@ -138,6 +138,7 @@ export const listScholarships = query({
     fundingTypes: v.optional(v.array(fundingTypeValidator)),
     prestigeTiers: v.optional(v.array(prestigeTierValidator)),
     scholarshipTypes: v.optional(v.array(scholarshipTypeValidator)),
+    tags: v.optional(v.array(v.string())),
     sort: v.optional(v.string()),
     showClosed: v.optional(v.boolean()),
     closingSoon: v.optional(v.boolean()),
@@ -182,8 +183,14 @@ export const listScholarships = query({
         });
 
       // Search index doesn't support .filter() or pagination natively the same way,
-      // so we take a capped set and post-filter then manually paginate.
-      const allResults = await searchQuery.take(500);
+      // so we take a bounded set and post-filter then manually paginate.
+      // Cap is cursor-aware to keep read costs lower on early pages.
+      const numItems = args.paginationOpts.numItems;
+      const rawCursor = args.paginationOpts.cursor;
+      const parsedCursor = rawCursor ? Number.parseInt(rawCursor, 10) : 0;
+      const startIndex = Number.isFinite(parsedCursor) && parsedCursor >= 0 ? parsedCursor : 0;
+      const searchCap = Math.min(800, Math.max((startIndex + numItems) * 6, 120));
+      const allResults = await searchQuery.take(searchCap);
       const filtered = applyPostFilters(allResults, {
         hostCountries:
           args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
@@ -199,6 +206,7 @@ export const listScholarships = query({
           args.scholarshipTypes && args.scholarshipTypes.length > 1
             ? args.scholarshipTypes
             : undefined,
+        tags: args.tags,
         showClosed,
         closingSoon: args.closingSoon,
         now,
@@ -206,9 +214,6 @@ export const listScholarships = query({
       });
 
       // Manual pagination for search results
-      const numItems = args.paginationOpts.numItems;
-      const cursor = args.paginationOpts.cursor;
-      const startIndex = cursor ? Number.parseInt(cursor, 10) : 0;
       const page = filtered.slice(startIndex, startIndex + numItems);
       const nextCursor =
         startIndex + numItems < filtered.length ? String(startIndex + numItems) : null;
@@ -323,6 +328,13 @@ export const listScholarships = query({
       page = page.filter((doc) => {
         if (!doc.fields_of_study || doc.fields_of_study.length === 0) return false;
         return args.fieldsOfStudy!.some((f) => doc.fields_of_study!.includes(f));
+      });
+    }
+
+    if (args.tags && args.tags.length > 0) {
+      page = page.filter((doc) => {
+        if (!doc.tags || doc.tags.length === 0) return false;
+        return args.tags!.some((tag) => doc.tags!.includes(tag));
       });
     }
 
@@ -471,7 +483,7 @@ export const listScholarshipsBatch = query({
         });
 
       const searchCap = Math.min(800, Math.max(maxResults * 6, 120));
-      let results = applyPostFilters(await searchQuery.take(searchCap), {
+      const results = applyPostFilters(await searchQuery.take(searchCap), {
         hostCountries:
           args.hostCountries && args.hostCountries.length > 1 ? args.hostCountries : undefined,
         nationalities: args.nationalities,
@@ -486,18 +498,12 @@ export const listScholarshipsBatch = query({
           args.scholarshipTypes && args.scholarshipTypes.length > 1
             ? args.scholarshipTypes
             : undefined,
+        tags: args.tags,
         showClosed,
         closingSoon: args.closingSoon,
         now,
         thirtyDays,
       });
-
-      if (args.tags && args.tags.length > 0) {
-        results = results.filter((doc) => {
-          if (!doc.tags || doc.tags.length === 0) return false;
-          return args.tags!.some((t) => doc.tags!.includes(t));
-        });
-      }
 
       return results.slice(0, maxResults).map((doc) => toScholarshipSummary(doc));
     }
@@ -559,7 +565,7 @@ export const listScholarshipsBatch = query({
     const scanLimit = Math.min(BATCH_QUERY_SCAN_CAP, Math.max(maxResults * 6, 80));
     const baseResults = await filtered.take(scanLimit);
 
-    let postFiltered = applyPostFilters(baseResults, {
+    const postFiltered = applyPostFilters(baseResults, {
       // Already pushed into db-level filter above.
       hostCountries: undefined,
       fundingTypes: undefined,
@@ -569,18 +575,12 @@ export const listScholarshipsBatch = query({
       showIneligible: args.showIneligible,
       degreeLevels: args.degreeLevels,
       fieldsOfStudy: args.fieldsOfStudy,
+      tags: args.tags,
       showClosed,
       closingSoon: args.closingSoon,
       now,
       thirtyDays,
     });
-
-    if (args.tags && args.tags.length > 0) {
-      postFiltered = postFiltered.filter((doc) => {
-        if (!doc.tags || doc.tags.length === 0) return false;
-        return args.tags!.some((t) => doc.tags!.includes(t));
-      });
-    }
 
     return postFiltered.slice(0, maxResults).map((doc) => toScholarshipSummary(doc));
   },
@@ -674,6 +674,7 @@ interface PostFilterOptions {
   fundingTypes?: string[];
   prestigeTiers?: string[];
   scholarshipTypes?: string[];
+  tags?: string[];
   showClosed: boolean;
   closingSoon?: boolean;
   now: number;
@@ -689,6 +690,7 @@ function applyPostFilters<
     funding_type: string;
     prestige_tier?: string | null;
     scholarship_type?: string | null;
+    tags?: string[] | null;
     application_deadline?: number | null;
     status: string;
   },
@@ -743,6 +745,14 @@ function applyPostFilters<
     filtered = filtered.filter((d) =>
       d.scholarship_type ? opts.scholarshipTypes!.includes(d.scholarship_type) : false,
     );
+  }
+
+  // Tags filter (multi-value OR)
+  if (opts.tags && opts.tags.length > 0) {
+    filtered = filtered.filter((d) => {
+      if (!d.tags || d.tags.length === 0) return false;
+      return opts.tags!.some((tag) => d.tags!.includes(tag));
+    });
   }
 
   // Show closed filter

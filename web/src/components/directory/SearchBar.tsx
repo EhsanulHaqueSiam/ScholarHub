@@ -120,7 +120,10 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
   function handleSuggestionClick(suggestion: (typeof combinedSuggestions)[number]) {
     setIsOpen(false);
     setActiveIndex(-1);
-    analytics.track("search_performed", { query: query, suggestion_type: suggestion.type });
+    analytics.track("search_performed", {
+      query: inputValue.trim() || debouncedQuery,
+      suggestion_type: suggestion.type,
+    });
     if (suggestion.type === "scholarship") {
       navigate({ to: `/scholarships/${suggestion.slug}` });
     } else {

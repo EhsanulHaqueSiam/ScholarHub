@@ -96,9 +96,26 @@ describe("SEO cache refresh", () => {
     const countryLanding = await t.query(anyApi.seo.getCountryLandingData, { countryCode: "US" });
     expect(countryLanding.stats.total).toBe(2);
     expect(countryLanding.stats.fullyFunded).toBe(1);
+    expect(countryLanding.scholarships).toBeUndefined();
+
+    const countryLandingWithCards = await t.query(anyApi.seo.getCountryLandingData, {
+      countryCode: "US",
+      includeScholarships: true,
+      scholarshipLimit: 1,
+    });
+    expect(countryLandingWithCards.scholarships).toHaveLength(1);
+    expect(countryLandingWithCards.scholarships[0].host_country).toBe("US");
 
     const degreeLanding = await t.query(anyApi.seo.getDegreeLandingData, { degreeLevel: "master" });
     expect(degreeLanding.stats.total).toBe(2);
     expect(degreeLanding.stats.topCountries[0]).toBe("US");
+    expect(degreeLanding.scholarships).toBeUndefined();
+
+    const degreeLandingWithCards = await t.query(anyApi.seo.getDegreeLandingData, {
+      degreeLevel: "master",
+      includeScholarships: true,
+      scholarshipLimit: 1,
+    });
+    expect(degreeLandingWithCards.scholarships).toHaveLength(1);
   });
 });

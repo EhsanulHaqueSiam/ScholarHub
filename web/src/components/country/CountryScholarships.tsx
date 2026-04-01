@@ -4,21 +4,29 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { getCountryName } from "@/lib/countries";
+import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import { api } from "../../../convex/_generated/api";
 
 interface CountryScholarshipsProps {
   countryCode: string;
+  scholarships?: ScholarshipSummary[];
+  loadFromQuery?: boolean;
 }
 
-export function CountryScholarships({ countryCode }: CountryScholarshipsProps) {
-  const scholarships = useQuery(api.directory.listScholarshipsBatch, {
-    hostCountries: [countryCode],
-    limit: 12,
-  });
+export function CountryScholarships({
+  countryCode,
+  scholarships,
+  loadFromQuery = true,
+}: CountryScholarshipsProps) {
+  const queriedScholarships = useQuery(
+    api.directory.listScholarshipsBatch,
+    loadFromQuery ? { hostCountries: [countryCode], limit: 12 } : "skip",
+  );
+  const resolvedScholarships = loadFromQuery ? queriedScholarships : scholarships;
 
   const countryName = getCountryName(countryCode);
 
-  if (scholarships === undefined) {
+  if (resolvedScholarships === undefined) {
     // Loading state
     return (
       <section aria-labelledby="scholarships-heading">
@@ -37,7 +45,7 @@ export function CountryScholarships({ countryCode }: CountryScholarshipsProps) {
     );
   }
 
-  if (scholarships.length === 0) {
+  if (resolvedScholarships.length === 0) {
     return (
       <section aria-labelledby="scholarships-heading">
         <h2 id="scholarships-heading" className="text-xl font-heading mb-4">
@@ -57,7 +65,7 @@ export function CountryScholarships({ countryCode }: CountryScholarshipsProps) {
         Scholarships in {countryName}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {scholarships.map((scholarship) => (
+        {resolvedScholarships.map((scholarship) => (
           <ScholarshipCard key={scholarship._id} scholarship={scholarship} />
         ))}
       </div>

@@ -20,17 +20,30 @@ async function createSource(t: any) {
   });
 }
 
-async function insertScholarship(t: any, sourceId: any, status: any = "published") {
+async function insertScholarship(
+  t: any,
+  sourceId: any,
+  status: any = "published",
+  overrides: Partial<{
+    title: string;
+    slug: string;
+    host_country: string;
+    degree_levels: string[];
+    funding_type: "fully_funded" | "partial" | "tuition_waiver" | "stipend_only";
+    tags: string[];
+  }> = {},
+) {
   return await t.run(async (ctx: any) => {
     return await ctx.db.insert("scholarships", {
-      title: `Count Test ${Date.now()}-${Math.random()}`,
-      slug: `count-test-${Date.now()}-${Math.random()}`,
+      title: overrides.title ?? `Count Test ${Date.now()}-${Math.random()}`,
+      slug: overrides.slug ?? `count-test-${Date.now()}-${Math.random()}`,
       provider_organization: "Count Org",
-      host_country: "DE",
-      degree_levels: ["master"],
-      funding_type: "partial",
+      host_country: overrides.host_country ?? "DE",
+      degree_levels: overrides.degree_levels ?? ["master"],
+      funding_type: overrides.funding_type ?? "partial",
       status,
       source_ids: [sourceId],
+      tags: overrides.tags,
       application_url: "https://example.com/apply",
     });
   });
@@ -72,5 +85,29 @@ describe("Directory count cache", () => {
       status: "published",
     });
     expect(refreshed).toBe(3);
+  });
+
+  it("filters listScholarships by tags in paginated query mode", async () => {
+    const t = convexTest(schema, modules);
+    const sourceId = await createSource(t);
+
+    await insertScholarship(t, sourceId, "published", {
+      title: "STEM Focused Scholarship",
+      slug: "stem-focused-scholarship",
+      tags: ["stem", "women"],
+    });
+    await insertScholarship(t, sourceId, "published", {
+      title: "Arts Fellowship",
+      slug: "arts-fellowship",
+      tags: ["arts_humanities"],
+    });
+
+    const result = await t.query(anyApi.directory.listScholarships, {
+      paginationOpts: { numItems: 20, cursor: null },
+      tags: ["stem"],
+    });
+
+    expect(result.page).toHaveLength(1);
+    expect(result.page[0].title).toBe("STEM Focused Scholarship");
   });
 });

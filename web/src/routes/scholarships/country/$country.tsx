@@ -51,7 +51,11 @@ function CountryLandingPage() {
   }, [country, countryName]);
 
   // SEO data query (combined to reduce Convex call count)
-  const landingData = useQuery(api.seo.getCountryLandingData, { countryCode: country });
+  const landingData = useQuery(api.seo.getCountryLandingData, {
+    countryCode: country,
+    includeScholarships: true,
+    scholarshipLimit: 12,
+  });
   const countryStats = landingData?.stats;
 
   // Generate SEO content when stats are loaded
@@ -153,7 +157,11 @@ function CountryLandingPage() {
                 <AdmissionVisaSection data={countryData} countryName={countryName} />
                 <IntakePeriodsSection data={countryData} />
                 <PostStudyWorkSection data={countryData} countryName={countryName} />
-                <CountryScholarships countryCode={country} />
+                <CountryScholarships
+                  countryCode={country}
+                  scholarships={landingData?.scholarships}
+                  loadFromQuery={false}
+                />
               </div>
             </>
           ) : (
@@ -166,7 +174,11 @@ function CountryLandingPage() {
                   </p>
                 </CardContent>
               </Card>
-              <CountryScholarships countryCode={country} />
+              <CountryScholarships
+                countryCode={country}
+                scholarships={landingData?.scholarships}
+                loadFromQuery={false}
+              />
             </div>
           )}
 
