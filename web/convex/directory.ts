@@ -146,9 +146,9 @@ export const listScholarships = query({
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
     const sort = args.sort ?? "deadline";
-    // Default to all published scholarships (open + closed) unless caller explicitly
-    // opts into "open now" by setting showClosed: false.
-    const showClosed = args.showClosed ?? true;
+    // Default to open scholarships only unless caller explicitly opts into
+    // including closed scholarships.
+    const showClosed = args.showClosed ?? false;
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
@@ -454,9 +454,9 @@ export const listScholarshipsBatch = query({
   handler: async (ctx, args) => {
     const status = args.status ?? "published";
     const sort = args.sort ?? "deadline";
-    // Keep batch endpoint aligned with primary directory default: include all published
-    // scholarships unless explicitly filtered to open-only.
-    const showClosed = args.showClosed ?? true;
+    // Keep batch endpoint aligned with primary directory default: open-only unless
+    // caller explicitly includes closed scholarships.
+    const showClosed = args.showClosed ?? false;
     const maxResults = args.limit ?? 200;
     const now = Date.now();
     const thirtyDays = 30 * 24 * 60 * 60 * 1000;

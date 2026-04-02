@@ -1,6 +1,7 @@
+import { useSearch } from "@tanstack/react-router";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
-import { serializeCommaSeparated } from "@/lib/filters";
+import { serializeCommaSeparated, type ScholarshipSearch } from "@/lib/filters";
 import { cn } from "@/lib/utils";
 
 const QUICK_FILTER_OPTIONS = [
@@ -13,16 +14,19 @@ const QUICK_FILTER_OPTIONS = [
 /**
  * Quick filter toggle tabs for common filter presets.
  * Uses Radix ToggleGroup (type="multiple") for AND logic.
- * "Open Now" is an explicit filter (show_closed = false).
+ * By default the directory is open-only (closed scholarships hidden).
+ * "Open Now" becomes active when user explicitly sets show_closed=false in URL.
  */
 export function QuickFilters() {
   const { filters, setFilter } = useScholarshipFilters();
+  const search = useSearch({ strict: false }) as ScholarshipSearch;
 
   // Derive active quick filters from current filter state
   const activeValues: string[] = [];
 
-  // "Open Now" is active when NOT closing soon and NOT showing closed
-  const isOpenNow = !filters.closingSoon && !filters.showClosed;
+  // Don't mark "Open Now" as selected for the implicit default state.
+  const hasExplicitShowClosed = search.show_closed !== undefined;
+  const isOpenNow = hasExplicitShowClosed && !filters.closingSoon && !filters.showClosed;
   if (isOpenNow) activeValues.push("open_now");
 
   if (filters.closingSoon) activeValues.push("closing_soon");
@@ -40,7 +44,7 @@ export function QuickFilters() {
         setFilter("closing_soon", false);
         setFilter("show_closed", false);
       } else {
-        // Turning off "Open Now" restores the default "all published" view.
+        // Turning off "Open Now" opts into viewing closed scholarships too.
         setFilter("show_closed", true);
       }
     }

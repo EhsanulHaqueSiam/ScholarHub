@@ -35,7 +35,7 @@ export function CountryScholarships({
   const shouldUseConvexQuery = loadFromQuery && !isStaticDataLoading && !staticData;
   const queriedScholarships = useQuery(
     api.directory.listScholarshipsBatch,
-    shouldUseConvexQuery ? { hostCountries: [countryCode], limit: 12 } : "skip",
+    shouldUseConvexQuery ? { hostCountries: [countryCode], showClosed: true, limit: 12 } : "skip",
   );
   const resolvedScholarships = loadFromQuery
     ? (staticScholarships ?? queriedScholarships)

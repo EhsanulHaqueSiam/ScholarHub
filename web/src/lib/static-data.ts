@@ -248,7 +248,7 @@ export function filterScholarships(
 ): { scholarships: ScholarshipSummary[]; total: number } {
   const now = Date.now();
   const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-  const showClosed = filters.showClosed ?? true;
+  const showClosed = filters.showClosed ?? false;
   const searchQuery = filters.search?.trim().toLowerCase() ?? "";
   const searchTokens = searchQuery
     .split(/\s+/)

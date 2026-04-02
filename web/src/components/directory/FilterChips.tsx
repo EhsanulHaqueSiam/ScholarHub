@@ -127,13 +127,13 @@ export function FilterChips() {
     });
   }
 
-  // Open-now chip (when closed scholarships are hidden)
-  if (!filters.showClosed) {
+  // Show-closed chip (explicit opt-in from the default open-only view)
+  if (filters.showClosed) {
     chips.push({
       key: "show_closed",
       filterKey: "show_closed",
-      value: "false",
-      label: "Open Now",
+      value: "true",
+      label: "Show Closed",
     });
   }
 

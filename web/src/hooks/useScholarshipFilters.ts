@@ -43,7 +43,8 @@ export function useScholarshipFilters() {
     tags: parseCommaSeparated(search.tags),
     sort: search.sort ?? "deadline",
     view: search.view ?? "grid",
-    showClosed: search.show_closed ?? true,
+    // Closed scholarships are hidden by default on the directory.
+    showClosed: search.show_closed ?? false,
     showIneligible: search.show_ineligible ?? false,
     closingSoon: search.closing_soon ?? false,
   };
@@ -152,7 +153,8 @@ export function useScholarshipFilters() {
     filters.type.length > 0,
     filters.tags.length > 0,
     filters.q,
-    !filters.showClosed,
+    // Count only explicit opt-in to include closed scholarships as an active filter.
+    filters.showClosed,
     filters.closingSoon,
   ].filter(Boolean).length;
 
