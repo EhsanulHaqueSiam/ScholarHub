@@ -11,9 +11,11 @@ import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel, getPrestigeTooltip } from "@/lib/prestige";
 import { SCHOLARSHIP_TYPE_META } from "@/lib/scholarship-types";
 import { formatFundingType, urgencyLabelMap, urgencyVariantMap } from "@/lib/shared";
+import { TrackThisButton } from "@/components/tracker/TrackThisButton";
 import type { ScholarshipType } from "../../../convex/schema";
 
 interface HeroSectionProps {
+  slug: string;
   title: string;
   providerOrganization: string;
   prestigeTier: PrestigeTier;
@@ -29,6 +31,7 @@ interface HeroSectionProps {
 
 export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function HeroSection(
   {
+    slug,
     title,
     providerOrganization,
     prestigeTier,
@@ -121,27 +124,30 @@ export const HeroSection = forwardRef<HTMLDivElement, HeroSectionProps>(function
             </div>
           )}
 
-          {/* Apply Now button */}
-          {applicationUrl && !isExpired ? (
-            <Button variant="default" size="lg" className="w-full md:w-auto" asChild>
-              <a
-                href={applicationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Apply to ${title} (opens in new tab)`}
-              >
-                Apply Now
-              </a>
-            </Button>
-          ) : isExpired ? (
-            <Button variant="default" size="lg" className="w-full md:w-auto" disabled>
-              Applications Closed
-            </Button>
-          ) : (
-            <Button variant="default" size="lg" className="w-full md:w-auto" disabled>
-              Application Link Unavailable
-            </Button>
-          )}
+          {/* Apply Now + Track This buttons */}
+          <div className="flex flex-col md:flex-row gap-3">
+            {applicationUrl && !isExpired ? (
+              <Button variant="default" size="lg" className="w-full md:w-auto" asChild>
+                <a
+                  href={applicationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Apply to ${title} (opens in new tab)`}
+                >
+                  Apply Now
+                </a>
+              </Button>
+            ) : isExpired ? (
+              <Button variant="default" size="lg" className="w-full md:w-auto" disabled>
+                Applications Closed
+              </Button>
+            ) : (
+              <Button variant="default" size="lg" className="w-full md:w-auto" disabled>
+                Application Link Unavailable
+              </Button>
+            )}
+            <TrackThisButton slug={slug} title={title} size="lg" className="w-full md:w-auto" />
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,7 @@
 import { Check, Copy } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { TrackThisButton } from "@/components/tracker/TrackThisButton";
 
 interface StickyBarProps {
   title: string;
@@ -73,6 +74,7 @@ export function StickyBar({ title, slug, applicationUrl, visible, isExpired }: S
               {isExpired ? "Closed" : "No Link"}
             </Button>
           )}
+          <TrackThisButton slug={slug} title={title} variant="icon" size="sm" />
         </div>
       </div>
     </div>

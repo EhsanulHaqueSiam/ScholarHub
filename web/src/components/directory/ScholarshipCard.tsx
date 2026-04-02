@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Banknote, Check, Copy } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import { CompareCheckbox } from "@/components/comparison/CompareCheckbox";
+import { TrackThisButton } from "@/components/tracker/TrackThisButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,8 +170,9 @@ export const ScholarshipCard = memo(function ScholarshipCard({
           </div>
         </CardContent>
 
-        {/* Footer: Copy Link */}
+        {/* Footer: Track + Copy Link */}
         <CardFooter>
+          <TrackThisButton slug={slug} title={scholarship.title} size="sm" className="text-xs" />
           <Button
             variant="neutral"
             size="sm"
