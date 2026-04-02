@@ -40,7 +40,7 @@ ScholarHub v2 transforms the existing scholarship discovery platform into a full
 
 Plans:
 - [x] 01-01-PLAN.md — Core storage types, error detection utilities, and versioned migration engine
-- [ ] 01-02-PLAN.md — useLocalStorage hook upgrade (error state + cross-tab sync) and profile adapter versioning
+- [x] 01-02-PLAN.md — useLocalStorage hook upgrade (error state + cross-tab sync) and profile adapter versioning
 - [ ] 01-03-PLAN.md — ShortlistStorageAdapter, useShortlist hook, and shortlist route refactor
 
 ### Phase 2: Application Tracker + Document Matrix
