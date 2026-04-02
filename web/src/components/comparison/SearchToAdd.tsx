@@ -37,15 +37,15 @@ export function SearchToAdd({ onSelect }: SearchToAddProps) {
     }
   }, [open]);
 
+  const normalizedQuery = debouncedQuery.trim();
+  const shouldQuerySuggestions = normalizedQuery.length >= 2;
   const convexSuggestions = useQuery(
     api.directory.searchSuggestions,
-    !useStaticSuggestions && debouncedQuery.trim().length > 0
-      ? { query: debouncedQuery.trim() }
-      : "skip",
+    !useStaticSuggestions && shouldQuerySuggestions ? { query: normalizedQuery } : "skip",
   );
   const suggestions =
-    useStaticSuggestions && debouncedQuery.trim().length > 0
-      ? searchStaticSuggestions(debouncedQuery.trim(), 8)
+    useStaticSuggestions && shouldQuerySuggestions
+      ? searchStaticSuggestions(normalizedQuery, 8)
       : convexSuggestions;
 
   const handleSelect = useCallback(
@@ -105,13 +105,13 @@ export function SearchToAdd({ onSelect }: SearchToAddProps) {
             </ul>
           )}
 
-          {suggestions && suggestions.length === 0 && debouncedQuery.trim().length > 0 && (
+          {suggestions && suggestions.length === 0 && shouldQuerySuggestions && (
             <p className="text-xs text-foreground/50 text-center py-2">
               No scholarships found
             </p>
           )}
 
-          {!suggestions && debouncedQuery.trim().length > 0 && (
+          {!suggestions && shouldQuerySuggestions && (
             <p className="text-xs text-foreground/50 text-center py-2">Searching...</p>
           )}
         </Popover.Content>

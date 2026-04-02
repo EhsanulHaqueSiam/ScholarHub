@@ -595,14 +595,15 @@ export const searchSuggestions = query({
     query: v.string(),
   },
   handler: async (ctx, args) => {
-    if (!args.query || args.query.trim().length === 0) {
+    const term = args.query.trim();
+    if (term.length < 2) {
       return [];
     }
 
     const results = await ctx.db
       .query("scholarships")
       .withSearchIndex("search_scholarships", (q) =>
-        q.search("search_text", args.query).eq("status", "published"),
+        q.search("search_text", term).eq("status", "published"),
       )
       .take(5);
 

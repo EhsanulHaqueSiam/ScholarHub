@@ -9,6 +9,12 @@ export interface ScholarshipSummary {
   eligibility_nationalities?: string[] | null;
   degree_levels: string[];
   fields_of_study?: string[] | null;
+  subject_details?: Array<{
+    subject: string;
+    tuition_rate?: string;
+    scholarship_amount?: string;
+    notes?: string;
+  }> | null;
   funding_type: string;
   funding_tuition?: boolean;
   funding_living?: boolean;

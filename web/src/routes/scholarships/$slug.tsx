@@ -13,6 +13,7 @@ import { DetailSkeleton } from "@/components/detail/DetailSkeleton";
 import { EligibilitySection } from "@/components/detail/EligibilitySection";
 import { FundingSection } from "@/components/detail/FundingSection";
 import { HeroSection } from "@/components/detail/HeroSection";
+import { SubjectsSection } from "@/components/detail/SubjectsSection";
 import { HowToApplySection } from "@/components/detail/HowToApplySection";
 import { OverviewSection } from "@/components/detail/OverviewSection";
 import { RelatedScholarships } from "@/components/detail/RelatedScholarships";
@@ -215,6 +216,12 @@ function ScholarshipDetailPage() {
           <EligibilitySection
             nationalities={scholarship.eligibility_nationalities}
             degreeLevels={scholarship.degree_levels}
+            fieldsOfStudy={scholarship.fields_of_study}
+          />
+
+          {/* Subjects & Coverage */}
+          <SubjectsSection
+            subjectDetails={(scholarship as any).subject_details ?? undefined}
             fieldsOfStudy={scholarship.fields_of_study}
           />
 

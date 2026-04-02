@@ -179,6 +179,16 @@ export default defineSchema({
     eligibility_nationalities: v.optional(v.array(v.string())),
     degree_levels: v.array(degreeLevelValidator),
     fields_of_study: v.optional(v.array(v.string())),
+    subject_details: v.optional(
+      v.array(
+        v.object({
+          subject: v.string(),
+          tuition_rate: v.optional(v.string()),
+          scholarship_amount: v.optional(v.string()),
+          notes: v.optional(v.string()),
+        }),
+      ),
+    ),
     funding_type: fundingTypeValidator,
     funding_tuition: v.optional(v.boolean()),
     funding_living: v.optional(v.boolean()),
