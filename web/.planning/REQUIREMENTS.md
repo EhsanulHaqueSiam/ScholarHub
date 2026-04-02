@@ -111,7 +111,71 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| (To be filled by roadmapper) | | |
+| STORE-01 | Phase 1 | Pending |
+| STORE-02 | Phase 1 | Pending |
+| STORE-03 | Phase 1 | Pending |
+| STORE-04 | Phase 1 | Pending |
+| TRACK-01 | Phase 2 | Pending |
+| TRACK-02 | Phase 2 | Pending |
+| TRACK-03 | Phase 2 | Pending |
+| TRACK-04 | Phase 2 | Pending |
+| TRACK-05 | Phase 2 | Pending |
+| TRACK-06 | Phase 2 | Pending |
+| TRACK-07 | Phase 2 | Pending |
+| DOC-01 | Phase 2 | Pending |
+| DOC-02 | Phase 2 | Pending |
+| DOC-03 | Phase 2 | Pending |
+| DOC-04 | Phase 2 | Pending |
+| CAL-01 | Phase 3 | Pending |
+| CAL-02 | Phase 3 | Pending |
+| CAL-03 | Phase 3 | Pending |
+| CAL-04 | Phase 3 | Pending |
+| CAL-05 | Phase 3 | Pending |
+| DISC-01 | Phase 4 | Pending |
+| DISC-02 | Phase 4 | Pending |
+| DISC-03 | Phase 4 | Pending |
+| DISC-04 | Phase 4 | Pending |
+| DISC-05 | Phase 4 | Pending |
+| DISC-06 | Phase 4 | Pending |
+| COUNTRY-01 | Phase 5 | Pending |
+| COUNTRY-02 | Phase 5 | Pending |
+| COUNTRY-03 | Phase 5 | Pending |
+| COUNTRY-04 | Phase 5 | Pending |
+| READY-01 | Phase 6 | Pending |
+| READY-02 | Phase 6 | Pending |
+| READY-03 | Phase 6 | Pending |
+| READY-04 | Phase 6 | Pending |
+| READY-05 | Phase 6 | Pending |
+| VALUE-01 | Phase 6 | Pending |
+| VALUE-02 | Phase 6 | Pending |
+| VALUE-03 | Phase 6 | Pending |
+| VALUE-04 | Phase 6 | Pending |
+| VALUE-05 | Phase 6 | Pending |
+| SIM-01 | Phase 7 | Pending |
+| SIM-02 | Phase 7 | Pending |
+| SIM-03 | Phase 7 | Pending |
+| COMP-01 | Phase 7 | Pending |
+| COMP-02 | Phase 7 | Pending |
+| COMP-03 | Phase 7 | Pending |
+| COMP-04 | Phase 7 | Pending |
+| COMP-05 | Phase 7 | Pending |
+| COMP-06 | Phase 7 | Pending |
+| RECO-01 | Phase 8 | Pending |
+| RECO-02 | Phase 8 | Pending |
+| RECO-03 | Phase 8 | Pending |
+| RECO-04 | Phase 8 | Pending |
+| ESSAY-01 | Phase 8 | Pending |
+| ESSAY-02 | Phase 8 | Pending |
+| ESSAY-03 | Phase 8 | Pending |
+| ESSAY-04 | Phase 8 | Pending |
+| ALERT-01 | Phase 9 | Pending |
+| ALERT-02 | Phase 9 | Pending |
+| ALERT-03 | Phase 9 | Pending |
+| ALERT-04 | Phase 9 | Pending |
+| ALERT-05 | Phase 9 | Pending |
+| ALERT-06 | Phase 9 | Pending |
+
+**Coverage:** 63/63 requirements mapped across 9 phases
 
 ---
-*Generated: 2026-04-03*
+*Generated: 2026-04-03 | Traceability updated: 2026-04-03*
