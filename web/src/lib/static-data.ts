@@ -255,7 +255,7 @@ export function filterScholarships(
     .map((t) => t.trim())
     .filter(Boolean);
 
-  let results = data.summaries.filter((s) => {
+  const results = data.summaries.filter((s) => {
     if (!showClosed && s.application_deadline && s.application_deadline < now) return false;
 
     if (filters.closingSoon) {

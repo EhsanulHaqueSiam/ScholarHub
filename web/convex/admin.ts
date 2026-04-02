@@ -31,11 +31,10 @@ import { wrapDB } from "./triggers";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(wrapDB));
-const ADMIN_COUNT_PAGE_SIZE = 256;
 const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 100;
 const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 500;
 const ADMIN_PENDING_SOURCE_SCAN_CAP = 2000;
-const ADMIN_POSSIBLE_DUP_SCAN_CAP = 2000;
+const ADMIN_DUP_CHECK_PER_SCHOLARSHIP_CAP = 8;
 const ADMIN_SOURCE_LIST_MAX_LIMIT = 1200;
 const ADMIN_REVIEW_TEXT_PREVIEW_CHARS = 420;
 const ADMIN_DASHBOARD_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
@@ -199,16 +198,13 @@ export const getReviewQueue = query({
       args.includeResolvedSources ??
       !(args.status === "published" && includePossibleDuplicate === false);
 
-    let scholarships;
-    if (args.status) {
-      scholarships = await ctx.db
+    const scholarships = args.status
+      ? await ctx.db
         .query("scholarships")
         .withIndex("by_status", (q) => q.eq("status", args.status))
-        .take(limit);
-    } else {
-      // No status filter = newest first, bounded.
-      scholarships = await ctx.db.query("scholarships").order("desc").take(limit);
-    }
+        .take(limit)
+      : // No status filter = newest first, bounded.
+        await ctx.db.query("scholarships").order("desc").take(limit);
 
     const sourceMap = new Map<string, any>();
     if (includeResolvedSources) {
@@ -221,30 +217,27 @@ export const getReviewQueue = query({
       );
     }
 
-    const pendingIdsForDupCheck = new Set(
-      includePossibleDuplicate
-        ? scholarships.filter((s) => s.status === "pending_review").map((s) => String(s._id))
-        : [],
-    );
+    const pendingScholarshipIdsForDupCheck = includePossibleDuplicate
+      ? scholarships.filter((s) => s.status === "pending_review").map((s) => s._id)
+      : [];
 
     const possibleDuplicateIds = new Set<string>();
-    if (includePossibleDuplicate && pendingIdsForDupCheck.size > 0) {
-      // Single bounded scan avoids N+1 canonical-id lookups for large admin queues.
-      const dupRows = await ctx.db
-        .query("raw_records")
-        .withIndex("by_match_status", (q) => q.eq("match_status", "possible_duplicate"))
-        .take(ADMIN_POSSIBLE_DUP_SCAN_CAP);
+    if (includePossibleDuplicate && pendingScholarshipIdsForDupCheck.length > 0) {
+      // Query only the pending scholarships currently on screen instead of scanning
+      // a large global possible-duplicate set from raw_records (which can carry heavy raw_data).
+      await Promise.all(
+        pendingScholarshipIdsForDupCheck.map(async (scholarshipId) => {
+          const rawRows = await ctx.db
+            .query("raw_records")
+            .withIndex("by_canonical", (q) => q.eq("canonical_id", scholarshipId))
+            .order("desc")
+            .take(ADMIN_DUP_CHECK_PER_SCHOLARSHIP_CAP);
 
-      for (const row of dupRows) {
-        if (!row.canonical_id) continue;
-        const canonicalId = String(row.canonical_id);
-        if (pendingIdsForDupCheck.has(canonicalId)) {
-          possibleDuplicateIds.add(canonicalId);
-          if (possibleDuplicateIds.size >= pendingIdsForDupCheck.size) {
-            break;
+          if (rawRows.some((row) => row.match_status === "possible_duplicate")) {
+            possibleDuplicateIds.add(String(scholarshipId));
           }
-        }
-      }
+        }),
+      );
     }
 
     const enriched = scholarships.map((scholarship) => {

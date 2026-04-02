@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "cd web && bun run dev",
     "build": "cd web && bun run build",
-    "lint": "cd web && bun biome check . && cd ../scraping && uv run ruff check .",
+    "lint": "cd web && bun run lint && cd ../scraping && uv run ruff check .",
     "typecheck": "cd web && bun tsc --noEmit",
     "test": "cd web && bun vitest run && cd ../scraping && uv run pytest -x -v",
     "test:web": "cd web && bun vitest run --reporter=verbose",

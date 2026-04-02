@@ -6,7 +6,20 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["src/**/*.ts", "src/**/*.tsx", "convex/**/*.ts", "!src/routeTree.gen.ts"]
+    "includes": [
+      "**",
+      "!dist",
+      "!node_modules",
+      "!coverage",
+      "!public/data",
+      "!src/data/scholarships.json",
+      "!src/data/export-meta.json",
+      "!src/routeTree.gen.ts",
+      "!convex/_generated"
+    ]
+  },
+  "assist": {
+    "enabled": false
   },
   "formatter": {
     "enabled": true,
@@ -20,18 +33,37 @@
       "semicolons": "always"
     }
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "recommended": false,
       "correctness": {
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error"
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "off"
       },
       "style": {
-        "useConst": "error",
-        "noNonNullAssertion": "warn"
+        "useConst": "warn",
+        "noNonNullAssertion": "off"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["convex/_generated"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }

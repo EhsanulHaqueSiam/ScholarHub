@@ -75,7 +75,7 @@ export const upsertBatch = triggeredMutation({
   handler: async (ctx, args) => {
     let inserted = 0;
     let updated = 0;
-    let skipped = 0;
+    const skipped = 0;
 
     for (const record of args.records) {
       // Dedup by match_key
