@@ -72,14 +72,32 @@ export async function loadStaticData(): Promise<StaticData | null> {
   if (_loadPromise) return _loadPromise;
 
   _loadPromise = (async () => {
-    try {
-      const mod = await import("../data/scholarships.json");
-      _cachedData = mod.default as StaticData;
-      return _cachedData;
-    } catch {
-      // JSON not generated yet — app will fall back to Convex queries
-      return null;
+    // Browser path: fetch static JSON from public assets so we don't ship
+    // a multi-megabyte JSON blob inside client JS bundles.
+    if (!import.meta.env.SSR) {
+      try {
+        const base = import.meta.env.BASE_URL ?? "/";
+        const normalizedBase = base.endsWith("/") ? base : `${base}/`;
+        const url = `${normalizedBase}data/scholarships.json`;
+        const response = await fetch(url, { cache: "force-cache" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        _cachedData = (await response.json()) as StaticData;
+        return _cachedData;
+      } catch {
+        // Static JSON not available in public assets — app will fall back to Convex queries.
+        return null;
+      }
     }
+
+    // SSR/server path: delegate to server-only loader.
+    if (import.meta.env.SSR) {
+      const { loadStaticDataFromModule } = await import("./static-data-server");
+      const loaded = await loadStaticDataFromModule();
+      if (loaded) _cachedData = loaded;
+      return loaded;
+    }
+
+    return null;
   })();
 
   return _loadPromise;

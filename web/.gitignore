@@ -35,3 +35,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Local Netlify folder
 .netlify
+
+# Generated static export mirror (created by scripts/export-static-data.mjs)
+public/data

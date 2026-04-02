@@ -14,7 +14,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT_DIR = path.join(__dirname, "..", "src", "data");
+const OUTPUT_DIR_SRC = path.join(__dirname, "..", "src", "data");
+const OUTPUT_DIR_PUBLIC = path.join(__dirname, "..", "public", "data");
 
 // Load env
 const envPath = path.join(__dirname, "..", "..", ".env.local");
@@ -79,40 +80,46 @@ async function main() {
     };
 
     // 5. Write output
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    fs.mkdirSync(OUTPUT_DIR_SRC, { recursive: true });
+    fs.mkdirSync(OUTPUT_DIR_PUBLIC, { recursive: true });
     const jsonStr = JSON.stringify(data);
-    const outputPath = path.join(OUTPUT_DIR, "scholarships.json");
-    fs.writeFileSync(outputPath, jsonStr);
+    const srcOutputPath = path.join(OUTPUT_DIR_SRC, "scholarships.json");
+    const publicOutputPath = path.join(OUTPUT_DIR_PUBLIC, "scholarships.json");
+    fs.writeFileSync(srcOutputPath, jsonStr);
+    fs.writeFileSync(publicOutputPath, jsonStr);
 
     const sizeMB = (Buffer.byteLength(jsonStr) / 1024 / 1024).toFixed(2);
     console.log(`✅ Exported ${allSummaries.length} scholarships (${sizeMB} MB)`);
-    console.log(`   Output: ${outputPath}`);
+    console.log(`   Output: ${srcOutputPath}`);
+    console.log(`   Public Output: ${publicOutputPath}`);
 
-    fs.writeFileSync(
-      path.join(OUTPUT_DIR, "export-meta.json"),
-      JSON.stringify({
-        exportedAt: data.exportedAt,
-        scholarshipCount: allSummaries.length,
-        collectionCount: metadata.collections.length,
-        pages: page,
-      }),
-    );
+    const exportMeta = JSON.stringify({
+      exportedAt: data.exportedAt,
+      scholarshipCount: allSummaries.length,
+      collectionCount: metadata.collections.length,
+      pages: page,
+    });
+    fs.writeFileSync(path.join(OUTPUT_DIR_SRC, "export-meta.json"), exportMeta);
+    fs.writeFileSync(path.join(OUTPUT_DIR_PUBLIC, "export-meta.json"), exportMeta);
   } catch (err) {
     console.error("❌ Export failed:", err.message);
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    fs.mkdirSync(OUTPUT_DIR_SRC, { recursive: true });
+    fs.mkdirSync(OUTPUT_DIR_PUBLIC, { recursive: true });
+    const fallbackJson = JSON.stringify({
+      scholarships: [],
+      summaries: [],
+      slugIndex: {},
+      collections: [],
+      taxonomy: { topCountries: [], allDegrees: [] },
+      countryCaches: [],
+      degreeCaches: [],
+      exportedAt: Date.now(),
+    });
     fs.writeFileSync(
-      path.join(OUTPUT_DIR, "scholarships.json"),
-      JSON.stringify({
-        scholarships: [],
-        summaries: [],
-        slugIndex: {},
-        collections: [],
-        taxonomy: { topCountries: [], allDegrees: [] },
-        countryCaches: [],
-        degreeCaches: [],
-        exportedAt: Date.now(),
-      }),
+      path.join(OUTPUT_DIR_SRC, "scholarships.json"),
+      fallbackJson,
     );
+    fs.writeFileSync(path.join(OUTPUT_DIR_PUBLIC, "scholarships.json"), fallbackJson);
     console.log("⚠️  Wrote empty fallback — app will use Convex queries as fallback");
   }
 }
