@@ -194,6 +194,7 @@ function ScholarshipDetailPage() {
           {/* Hero section with IntersectionObserver ref */}
           <HeroSection
             ref={heroRef}
+            slug={scholarshipSlug}
             title={scholarship.title}
             providerOrganization={scholarship.provider_organization}
             prestigeTier={prestigeTier}
