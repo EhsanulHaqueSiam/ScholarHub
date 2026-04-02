@@ -36,7 +36,12 @@ ScholarHub v2 transforms the existing scholarship discovery platform into a full
   2. Every stored object (profile, shortlist, tracker, alerts) has a `_version` field that triggers a migration function on read
   3. The shortlist reads and writes through a typed `StorageAdapter` interface matching the eligibility profile pattern — no component calls `localStorage` directly
   4. Data written in one browser tab is visible in another tab without a page reload
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Core storage types, error detection utilities, and versioned migration engine
+- [ ] 01-02-PLAN.md — useLocalStorage hook upgrade (error state + cross-tab sync) and profile adapter versioning
+- [ ] 01-03-PLAN.md — ShortlistStorageAdapter, useShortlist hook, and shortlist route refactor
 
 ### Phase 2: Application Tracker + Document Matrix
 **Goal**: Students can track their applications through named stages and see required documents per scholarship
@@ -149,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Storage Foundations | 0/TBD | Not started | - |
+| 1. Storage Foundations | 0/3 | Planning complete | - |
 | 2. Application Tracker + Document Matrix | 0/TBD | Not started | - |
 | 3. Scholarship Calendar | 0/TBD | Not started | - |
 | 4. Discovery Wizard + Enhanced Filters | 0/TBD | Not started | - |
