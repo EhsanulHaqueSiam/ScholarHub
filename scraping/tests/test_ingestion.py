@@ -1,8 +1,11 @@
 """Tests for ingestion components: BatchAccumulator, SourceDeduplicator, compute_diff."""
 
+import pytest
+
 from scholarhub_pipeline.ingestion.batch import BatchAccumulator
 from scholarhub_pipeline.ingestion.dedup import SourceDeduplicator
 from scholarhub_pipeline.ingestion.differ import compute_diff
+from scholarhub_pipeline.ingestion.direct_batch import DirectBatchAccumulator
 
 
 class MockConvexClient:
@@ -14,6 +17,22 @@ class MockConvexClient:
     def mutation(self, name, args):
         self.calls.append({"name": name, "args": args})
         return {"inserted": len(args.get("records", [])), "updated": 0, "unchanged": 0}
+
+
+class MockDirectConvexClient:
+    """Mock Convex client for DirectBatchAccumulator tests."""
+
+    def __init__(self, fail_first: bool = False):
+        self.calls = []
+        self.fail_first = fail_first
+        self._attempts = 0
+
+    def mutation(self, name, args):
+        self._attempts += 1
+        self.calls.append({"name": name, "args": args})
+        if self.fail_first and self._attempts == 1:
+            raise RuntimeError("transient convex failure")
+        return {"inserted": len(args.get("records", [])), "updated": 0, "skipped": 0}
 
 
 class TestBatchAccumulator:
@@ -70,6 +89,43 @@ class TestBatchAccumulator:
         client = MockConvexClient()
         batch = BatchAccumulator(client, run_id="run_123")
         assert batch._batch_size == 50
+
+
+class TestDirectBatchAccumulator:
+    def test_flush_retains_batch_on_failure(self, monkeypatch):
+        monkeypatch.setattr(
+            "scholarhub_pipeline.ingestion.direct_batch.enrich_record",
+            lambda record: record,
+        )
+        client = MockDirectConvexClient(fail_first=True)
+        batch = DirectBatchAccumulator(client, batch_size=10)
+        batch.add({"title": "A"})
+        batch.add({"title": "B"})
+
+        with pytest.raises(RuntimeError, match="transient convex failure"):
+            batch.flush()
+
+        assert len(client.calls) == 1
+        assert len(batch._batch) == 2
+        assert batch.stats["inserted"] == 0
+
+        result = batch.flush()
+        assert result["inserted"] == 2
+        assert len(batch._batch) == 0
+        assert batch.stats["inserted"] == 2
+
+    def test_skips_records_without_title(self, monkeypatch):
+        monkeypatch.setattr(
+            "scholarhub_pipeline.ingestion.direct_batch.enrich_record",
+            lambda record: record,
+        )
+        client = MockDirectConvexClient()
+        batch = DirectBatchAccumulator(client, batch_size=10)
+        batch.add({"source_url": "https://example.com/no-title"})
+        result = batch.flush_remaining()
+        assert result == {"inserted": 0, "updated": 0, "skipped": 0}
+        assert batch.stats["skipped"] == 1
+        assert len(client.calls) == 0
 
 
 class TestSourceDeduplicator:

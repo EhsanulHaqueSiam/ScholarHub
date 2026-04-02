@@ -90,6 +90,7 @@ class PipelineRunner:
         self.buffer = LocalBuffer()
         # Bulk source map: name -> {_id, last_scraped, is_active, url}
         self._source_map: dict[str, dict[str, Any]] = {}
+        self._source_map_loaded = False
         # Per-source results accumulated during the run for batch completion
         self._source_results: list[dict[str, Any]] = []
         self.stats: dict[str, int] = {
@@ -106,11 +107,52 @@ class PipelineRunner:
         if not self.convex:
             return
         try:
-            self._source_map = self.convex.query("sources:getAllSourceMap", {})
+            raw_map = self.convex.query("sources:getAllSourceMap", {})
+            self._source_map = self._normalize_source_map(raw_map)
+            self._source_map_loaded = True
             logger.info("source_map_loaded", count=len(self._source_map))
+            if raw_map and not self._source_map:
+                logger.warning("source_map_shape_unexpected")
         except Exception as e:
             logger.warning("source_map_load_failed", error=str(e))
             self._source_map = {}
+            self._source_map_loaded = False
+
+    @staticmethod
+    def _normalize_source_map(raw_map: Any) -> dict[str, dict[str, Any]]:
+        """Normalize source map payloads from Convex into name-keyed dict."""
+        if not raw_map:
+            return {}
+
+        # Preferred shape: { [name]: sourceDoc }
+        if isinstance(raw_map, dict):
+            if "_id" in raw_map and "name" in raw_map:
+                name = str(raw_map.get("name", "")).strip()
+                return {name: raw_map} if name else {}
+
+            normalized: dict[str, dict[str, Any]] = {}
+            for key, value in raw_map.items():
+                if not isinstance(value, dict):
+                    continue
+                source_name = value.get("name")
+                if isinstance(source_name, str) and source_name.strip():
+                    normalized[source_name] = value
+                elif isinstance(key, str) and key.strip():
+                    normalized[key] = value
+            return normalized
+
+        # Back-compat shape: list of source docs
+        if isinstance(raw_map, list):
+            normalized: dict[str, dict[str, Any]] = {}
+            for value in raw_map:
+                if not isinstance(value, dict):
+                    continue
+                source_name = value.get("name")
+                if isinstance(source_name, str) and source_name.strip():
+                    normalized[source_name] = value
+            return normalized
+
+        return {}
 
     def _resolve_convex_id(self, config: SourceConfig) -> str | None:
         """Resolve a source config's name to its Convex document _id using the bulk map."""
@@ -121,12 +163,38 @@ class PipelineRunner:
         for _name, info in self._source_map.items():
             if info.get("url") == config.url:
                 return str(info["_id"])
+
+        if not self.convex:
+            return None
+
+        # Fail-open fallback when map is unavailable/stale: query by name then URL.
+        try:
+            by_name = self.convex.query("sources:getByName", {"name": config.name})
+            if isinstance(by_name, dict) and by_name.get("_id"):
+                self._source_map[str(by_name.get("name") or config.name)] = by_name
+                return str(by_name["_id"])
+        except Exception as e:
+            logger.warning("source_lookup_by_name_failed", source=config.name, error=str(e))
+
+        try:
+            by_url = self.convex.query("sources:getByUrl", {"url": config.url})
+            if isinstance(by_url, dict) and by_url.get("_id"):
+                self._source_map[str(by_url.get("name") or config.name)] = by_url
+                return str(by_url["_id"])
+        except Exception as e:
+            logger.warning("source_lookup_by_url_failed", source=config.name, error=str(e))
+
         return None
 
     def _is_source_active(self, config: SourceConfig) -> bool:
         """Check if source is active using the bulk map."""
+        if not self._source_map:
+            # If source map couldn't be loaded, avoid silently dropping all sources.
+            return True
         source = self._source_map.get(config.name)
-        return bool(source and source.get("is_active", True))
+        if source is None:
+            return True
+        return bool(source.get("is_active", True))
 
     def _get_last_scraped(self, config: SourceConfig) -> int | None:
         """Get last_scraped timestamp from the bulk map."""
@@ -236,10 +304,15 @@ class PipelineRunner:
 
         # Filter inactive sources using the bulk map
         if self.convex and not self.dry_run:
-            configs = [c for c in configs if self._is_source_active(c)]
-            # Filter due sources (skip if single-source manual run)
-            if not self.source_filter:
-                configs = self._filter_due_sources(configs)
+            if self._source_map:
+                configs = [c for c in configs if self._is_source_active(c)]
+                # Filter due sources (skip if single-source manual run)
+                if not self.source_filter:
+                    configs = self._filter_due_sources(configs)
+            elif self._source_map_loaded:
+                logger.warning("source_map_empty_skip_filters")
+            else:
+                logger.warning("source_map_unavailable_skip_filters")
 
         self.stats["sources_targeted"] = len(configs)
         logger.info(

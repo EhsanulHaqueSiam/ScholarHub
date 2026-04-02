@@ -3,8 +3,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from scholarhub_pipeline.configs import discover_configs
 from scholarhub_pipeline.configs._protocol import SourceConfig
 
@@ -18,7 +16,10 @@ def get_catalog_sources() -> list[dict]:
     for f in sources_dir.glob("*.json"):
         if f.name == "schema.json":
             continue
-        all_sources.extend(json.loads(f.read_text()))
+        payload = json.loads(f.read_text())
+        if not isinstance(payload, list):
+            continue
+        all_sources.extend(entry for entry in payload if isinstance(entry, dict))
     return all_sources
 
 

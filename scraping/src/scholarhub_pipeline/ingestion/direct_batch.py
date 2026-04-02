@@ -61,8 +61,7 @@ class DirectBatchAccumulator:
             return result
         except Exception as e:
             logger.error("direct_batch_flush_failed", error=str(e), batch_size=len(self._batch))
-            # Fall back to legacy raw_records path
-            self._batch = []
+            # Keep queued records so callers can retry without data loss.
             raise
 
     def flush_remaining(self) -> dict[str, int]:
