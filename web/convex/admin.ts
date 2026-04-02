@@ -521,6 +521,16 @@ export const updateScholarship = triggeredMutation({
         ),
       ),
       fields_of_study: v.optional(v.array(v.string())),
+      subject_details: v.optional(
+        v.array(
+          v.object({
+            subject: v.string(),
+            tuition_rate: v.optional(v.string()),
+            scholarship_amount: v.optional(v.string()),
+            notes: v.optional(v.string()),
+          }),
+        ),
+      ),
       funding_type: v.optional(
         v.union(
           v.literal("fully_funded"),

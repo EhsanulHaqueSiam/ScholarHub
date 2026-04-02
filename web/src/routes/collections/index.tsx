@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { CollectionCard } from "@/components/collections/CollectionCard";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";

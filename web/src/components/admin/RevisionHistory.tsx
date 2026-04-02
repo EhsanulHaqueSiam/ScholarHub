@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../../convex/_generated/api";

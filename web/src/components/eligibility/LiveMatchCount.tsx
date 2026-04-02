@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStaticData } from "@/hooks/useStaticData";
 import { filterScholarships } from "@/lib/static-data";

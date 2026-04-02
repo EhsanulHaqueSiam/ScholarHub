@@ -1,5 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { useEffect, useMemo, useState } from "react";
 import { DesktopPagination } from "@/components/directory/Pagination";
 import { useAdminSelection } from "@/hooks/useAdminSelection";

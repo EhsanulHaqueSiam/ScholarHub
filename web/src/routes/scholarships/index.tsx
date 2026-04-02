@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "@/lib/convex-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FeaturedCollectionsRow } from "@/components/collections/FeaturedCollectionsRow";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";

@@ -1,6 +1,6 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import {
   BookOpen,
   ChevronDown,

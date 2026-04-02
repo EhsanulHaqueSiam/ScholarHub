@@ -1,6 +1,6 @@
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "@/lib/convex-react";
 import { LayoutGrid, List } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { analytics } from "@/lib/analytics";

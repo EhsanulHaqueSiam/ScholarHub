@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef } from "react";
 import { CompareBar } from "@/components/comparison/CompareBar";
 import { CompareProvider } from "@/components/comparison/CompareContext";
+import { PageActivityProvider } from "@/hooks/usePageActivity";
 import { buildOrganizationJsonLd } from "@/lib/seo/json-ld";
 import appCss from "../index.css?url";
 
@@ -238,18 +239,20 @@ function RootComponent() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
         />
-        <CompareProvider>
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-main focus:text-main-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-border focus:shadow-shadow focus:font-heading focus:text-sm"
-          >
-            Skip to main content
-          </a>
-          <main id="main-content">
-            <Outlet />
-          </main>
-          <CompareBar />
-        </CompareProvider>
+        <PageActivityProvider>
+          <CompareProvider>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-main focus:text-main-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-border focus:shadow-shadow focus:font-heading focus:text-sm"
+            >
+              Skip to main content
+            </a>
+            <main id="main-content">
+              <Outlet />
+            </main>
+            <CompareBar />
+          </CompareProvider>
+        </PageActivityProvider>
         <SpaPageviewTracker />
         <Scripts />
       </body>

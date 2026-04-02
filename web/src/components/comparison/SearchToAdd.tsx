@@ -1,5 +1,5 @@
 import * as Popover from "@radix-ui/react-popover";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";

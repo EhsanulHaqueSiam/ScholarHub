@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useStaticData } from "@/hooks/useStaticData";

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { analytics } from "@/lib/analytics";

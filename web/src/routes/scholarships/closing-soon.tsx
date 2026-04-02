@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "@/lib/convex-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EmptyState } from "@/components/directory/EmptyState";
 import { FilterChips } from "@/components/directory/FilterChips";

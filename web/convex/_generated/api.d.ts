@@ -24,6 +24,7 @@ import type * as export_ from "../export.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
 import type * as maintenance from "../maintenance.js";
+import type * as migrations_populateSubjectDetails from "../migrations/populateSubjectDetails.js";
 import type * as monitoring from "../monitoring.js";
 import type * as prestige from "../prestige.js";
 import type * as related from "../related.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   ingest: typeof ingest;
   maintenance: typeof maintenance;
+  "migrations/populateSubjectDetails": typeof migrations_populateSubjectDetails;
   monitoring: typeof monitoring;
   prestige: typeof prestige;
   related: typeof related;

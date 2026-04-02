@@ -1,5 +1,5 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { useMutation } from "convex/react";
+import { useMutation } from "@/lib/convex-react";
 import { Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getTagLabel } from "@/lib/tags";

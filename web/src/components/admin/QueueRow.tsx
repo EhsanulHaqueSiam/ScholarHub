@@ -1,6 +1,6 @@
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { useMutation } from "convex/react";
+import { useMutation } from "@/lib/convex-react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";

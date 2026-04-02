@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useStaticData } from "@/hooks/useStaticData";

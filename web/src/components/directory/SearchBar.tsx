@@ -1,6 +1,6 @@
 import * as Popover from "@radix-ui/react-popover";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery } from "@/lib/convex-react";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useStaticData } from "@/hooks/useStaticData";
