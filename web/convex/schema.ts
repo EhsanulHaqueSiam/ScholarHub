@@ -243,6 +243,11 @@ export default defineSchema({
         post_study_description: v.optional(v.string()),
       }),
     ),
+    // Per-scholarship document requirements (admin-editable, DOC-04)
+    // Falls back to standard DOCUMENT_TYPES taxonomy when absent
+    document_requirements: v.optional(
+      v.array(v.string())
+    ),
     prestige_tier: v.optional(prestigeTierValidator),
     prestige_score: v.optional(v.number()),
     scholarship_type: v.optional(scholarshipTypeValidator),

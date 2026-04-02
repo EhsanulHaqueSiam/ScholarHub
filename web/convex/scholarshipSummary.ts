@@ -30,6 +30,7 @@ export interface ScholarshipSummary {
   prestige_tier?: string | null;
   scholarship_type?: string | null;
   tags?: string[] | null;
+  document_requirements?: string[] | null;
 }
 
 export function toScholarshipSummary(s: any): ScholarshipSummary {
@@ -58,5 +59,6 @@ export function toScholarshipSummary(s: any): ScholarshipSummary {
     prestige_tier: s.prestige_tier,
     scholarship_type: s.scholarship_type,
     tags: s.tags,
+    document_requirements: s.document_requirements,
   };
 }

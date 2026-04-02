@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import { CompareBar } from "@/components/comparison/CompareBar";
 import { CompareProvider } from "@/components/comparison/CompareContext";
 import { PageActivityProvider } from "@/hooks/usePageActivity";
+import { Toaster } from "sonner";
 import { buildOrganizationJsonLd } from "@/lib/seo/json-ld";
 import appCss from "../index.css?url";
 
@@ -255,6 +256,13 @@ function RootComponent() {
         </PageActivityProvider>
         <SpaPageviewTracker />
         <Scripts />
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            className: "border-2 border-border shadow-shadow bg-secondary-background text-foreground font-base",
+            duration: 3000,
+          }}
+        />
       </body>
     </html>
   );
