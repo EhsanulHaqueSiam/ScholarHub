@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Application Hub
 status: Phase complete — ready for verification
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-04-02T21:12:09.930Z"
+stopped_at: Completed 02-06-PLAN.md
+last_updated: "2026-04-02T21:20:01.882Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 9
@@ -53,6 +53,7 @@ All v1.0 decisions archived in PROJECT.md Key Decisions table and milestones/v1.
 - [Phase 02]: document_requirements stored as v.optional(v.array(v.string())) for flexible per-scholarship document checklists
 - [Phase 02]: Expanded card uses fixed overlay pattern (inset-0 z-50) for simplicity on both desktop and mobile
 - [Phase 02]: DocumentChecklist on detail page shows read-only preview with hint text when scholarship not tracked
+- [Phase 02]: Kept Toaster inside CompareProvider (with font-base), removed duplicate outside
 
 ### Pending Todos
 
@@ -78,6 +79,7 @@ None.
 | Phase 01 P08 | 4m 19s | 2 tasks | 3 files |
 | Phase 02 P02 | 2m 36s | 2 tasks | 6 files |
 | Phase 02 P05 | 4min | 2 tasks | 8 files |
+| Phase 02 P06 | 5min | 2 tasks | 1 files |
 
 ### Roadmap Evolution
 
@@ -91,7 +93,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T21:12:09.928Z
+Last session: 2026-04-02T21:20:01.881Z
 Last activity: 2026-04-02
-Stopped at: Completed 02-05-PLAN.md
+Stopped at: Completed 02-06-PLAN.md
 Resume file: None

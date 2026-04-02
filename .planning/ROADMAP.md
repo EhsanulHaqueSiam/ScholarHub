@@ -69,12 +69,12 @@
 **Plans:** 6 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — TDD: Tracker data layer (types, Zustand store, engine functions, CSV export)
-- [ ] 02-02-PLAN.md — Install dependencies + Sonner Toaster + Convex schema extension (DOC-04)
-- [ ] 02-03-PLAN.md — Kanban board UI (TrackerKanban, columns, cards, mobile stage selector, /tracker route)
-- [ ] 02-04-PLAN.md — TrackThisButton integration into detail page, sticky bar, and directory cards
-- [ ] 02-05-PLAN.md — Detail components (notes editor, document checklist, expanded card, document matrix, CSV export button)
-- [ ] 02-06-PLAN.md — End-to-end verification checkpoint
+- [x] 02-01-PLAN.md — TDD: Tracker data layer (types, Zustand store, engine functions, CSV export)
+- [x] 02-02-PLAN.md — Install dependencies + Sonner Toaster + Convex schema extension (DOC-04)
+- [x] 02-03-PLAN.md — Kanban board UI (TrackerKanban, columns, cards, mobile stage selector, /tracker route)
+- [x] 02-04-PLAN.md — TrackThisButton integration into detail page, sticky bar, and directory cards
+- [x] 02-05-PLAN.md — Detail components (notes editor, document checklist, expanded card, document matrix, CSV export button)
+- [x] 02-06-PLAN.md — End-to-end verification checkpoint
 
 **Success Criteria:**
 1. User can add a scholarship to the tracker from any detail page or card
