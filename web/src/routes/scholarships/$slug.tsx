@@ -348,6 +348,7 @@ function ScholarshipDetailPage() {
               <DocumentChecklist
                 slug={slug}
                 documentChecks={trackerEntry.documentChecks}
+                customRequirements={scholarship.document_requirements ?? undefined}
               />
             ) : (
               <div className="bg-secondary-background border-2 border-border p-4">
@@ -355,6 +356,7 @@ function ScholarshipDetailPage() {
                   slug={slug}
                   documentChecks={{}}
                   readOnly
+                  customRequirements={scholarship.document_requirements ?? undefined}
                 />
                 <p className="text-caption text-foreground/60 mt-3">
                   Track this scholarship to check off documents as you prepare them.

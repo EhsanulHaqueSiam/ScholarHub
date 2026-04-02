@@ -2,30 +2,30 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Application Hub
-status: Phase complete — ready for verification
-stopped_at: Completed 02-06-PLAN.md
-last_updated: "2026-04-02T21:20:01.882Z"
+status: Executing Phase 02
+stopped_at: Phase 02 UI-SPEC approved
+last_updated: "2026-04-02T20:44:27.220Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 9
+  completed_plans: 8
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-23)
+See: .planning/PROJECT.md (updated 2026-04-03)
 
-**Core value:** Students can discover every relevant international scholarship in one place, with reliable, enriched information they can't easily find elsewhere.
-**Current focus:** Phase 01 — eligibility-analysis-funnel
+**Core value:** Help students confidently find and apply to scholarships they qualify for — reducing anxiety through clear data, preparation tools, and personalized recommendations.
+**Current focus:** Phase 02 — Application Tracker + Document Matrix
 
 ## Current Position
 
-Phase: 01 (eligibility-analysis-funnel) — EXECUTING
-Plan: 8 of 8
+Phase: 02 (Application Tracker + Document Matrix) — EXECUTING
+Plan: 1 of 6
 
 ## Performance Metrics
 
@@ -49,11 +49,6 @@ All v1.0 decisions archived in PROJECT.md Key Decisions table and milestones/v1.
 - [Phase 01]: Built self-contained sort/filter components for eligibility results instead of reusing directory SortPills/FilterChips (coupled to useScholarshipFilters)
 - [Phase 01]: Used POPULAR_NATIONALITIES from countries.ts for D-35 indexable nationality set
 - [Phase 01]: FAQPage JSON-LD with 4 entries added to /eligibility route head for SEO
-- [Phase 02]: Sonner Toaster with neo-brutalism className overrides positioned bottom-right
-- [Phase 02]: document_requirements stored as v.optional(v.array(v.string())) for flexible per-scholarship document checklists
-- [Phase 02]: Expanded card uses fixed overlay pattern (inset-0 z-50) for simplicity on both desktop and mobile
-- [Phase 02]: DocumentChecklist on detail page shows read-only preview with hint text when scholarship not tracked
-- [Phase 02]: Kept Toaster inside CompareProvider (with font-base), removed duplicate outside
 
 ### Pending Todos
 
@@ -77,9 +72,6 @@ None.
 | Phase 01 P06 | 2m 19s | 2 tasks | 3 files |
 | Phase 01 P07 | 6min | 3 tasks | 4 files |
 | Phase 01 P08 | 4m 19s | 2 tasks | 3 files |
-| Phase 02 P02 | 2m 36s | 2 tasks | 6 files |
-| Phase 02 P05 | 4min | 2 tasks | 8 files |
-| Phase 02 P06 | 5min | 2 tasks | 1 files |
 
 ### Roadmap Evolution
 
@@ -93,7 +85,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T21:20:01.881Z
+Last session: 2026-04-02T20:12:54.459Z
 Last activity: 2026-04-02
-Stopped at: Completed 02-06-PLAN.md
-Resume file: None
+Stopped at: Phase 02 UI-SPEC approved
+Resume file: web/.planning/phases/02-application-tracker-document-matrix/02-UI-SPEC.md
