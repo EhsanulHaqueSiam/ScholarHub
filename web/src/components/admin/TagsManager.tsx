@@ -47,8 +47,9 @@ export function TagsManager() {
   // Get scholarships with suggested tags for Section 2
   const reviewQueue = useQuery(api.admin.getReviewQueue, {
     status: "published" as any,
-    limit: 200,
+    limit: 80,
     includePossibleDuplicate: false,
+    includeResolvedSources: false,
   });
 
   // Build tag count map

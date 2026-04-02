@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 import { generateSitemapXml } from "../../lib/seo/sitemap";
+import { loadStaticData } from "../../lib/static-data";
 
 const SITE_URL = process.env.VITE_SITE_URL || "https://scholarhub.io";
 
@@ -19,6 +20,69 @@ export const Route = createFileRoute("/api/sitemap.xml")({
       },
       GET: async () => {
         try {
+          const staticData = await loadStaticData();
+          if (staticData) {
+            const urls: {
+              loc: string;
+              lastmod?: string;
+              changefreq?: string;
+              priority?: number;
+            }[] = [];
+
+            urls.push(
+              { loc: SITE_URL, priority: 1.0, changefreq: "daily" },
+              {
+                loc: `${SITE_URL}/scholarships`,
+                priority: 0.9,
+                changefreq: "daily",
+              },
+              {
+                loc: `${SITE_URL}/scholarships/closing-soon`,
+                priority: 0.8,
+                changefreq: "daily",
+              },
+              {
+                loc: `${SITE_URL}/collections`,
+                priority: 0.7,
+                changefreq: "weekly",
+              },
+            );
+
+            for (const s of staticData.summaries) {
+              if (!s.slug) continue;
+              urls.push({
+                loc: `${SITE_URL}/scholarships/${s.slug}`,
+                lastmod: new Date(s._creationTime).toISOString().split("T")[0],
+                changefreq: "weekly",
+                priority: 0.8,
+              });
+            }
+
+            for (const c of staticData.taxonomy.topCountries) {
+              urls.push({
+                loc: `${SITE_URL}/scholarships/country/${c.code.toLowerCase()}`,
+                changefreq: "weekly",
+                priority: 0.7,
+              });
+            }
+
+            for (const d of staticData.taxonomy.allDegrees) {
+              urls.push({
+                loc: `${SITE_URL}/scholarships/degree/${d.level}`,
+                changefreq: "weekly",
+                priority: 0.7,
+              });
+            }
+
+            return new Response(generateSitemapXml(urls), {
+              status: 200,
+              headers: {
+                "Content-Type": "application/xml",
+                "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+              },
+            });
+          }
+
           const convexUrl = process.env.VITE_CONVEX_URL;
           if (!convexUrl) {
             return new Response(

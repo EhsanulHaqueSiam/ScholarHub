@@ -27,6 +27,9 @@ import { toScholarshipSummary } from "./scholarshipSummary";
 
 const COLLECTION_SCAN_CAP = 5000;
 const COLLECTION_PAGE_SCAN_CAP = 3000;
+const COLLECTION_ACTIVE_LIST_CAP = 500;
+const COLLECTION_MEMBERSHIP_SCAN_CAP = 800;
+const COLLECTION_ADMIN_LIST_CAP = 1200;
 
 // ---- Helper: Check if a scholarship matches a collection's filter criteria ----
 
@@ -256,7 +259,7 @@ export const getAllCollections = query({
     const collections = await ctx.db
       .query("collections")
       .withIndex("by_sort_order", (q) => q.eq("status", "active"))
-      .collect();
+      .take(COLLECTION_ACTIVE_LIST_CAP);
 
     return collections;
   },
@@ -294,7 +297,7 @@ export const getScholarshipCollections = query({
     const activeCollections = await ctx.db
       .query("collections")
       .withIndex("by_status", (q) => q.eq("status", "active"))
-      .collect();
+      .take(COLLECTION_MEMBERSHIP_SCAN_CAP);
 
     return activeCollections
       .filter((collection) => matchesCollectionFilters(scholarship as any, collection))
@@ -314,7 +317,7 @@ export const getScholarshipCollections = query({
 export const getAdminCollections = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("collections").collect();
+    return await ctx.db.query("collections").take(COLLECTION_ADMIN_LIST_CAP);
   },
 });
 
@@ -532,7 +535,7 @@ export const recomputeAllCounts = internalMutation({
     }
 
     if (!page.isDone) {
-      await runAfterSafe(ctx, 0, internal.collections.recomputeAllCounts, {
+      await runAfterSafe(ctx, 500, internal.collections.recomputeAllCounts, {
         cursor: page.continueCursor,
       });
     }

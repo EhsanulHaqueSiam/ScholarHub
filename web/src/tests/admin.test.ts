@@ -130,4 +130,45 @@ describe("Admin query performance paths", () => {
     });
     expect(withDupCheck[0].has_possible_duplicate).toBe(true);
   });
+
+  it("getReviewQueue returns lightweight previews and can skip source hydration", async () => {
+    const t = convexTest(schema, modules);
+    const sourceId = await createSource(t, { trust_level: "needs_review" });
+    const longDescription = "A".repeat(800);
+
+    await t.run(async (ctx: any) => {
+      await ctx.db.insert("scholarships", {
+        title: "Queue Preview Test",
+        slug: "queue-preview-test",
+        description: longDescription,
+        provider_organization: "Org",
+        host_country: "US",
+        degree_levels: ["master"],
+        funding_type: "partial",
+        award_amount_min: 500,
+        award_amount_max: 1200,
+        application_url: "https://example.com/apply",
+        status: "published",
+        source_ids: [sourceId],
+      });
+    });
+
+    const hydrated = await t.query(anyApi.admin.getReviewQueue, {
+      status: "published",
+      limit: 5,
+      includePossibleDuplicate: false,
+      includeResolvedSources: true,
+    });
+    expect(hydrated[0].resolved_sources.length).toBe(1);
+    expect(hydrated[0].funding_amount_max).toBe(1200);
+    expect(hydrated[0].description.length).toBeLessThan(500);
+
+    const noSources = await t.query(anyApi.admin.getReviewQueue, {
+      status: "published",
+      limit: 5,
+      includePossibleDuplicate: false,
+      includeResolvedSources: false,
+    });
+    expect(noSources[0].resolved_sources).toEqual([]);
+  });
 });

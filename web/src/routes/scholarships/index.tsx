@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { usePaginatedQuery } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FeaturedCollectionsRow } from "@/components/collections/FeaturedCollectionsRow";
 import { EligibilityFilterBar } from "@/components/directory/EligibilityFilterBar";
 import { EmptyState } from "@/components/directory/EmptyState";
@@ -19,10 +19,12 @@ import { ViewToggle } from "@/components/directory/ViewToggle";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
+import { useStaticData } from "@/hooks/useStaticData";
 import { useScholarshipFilters } from "@/hooks/useScholarshipFilters";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { scholarshipSearchSchema } from "@/lib/filters";
 import { buildPageMeta } from "@/lib/seo/meta";
+import { filterScholarships } from "@/lib/static-data";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
@@ -105,7 +107,10 @@ function formatResultsCount(
 
 function ScholarshipsDirectory() {
   const { filters, queryArgs, setFilter } = useScholarshipFilters();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const [desktopPage, setDesktopPage] = useState(1);
+  const [mobilePagesLoaded, setMobilePagesLoaded] = useState(1);
+  const desktopLoadRequestRef = useRef<string | null>(null);
   const PAGE_SIZE = 20;
 
   // Track viewport size to switch between desktop (page-based) and mobile (accumulative) pagination
@@ -119,50 +124,119 @@ function ScholarshipsDirectory() {
   }, []);
 
   // Paginated query keeps Convex reads bounded while still allowing full result visibility.
+  const shouldUseConvex = !isStaticDataLoading && !staticData;
+  const useStaticResults = !!staticData;
   const {
-    results: allResults,
-    status,
-    loadMore,
-    isLoading,
-  } = usePaginatedQuery(api.directory.listScholarships, queryArgs, { initialNumItems: PAGE_SIZE });
+    results: convexResults,
+    status: convexStatus,
+    loadMore: loadMoreConvex,
+    isLoading: isLoadingConvex,
+  } = usePaginatedQuery(
+    api.directory.listScholarships,
+    shouldUseConvex ? queryArgs : "skip",
+    { initialNumItems: PAGE_SIZE },
+  );
 
-  const totalAvailable = allResults?.length ?? 0;
-  const hasMore = status === "CanLoadMore";
+  const staticWindow = useMemo(() => {
+    if (!staticData) return null;
+    const limit = isDesktop ? PAGE_SIZE : mobilePagesLoaded * PAGE_SIZE;
+    const offset = isDesktop ? (desktopPage - 1) * PAGE_SIZE : 0;
+    return filterScholarships(staticData, {
+      search: queryArgs.search,
+      hostCountries: queryArgs.hostCountries,
+      nationalities: queryArgs.nationalities,
+      showIneligible: queryArgs.showIneligible,
+      degreeLevels: queryArgs.degreeLevels,
+      fieldsOfStudy: queryArgs.fieldsOfStudy,
+      fundingTypes: queryArgs.fundingTypes,
+      prestigeTiers: queryArgs.prestigeTiers,
+      scholarshipTypes: queryArgs.scholarshipTypes,
+      tags: queryArgs.tags,
+      showClosed: queryArgs.showClosed,
+      closingSoon: queryArgs.closingSoon,
+      sort: queryArgs.sort,
+      limit,
+      offset,
+    });
+  }, [staticData, isDesktop, mobilePagesLoaded, desktopPage, queryArgs]);
+
+  const totalAvailable = useStaticResults ? (staticWindow?.total ?? 0) : (convexResults?.length ?? 0);
+  const querySignature = JSON.stringify(queryArgs);
   const loadedPages = Math.max(1, Math.ceil(totalAvailable / PAGE_SIZE));
-  const totalPages = hasMore ? loadedPages + 1 : loadedPages;
+  const desktopTotalPages = useStaticResults
+    ? loadedPages
+    : convexStatus === "CanLoadMore"
+      ? loadedPages + 1
+      : loadedPages;
+  const desktopHasMore = desktopPage < desktopTotalPages;
+  const mobileHasMore = useStaticResults
+    ? mobilePagesLoaded * PAGE_SIZE < totalAvailable
+    : convexStatus === "CanLoadMore";
+  const hasMore = isDesktop ? desktopHasMore : mobileHasMore;
+  const hasUnknownRemaining =
+    !useStaticResults && (convexStatus === "CanLoadMore" || convexStatus === "LoadingMore");
 
   // Desktop numbered pagination can request additional pages lazily as user advances.
-  const neededForCurrentPage = currentPage * PAGE_SIZE;
+  const neededForDesktopPage = desktopPage * PAGE_SIZE;
   const isPageDataLoading =
+    !useStaticResults &&
     isDesktop &&
-    totalAvailable < neededForCurrentPage &&
-    (status === "CanLoadMore" || status === "LoadingMore");
+    totalAvailable < neededForDesktopPage &&
+    (convexStatus === "CanLoadMore" || convexStatus === "LoadingMore");
 
   useEffect(() => {
-    if (!isDesktop || status !== "CanLoadMore") return;
-    if (totalAvailable >= neededForCurrentPage) return;
-    loadMore(Math.max(PAGE_SIZE, neededForCurrentPage - totalAvailable));
-  }, [currentPage, isDesktop, loadMore, status, totalAvailable, neededForCurrentPage]);
+    if (useStaticResults) return;
+    if (!isDesktop || convexStatus !== "CanLoadMore") return;
+    if (totalAvailable >= neededForDesktopPage) return;
+    const requestAmount = Math.max(PAGE_SIZE, neededForDesktopPage - totalAvailable);
+    const requestKey = `${querySignature}:${desktopPage}:${totalAvailable}:${requestAmount}`;
+    if (desktopLoadRequestRef.current === requestKey) return;
+    desktopLoadRequestRef.current = requestKey;
+    loadMoreConvex(requestAmount);
+  }, [
+    desktopPage,
+    isDesktop,
+    useStaticResults,
+    loadMoreConvex,
+    convexStatus,
+    totalAvailable,
+    neededForDesktopPage,
+    querySignature,
+  ]);
 
   // Client-side pagination — desktop replaces content per-page, mobile accumulates
   const results = useMemo(() => {
-    if (!allResults) return undefined;
+    if (useStaticResults) return staticWindow?.scholarships;
+    if (!convexResults) return undefined;
     if (isDesktop) {
       // Desktop: show only current page's items (e.g., page 2 = items 21-40)
-      const pageSlice = allResults.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+      const pageSlice = convexResults.slice((desktopPage - 1) * PAGE_SIZE, desktopPage * PAGE_SIZE);
       // If we're waiting for more data to load for this page, return undefined to show skeletons
       if (pageSlice.length === 0 && isPageDataLoading) return undefined;
       return pageSlice;
     }
     // Mobile: accumulative "load more" (e.g., page 2 = items 1-40)
-    return allResults.slice(0, currentPage * PAGE_SIZE);
-  }, [allResults, currentPage, isDesktop, isPageDataLoading]);
+    return convexResults.slice(0, mobilePagesLoaded * PAGE_SIZE);
+  }, [
+    useStaticResults,
+    staticWindow,
+    convexResults,
+    desktopPage,
+    mobilePagesLoaded,
+    isDesktop,
+    isPageDataLoading,
+  ]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    setDesktopPage(1);
+    setMobilePagesLoaded(1);
+    desktopLoadRequestRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(queryArgs)]);
+  }, [querySignature]);
+  useEffect(() => {
+    setDesktopPage((page) => Math.min(page, desktopTotalPages));
+  }, [desktopTotalPages]);
 
   // Use loaded results count instead of a separate heavy count query
   const totalCount = totalAvailable > 0 ? totalAvailable : undefined;
@@ -195,8 +269,15 @@ function ScholarshipsDirectory() {
 
   const isGridView = filters.view === "grid";
   const hasResults = results && results.length > 0;
-  const isInitialLoading = (isLoading && !results?.length) || isPageDataLoading;
-  const isFilterChanging = status === "LoadingFirstPage" && !!results?.length;
+  const isInitialLoading =
+    (useStaticResults ? false : isStaticDataLoading || (isLoadingConvex && !results?.length)) ||
+    isPageDataLoading;
+  const status = useStaticResults
+    ? mobileHasMore
+      ? "CanLoadMore"
+      : "Exhausted"
+    : convexStatus;
+  const isFilterChanging = !useStaticResults && status === "LoadingFirstPage" && !!results?.length;
 
   return (
     <div className="min-h-screen">
@@ -332,16 +413,18 @@ function ScholarshipsDirectory() {
               )}
 
               {/* Mobile: Show more button */}
-              {hasMore && (
+              {mobileHasMore && (
                 <div className="lg:hidden flex justify-center mt-8">
                   <button
                     type="button"
                     onClick={() => {
-                      if (status === "CanLoadMore") {
-                        loadMore(PAGE_SIZE);
+                      if (!useStaticResults) {
+                        if (status !== "CanLoadMore") return;
+                        loadMoreConvex(PAGE_SIZE);
                       }
-                      setCurrentPage((p) => p + 1);
+                      setMobilePagesLoaded((page) => page + 1);
                     }}
+                    disabled={!useStaticResults && status !== "CanLoadMore"}
                     className="inline-flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-6 py-3 border-2 border-border rounded-base shadow-shadow active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
                   >
                     Show More Scholarships
@@ -349,7 +432,7 @@ function ScholarshipsDirectory() {
                 </div>
               )}
 
-              {status === "LoadingMore" && (
+              {!useStaticResults && status === "LoadingMore" && (
                 <div
                   className={cn(
                     "mt-6",
@@ -367,14 +450,15 @@ function ScholarshipsDirectory() {
               {/* Desktop: Numbered pagination */}
               <div className="hidden lg:block">
                 <DesktopPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+                  currentPage={desktopPage}
+                  totalPages={desktopTotalPages}
+                  onPageChange={setDesktopPage}
                 />
                 {hasResults && (
                   <p className="text-center text-sm text-foreground/60 mt-4">
-                    Showing {results.length} of {hasMore ? `${totalAvailable}+` : totalAvailable}{" "}
-                    matching scholarships
+                    Showing {results.length} of{" "}
+                    {hasUnknownRemaining ? `${totalAvailable}+` : totalAvailable} matching
+                    scholarships
                   </p>
                 )}
               </div>

@@ -7,7 +7,8 @@
     "prebuild": "node scripts/export-static-data.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "export-data": "node scripts/export-static-data.mjs"
+    "export-data": "node scripts/export-static-data.mjs",
+    "quota:readiness": "node scripts/quota-readiness-report.mjs"
   },
   "dependencies": {
     "@convex-dev/react-query": "^0.1.0",

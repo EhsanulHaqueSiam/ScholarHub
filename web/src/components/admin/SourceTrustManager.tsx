@@ -30,7 +30,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function SourceTrustManager() {
-  const sources = useQuery(api.admin.getAllSources);
   const updateSourceTrust = useMutation(api.admin.updateSourceTrust);
 
   const [pendingChanges, setPendingChanges] = useState<Record<string, TrustLevel>>({});
@@ -46,12 +45,15 @@ export function SourceTrustManager() {
     api.admin.countAffectedScholarships,
     confirmingSource ? { sourceId: confirmingSource.id } : "skip",
   );
+  const sources = useQuery(api.admin.getAllSources, {
+    activeOnly: showActiveOnly,
+  });
 
   if (!sources) {
     return <div className="text-foreground/60 text-sm py-8 text-center">Loading sources...</div>;
   }
 
-  const filteredSources = showActiveOnly ? sources.filter((s) => s.is_active) : sources;
+  const filteredSources = sources;
 
   function handleDropdownChange(sourceId: string, currentLevel: TrustLevel, newLevel: TrustLevel) {
     if (newLevel === currentLevel) {
@@ -93,9 +95,6 @@ export function SourceTrustManager() {
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-foreground/60">
           {filteredSources.length} source{filteredSources.length !== 1 ? "s" : ""}
-          {showActiveOnly && sources.length !== filteredSources.length && (
-            <span> ({sources.length} total)</span>
-          )}
         </p>
         <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground/80">
           <input

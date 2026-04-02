@@ -411,6 +411,7 @@ describe("archiveExpired", () => {
 
     await t.mutation(anyApi.aggregation.archiveExpired, {
       cursor: null,
+      runKey: 2,
     });
 
     const scholarships = await t.run(async (ctx: any) => {
@@ -444,6 +445,7 @@ describe("archiveExpired", () => {
 
     await t.mutation(anyApi.aggregation.archiveExpired, {
       cursor: null,
+      runKey: 2,
     });
 
     const scholarships = await t.run(async (ctx: any) => {
@@ -494,7 +496,7 @@ describe("archiveExpired", () => {
     let iterations = 0;
 
     while (true) {
-      const result = await t.mutation(anyApi.aggregation.archiveExpired, { cursor: null });
+      const result = await t.mutation(anyApi.aggregation.archiveExpired, { cursor: null, runKey: 2 });
       totalArchived += result.archived;
       iterations += 1;
 
@@ -512,6 +514,69 @@ describe("archiveExpired", () => {
     });
     expect(scholarships.filter((s: any) => s.status === "archived")).toHaveLength(65);
     expect(scholarships.filter((s: any) => s.status === "published")).toHaveLength(65);
+  });
+
+  it("skips invocations without runKey", async () => {
+    const t = convexTest(schema, modules);
+    const fortyFiveDaysAgo = Date.now() - 45 * 24 * 60 * 60 * 1000;
+
+    await t.run(async (ctx: any) => {
+      await ctx.db.insert("scholarships", {
+        title: "Legacy RunKey Scholarship",
+        slug: "legacy-runkey-scholarship",
+        description: "Test",
+        provider_organization: "TestOrg",
+        host_country: "US",
+        degree_levels: ["master"],
+        funding_type: "fully_funded",
+        status: "published",
+        source_ids: [],
+        application_deadline: fortyFiveDaysAgo,
+      });
+    });
+
+    const result = await t.mutation(anyApi.aggregation.archiveExpired, {
+      cursor: null,
+    });
+    expect(result.archived).toBe(0);
+    expect(result.skippedLegacy).toBe(true);
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships[0].status).toBe("published");
+  });
+
+  it("skips stale runKey chains", async () => {
+    const t = convexTest(schema, modules);
+    const fortyFiveDaysAgo = Date.now() - 45 * 24 * 60 * 60 * 1000;
+
+    await t.run(async (ctx: any) => {
+      await ctx.db.insert("scholarships", {
+        title: "Stale RunKey Scholarship",
+        slug: "stale-runkey-scholarship",
+        description: "Test",
+        provider_organization: "TestOrg",
+        host_country: "US",
+        degree_levels: ["master"],
+        funding_type: "fully_funded",
+        status: "published",
+        source_ids: [],
+        application_deadline: fortyFiveDaysAgo,
+      });
+    });
+
+    const result = await t.mutation(anyApi.aggregation.archiveExpired, {
+      cursor: null,
+      runKey: 1,
+    });
+    expect(result.archived).toBe(0);
+    expect(result.skippedLegacy).toBe(true);
+
+    const scholarships = await t.run(async (ctx: any) => {
+      return await ctx.db.query("scholarships").collect();
+    });
+    expect(scholarships[0].status).toBe("published");
   });
 });
 

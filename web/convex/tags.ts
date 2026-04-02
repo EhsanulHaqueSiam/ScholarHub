@@ -24,6 +24,25 @@ import { ALL_TAGS } from "../src/lib/tags";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 const TAG_USAGE_SCAN_CAP = 12000;
+const TAG_COLLECTION_SCAN_CAP_PER_STATUS = 400;
+
+async function listCollectionsForTagOps(ctx: { db: any }) {
+  const [draft, active, archived] = await Promise.all([
+    ctx.db
+      .query("collections")
+      .withIndex("by_status", (q: any) => q.eq("status", "draft"))
+      .take(TAG_COLLECTION_SCAN_CAP_PER_STATUS),
+    ctx.db
+      .query("collections")
+      .withIndex("by_status", (q: any) => q.eq("status", "active"))
+      .take(TAG_COLLECTION_SCAN_CAP_PER_STATUS),
+    ctx.db
+      .query("collections")
+      .withIndex("by_status", (q: any) => q.eq("status", "archived"))
+      .take(TAG_COLLECTION_SCAN_CAP_PER_STATUS),
+  ]);
+  return [...draft, ...active, ...archived];
+}
 
 // ---- Queries ----
 
@@ -155,7 +174,7 @@ export const renameTag = rawInternalMutation({
 
     // Update collection filters once at the start of the operation.
     if (!(args.collectionsUpdated ?? false)) {
-      const collections = await ctx.db.query("collections").collect();
+      const collections = await listCollectionsForTagOps(ctx);
       for (const collection of collections) {
         const collTags = collection.tags ?? [];
         if (collTags.includes(args.oldTag)) {
@@ -168,7 +187,7 @@ export const renameTag = rawInternalMutation({
 
     // Continue pagination until complete.
     if (!page.isDone) {
-      await runAfterSafe(ctx, 0, internal.tags.renameTag, {
+      await runAfterSafe(ctx, 500, internal.tags.renameTag, {
         oldTag: args.oldTag,
         newTag: args.newTag,
         cursor: page.continueCursor,
@@ -232,7 +251,7 @@ export const deleteTag = rawInternalMutation({
 
     // Update collection filters once at the start of the operation.
     if (!(args.collectionsUpdated ?? false)) {
-      const collections = await ctx.db.query("collections").collect();
+      const collections = await listCollectionsForTagOps(ctx);
       for (const collection of collections) {
         const collTags = collection.tags ?? [];
         if (collTags.includes(args.tag)) {
@@ -245,7 +264,7 @@ export const deleteTag = rawInternalMutation({
 
     // Continue pagination until complete.
     if (!page.isDone) {
-      await runAfterSafe(ctx, 0, internal.tags.deleteTag, {
+      await runAfterSafe(ctx, 500, internal.tags.deleteTag, {
         tag: args.tag,
         cursor: page.continueCursor,
         collectionsUpdated: true,

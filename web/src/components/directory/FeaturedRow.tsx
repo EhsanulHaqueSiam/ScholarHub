@@ -1,6 +1,8 @@
 import { useQuery } from "convex/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useStaticData } from "@/hooks/useStaticData";
+import { getFeaturedScholarships } from "@/lib/static-data";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 import { ScholarshipCard } from "./ScholarshipCard";
@@ -16,10 +18,24 @@ interface FeaturedRowProps {
  * Mobile: horizontal snap scroll. Desktop: overflow-hidden with arrow buttons.
  */
 export const FeaturedRow = memo(function FeaturedRow({ nationalities }: FeaturedRowProps) {
-  const featured = useQuery(api.directory.getFeaturedScholarships, {
-    nationalities: nationalities && nationalities.length > 0 ? nationalities : undefined,
-    limit: 6,
-  });
+  const { data: staticData } = useStaticData();
+  const staticFeatured = staticData
+    ? getFeaturedScholarships(
+        staticData,
+        6,
+        nationalities && nationalities.length > 0 ? nationalities : undefined,
+      )
+    : null;
+  const queriedFeatured = useQuery(
+    api.directory.getFeaturedScholarships,
+    staticFeatured
+      ? "skip"
+      : {
+          nationalities: nationalities && nationalities.length > 0 ? nationalities : undefined,
+          limit: 6,
+        },
+  );
+  const featured = staticFeatured ?? queriedFeatured;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

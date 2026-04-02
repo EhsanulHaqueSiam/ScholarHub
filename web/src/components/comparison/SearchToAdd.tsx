@@ -4,7 +4,9 @@ import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCompare } from "@/components/comparison/CompareContext";
+import { useStaticData } from "@/hooks/useStaticData";
 import { getCountryFlag } from "@/lib/countries";
+import { searchSuggestions as searchStaticSuggestions } from "@/lib/search-engine";
 import { api } from "../../../convex/_generated/api";
 
 interface SearchToAddProps {
@@ -17,6 +19,8 @@ export function SearchToAdd({ onSelect }: SearchToAddProps) {
   const [searchText, setSearchText] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: staticData } = useStaticData();
+  const useStaticSuggestions = !!staticData;
 
   // Debounce search input by 300ms
   useEffect(() => {
@@ -33,10 +37,16 @@ export function SearchToAdd({ onSelect }: SearchToAddProps) {
     }
   }, [open]);
 
-  const suggestions = useQuery(
+  const convexSuggestions = useQuery(
     api.directory.searchSuggestions,
-    debouncedQuery.trim().length > 0 ? { query: debouncedQuery.trim() } : "skip",
+    !useStaticSuggestions && debouncedQuery.trim().length > 0
+      ? { query: debouncedQuery.trim() }
+      : "skip",
   );
+  const suggestions =
+    useStaticSuggestions && debouncedQuery.trim().length > 0
+      ? searchStaticSuggestions(debouncedQuery.trim(), 8)
+      : convexSuggestions;
 
   const handleSelect = useCallback(
     (slug: string, title: string) => {

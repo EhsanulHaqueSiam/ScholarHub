@@ -37,12 +37,19 @@ const VALID_FUNDING = new Set(["fully_funded", "partial", "tuition_waiver", "sti
 const DEFAULT_AGGREGATION_BATCH_SIZE = 6;
 const MAX_CANDIDATES_PER_MATCH_KEY = 12;
 const MAX_LINKED_RAW_RECORDS_FOR_MERGE = 12;
-const ARCHIVE_EXPIRED_BATCH_SIZE = 50;
+const ARCHIVE_EXPIRED_BATCH_SIZE = 20;
+const ARCHIVE_BATCH_DELAY_MS = 2000;
+const ARCHIVE_MAX_BATCHES = 50; // Hard cap: 50 × 20 = 1000 per cron run
+const ARCHIVE_RUN_KEY = 2; // Bump this to invalidate legacy scheduled continuations.
 const ARCHIVE_GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_VALID_DEADLINE_MS = 0;
 const AGGREGATION_LOCK_NAME = "aggregation.aggregateBatch";
 const AGGREGATION_LOCK_LEASE_MS = 2 * 60 * 1000;
+const ARCHIVE_LOCK_NAME = "aggregation.archiveExpired";
+const ARCHIVE_LOCK_LEASE_MS = 2 * 60 * 1000;
 const AGGREGATION_RETRY_DELAY_MS = 3 * 1000;
+const AGGREGATION_MAX_LOCK_RETRIES = 10;
+const BACKFILL_BATCH_DELAY_MS = 500; // Throttle backfill self-scheduling
 
 async function getSourceCategory(
   ctx: any,
@@ -61,17 +68,33 @@ async function acquireAggregationLock(
   ctx: any,
   owner: string,
 ): Promise<{ acquired: boolean; lockId?: any }> {
+  return await acquireNamedPipelineLock(ctx, AGGREGATION_LOCK_NAME, owner, AGGREGATION_LOCK_LEASE_MS);
+}
+
+async function acquireArchiveLock(
+  ctx: any,
+  owner: string,
+): Promise<{ acquired: boolean; lockId?: any }> {
+  return await acquireNamedPipelineLock(ctx, ARCHIVE_LOCK_NAME, owner, ARCHIVE_LOCK_LEASE_MS);
+}
+
+async function acquireNamedPipelineLock(
+  ctx: any,
+  lockName: string,
+  owner: string,
+  leaseMs: number,
+): Promise<{ acquired: boolean; lockId?: any }> {
   const now = Date.now();
   const existing = await ctx.db
     .query("pipeline_locks")
-    .withIndex("by_name", (q: any) => q.eq("name", AGGREGATION_LOCK_NAME))
+    .withIndex("by_name", (q: any) => q.eq("name", lockName))
     .first();
 
   if (!existing) {
     const lockId = await ctx.db.insert("pipeline_locks", {
-      name: AGGREGATION_LOCK_NAME,
+      name: lockName,
       owner,
-      lease_expires_at: now + AGGREGATION_LOCK_LEASE_MS,
+      lease_expires_at: now + leaseMs,
       updated_at: now,
     });
     return { acquired: true, lockId };
@@ -83,13 +106,21 @@ async function acquireAggregationLock(
 
   await ctx.db.patch(existing._id, {
     owner,
-    lease_expires_at: now + AGGREGATION_LOCK_LEASE_MS,
+    lease_expires_at: now + leaseMs,
     updated_at: now,
   });
   return { acquired: true, lockId: existing._id };
 }
 
 async function releaseAggregationLock(ctx: any, lockId: any, owner: string): Promise<void> {
+  await releaseNamedPipelineLock(ctx, lockId, owner);
+}
+
+async function releaseArchiveLock(ctx: any, lockId: any, owner: string): Promise<void> {
+  await releaseNamedPipelineLock(ctx, lockId, owner);
+}
+
+async function releaseNamedPipelineLock(ctx: any, lockId: any, owner: string): Promise<void> {
   if (!lockId) return;
   const existing = await ctx.db.get(lockId);
   if (!existing || existing.owner !== owner) return;
@@ -106,21 +137,28 @@ export const aggregateBatch = triggeredInternalMutation({
     cursor: v.union(v.string(), v.null()),
     batchSize: v.optional(v.number()),
     runId: v.optional(v.id("scrape_runs")),
+    lockRetries: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const batchSize = Math.max(1, Math.min(args.batchSize ?? DEFAULT_AGGREGATION_BATCH_SIZE, 40));
     const counts = { new: 0, updated: 0, duplicate: 0 };
     const owner = `${args.runId ?? "manual"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
     const sourceCategoryCache = new Map<string, string>();
+    const lockRetries = args.lockRetries ?? 0;
 
     const lock = await acquireAggregationLock(ctx, owner);
     if (!lock.acquired) {
+      if (lockRetries >= AGGREGATION_MAX_LOCK_RETRIES) {
+        console.log(`[aggregation] lock contention exceeded ${AGGREGATION_MAX_LOCK_RETRIES} retries, giving up`);
+        return;
+      }
       await ctx.scheduler.runAfter(AGGREGATION_RETRY_DELAY_MS, internal.aggregation.aggregateBatch, {
         cursor: null,
         batchSize,
         runId: args.runId,
+        lockRetries: lockRetries + 1,
       });
-      console.log("[aggregation] lock busy, deferred batch");
+      console.log(`[aggregation] lock busy, deferred batch (retry ${lockRetries + 1}/${AGGREGATION_MAX_LOCK_RETRIES})`);
       return;
     }
 
@@ -204,9 +242,9 @@ export const aggregateBatch = triggeredInternalMutation({
         `[aggregation] batch complete: ${counts.new} new, ${counts.updated} updated, ${counts.duplicate} possible duplicates`,
       );
 
-      // If there are more records, schedule next batch
+      // If there are more records, schedule next batch with throttle
       if (unpromoted.length === batchSize) {
-        await ctx.scheduler.runAfter(0, internal.aggregation.aggregateBatch, {
+        await ctx.scheduler.runAfter(BACKFILL_BATCH_DELAY_MS, internal.aggregation.aggregateBatch, {
           cursor: null,
           batchSize: batchSize,
           runId: args.runId,
@@ -243,9 +281,9 @@ export const backfillMatchKeys = triggeredInternalMutation({
       await ctx.db.patch(scholarship._id, { match_key: matchKey });
     }
 
-    // Schedule next batch if we processed a full batch
+    // Schedule next batch if we processed a full batch (throttled)
     if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.aggregation.backfillMatchKeys, {
+      await ctx.scheduler.runAfter(BACKFILL_BATCH_DELAY_MS, internal.aggregation.backfillMatchKeys, {
         cursor: null,
         batchSize: batchSize,
       });
@@ -290,9 +328,9 @@ export const backfillScholarshipTypes = triggeredInternalMutation({
       await ctx.db.patch(scholarship._id, { scholarship_type: scholarshipType });
     }
 
-    // Schedule next batch if we processed a full batch
+    // Schedule next batch if we processed a full batch (throttled)
     if (scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(0, internal.aggregation.backfillScholarshipTypes, {
+      await ctx.scheduler.runAfter(BACKFILL_BATCH_DELAY_MS, internal.aggregation.backfillScholarshipTypes, {
         cursor: null,
         batchSize,
       });
@@ -303,48 +341,89 @@ export const backfillScholarshipTypes = triggeredInternalMutation({
 });
 
 // ---------- Mutation 4: archiveExpired ----------
+// Uses rawInternalMutation (no triggers) because archived items don't need
+// prestige/search_text recomputation — saves ~50% writes per archive operation.
 
-export const archiveExpired = triggeredInternalMutation({
+export const archiveExpired = rawInternalMutation({
   args: {
     cursor: v.union(v.string(), v.null()),
+    batchesSoFar: v.optional(v.number()),
+    runKey: v.optional(v.number()),
   },
-  handler: async (ctx) => {
-    const archiveBefore = Date.now() - ARCHIVE_GRACE_MS;
-    let archived = 0;
+  handler: async (ctx, args) => {
+    const batchesSoFar = args.batchesSoFar ?? 0;
 
-    // Repeatedly archive from the oldest expired published slice.
-    // We re-query from the start each batch because we mutate `status`.
-    const expiredPublished = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status_deadline", (q) =>
-        q.eq("status", "published")
-          .gte("application_deadline", MIN_VALID_DEADLINE_MS)
-          .lt("application_deadline", archiveBefore),
-      )
-      .take(ARCHIVE_EXPIRED_BATCH_SIZE);
-
-    for (const scholarship of expiredPublished) {
-      const reopenMonth = scholarship.application_deadline
-        ? computeExpectedReopenMonth([scholarship.application_deadline])
-        : null;
-
-      await ctx.db.patch(scholarship._id, {
-        status: "archived",
-        ...(reopenMonth !== null ? { expected_reopen_month: reopenMonth } : {}),
-      });
-      archived++;
+    // Strict run-key gating: rejects old/stale queued invocations before doing any reads.
+    if (args.runKey === undefined) {
+      console.log("[archiveExpired] skipped invocation without runKey");
+      return { archived: 0, processed: 0, complete: false, skippedLegacy: true };
     }
 
-    const complete = expiredPublished.length < ARCHIVE_EXPIRED_BATCH_SIZE;
-    if (!complete) {
-      await runAfterSafe(ctx, 0, internal.aggregation.archiveExpired, { cursor: null });
+    // Reject stale chains when runKey mismatches.
+    if (args.runKey !== ARCHIVE_RUN_KEY) {
+      console.log(
+        `[archiveExpired] skipped continuation with stale runKey=${args.runKey} (expected ${ARCHIVE_RUN_KEY})`,
+      );
+      return { archived: 0, processed: 0, complete: false, skippedLegacy: true };
     }
 
-    return {
-      archived,
-      processed: expiredPublished.length,
-      complete,
-    };
+    const owner = `archive:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+    const lock = await acquireArchiveLock(ctx, owner);
+    if (!lock.acquired) {
+      // Another archive chain is already active; avoid scheduling retries to prevent fan-out.
+      return { archived: 0, processed: 0, complete: false, deferred: true };
+    }
+
+    try {
+      // Hard cap: stop self-scheduling after ARCHIVE_MAX_BATCHES to prevent runaway loops.
+      if (batchesSoFar >= ARCHIVE_MAX_BATCHES) {
+        console.log(
+          `[archiveExpired] Hit batch cap (${ARCHIVE_MAX_BATCHES}). Remaining items deferred to next cron run.`,
+        );
+        return { archived: 0, processed: 0, complete: false, cappedAt: batchesSoFar };
+      }
+
+      const archiveBefore = Date.now() - ARCHIVE_GRACE_MS;
+      let archived = 0;
+
+      const expiredPublished = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status_deadline", (q) =>
+          q.eq("status", "published")
+            .gte("application_deadline", MIN_VALID_DEADLINE_MS)
+            .lt("application_deadline", archiveBefore),
+        )
+        .take(ARCHIVE_EXPIRED_BATCH_SIZE);
+
+      for (const scholarship of expiredPublished) {
+        const reopenMonth = scholarship.application_deadline
+          ? computeExpectedReopenMonth([scholarship.application_deadline])
+          : null;
+
+        await ctx.db.patch(scholarship._id, {
+          status: "archived",
+          ...(reopenMonth !== null ? { expected_reopen_month: reopenMonth } : {}),
+        });
+        archived++;
+      }
+
+      const complete = expiredPublished.length < ARCHIVE_EXPIRED_BATCH_SIZE;
+      if (!complete) {
+        await runAfterSafe(ctx, ARCHIVE_BATCH_DELAY_MS, internal.aggregation.archiveExpired, {
+          cursor: null,
+          batchesSoFar: batchesSoFar + 1,
+          runKey: ARCHIVE_RUN_KEY,
+        });
+      }
+
+      return {
+        archived,
+        processed: expiredPublished.length,
+        complete,
+      };
+    } finally {
+      await releaseArchiveLock(ctx, lock.lockId, owner);
+    }
   },
 });
 

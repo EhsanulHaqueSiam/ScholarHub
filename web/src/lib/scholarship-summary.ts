@@ -22,4 +22,5 @@ export interface ScholarshipSummary {
   application_deadline?: number | null;
   prestige_tier?: string | null;
   scholarship_type?: string | null;
+  tags?: string[] | null;
 }

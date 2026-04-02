@@ -110,6 +110,13 @@ export function getScholarshipBySlug(data: StaticData, slug: string): any | null
   return data.scholarships[idx] ?? null;
 }
 
+/** Get multiple scholarship details by slug, preserving request order. */
+export function getScholarshipsBySlugs(data: StaticData, slugs: string[]): any[] {
+  return slugs
+    .map((slug) => getScholarshipBySlug(data, slug))
+    .filter((scholarship): scholarship is NonNullable<typeof scholarship> => scholarship !== null);
+}
+
 /** Get featured scholarships (gold/silver tier, non-expired) */
 export function getFeaturedScholarships(
   data: StaticData,
@@ -201,6 +208,7 @@ export function getDegreeLandingData(data: StaticData, degreeLevel: string) {
 export function filterScholarships(
   data: StaticData,
   filters: {
+    search?: string;
     hostCountries?: string[];
     nationalities?: string[];
     showIneligible?: boolean;
@@ -210,6 +218,9 @@ export function filterScholarships(
     prestigeTiers?: string[];
     scholarshipTypes?: string[];
     tags?: string[];
+    deadlineBefore?: number;
+    deadlineAfter?: number;
+    addedSince?: number;
     showClosed?: boolean;
     closingSoon?: boolean;
     sort?: string;
@@ -220,6 +231,11 @@ export function filterScholarships(
   const now = Date.now();
   const thirtyDays = 30 * 24 * 60 * 60 * 1000;
   const showClosed = filters.showClosed ?? true;
+  const searchQuery = filters.search?.trim().toLowerCase() ?? "";
+  const searchTokens = searchQuery
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
 
   let results = data.summaries.filter((s) => {
     if (!showClosed && s.application_deadline && s.application_deadline < now) return false;
@@ -264,7 +280,35 @@ export function filterScholarships(
     }
 
     if (filters.tags?.length) {
-      // Tags aren't in the summary — skip or check full doc
+      const scholarshipTags = s.tags ?? [];
+      if (!filters.tags.some((tag) => scholarshipTags.includes(tag))) return false;
+    }
+
+    if (filters.deadlineBefore !== undefined) {
+      if (!s.application_deadline || s.application_deadline > filters.deadlineBefore) return false;
+    }
+
+    if (filters.deadlineAfter !== undefined) {
+      if (!s.application_deadline || s.application_deadline < filters.deadlineAfter) return false;
+    }
+
+    if (filters.addedSince !== undefined) {
+      if (s._creationTime < filters.addedSince) return false;
+    }
+
+    if (searchTokens.length > 0) {
+      const haystack = [
+        s.title,
+        s.description ?? "",
+        s.provider_organization,
+        s.host_country,
+        ...(s.fields_of_study ?? []),
+        ...(s.tags ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      if (!searchTokens.every((token) => haystack.includes(token))) return false;
     }
 
     return true;
@@ -353,6 +397,9 @@ export function getCollectionScholarships(
     prestigeTiers: collection.prestige_tiers,
     tags: collection.tags,
     fieldsOfStudy: collection.fields_of_study,
+    deadlineBefore: collection.deadline_before,
+    deadlineAfter: collection.deadline_after,
+    addedSince: collection.added_since,
     showClosed: false,
     sort: options.sort ?? collection.default_sort ?? "deadline",
     limit: options.limit ?? 20,
@@ -368,18 +415,61 @@ export function getScholarshipCollections(
   const scholarship = data.scholarships.find((s) => s._id === scholarshipId);
   if (!scholarship) return [];
 
+  const matchesCollectionFilters = (collection: StaticCollection): boolean => {
+    if (collection.host_countries?.length && !collection.host_countries.includes(scholarship.host_country)) {
+      return false;
+    }
+
+    if (collection.degree_levels?.length) {
+      const scholarshipDegrees = scholarship.degree_levels ?? [];
+      if (!scholarshipDegrees.some((dl: string) => collection.degree_levels!.includes(dl))) {
+        return false;
+      }
+    }
+
+    if (collection.funding_types?.length && !collection.funding_types.includes(scholarship.funding_type)) {
+      return false;
+    }
+
+    if (collection.prestige_tiers?.length) {
+      if (!scholarship.prestige_tier || !collection.prestige_tiers.includes(scholarship.prestige_tier)) {
+        return false;
+      }
+    }
+
+    if (collection.tags?.length) {
+      const scholarshipTags = scholarship.tags ?? [];
+      if (!collection.tags.some((tag) => scholarshipTags.includes(tag))) return false;
+    }
+
+    if (collection.fields_of_study?.length) {
+      const scholarshipFields = scholarship.fields_of_study ?? [];
+      if (!collection.fields_of_study.some((field) => scholarshipFields.includes(field))) {
+        return false;
+      }
+    }
+
+    if (collection.deadline_before !== undefined) {
+      if (!scholarship.application_deadline || scholarship.application_deadline > collection.deadline_before) {
+        return false;
+      }
+    }
+
+    if (collection.deadline_after !== undefined) {
+      if (!scholarship.application_deadline || scholarship.application_deadline < collection.deadline_after) {
+        return false;
+      }
+    }
+
+    if (collection.added_since !== undefined) {
+      if (scholarship._creationTime < collection.added_since) return false;
+    }
+
+    return true;
+  };
+
   return data.collections
     .filter((c) => c.status === "active")
-    .filter((c) => {
-      if (c.host_countries?.length && !c.host_countries.includes(scholarship.host_country))
-        return false;
-      if (c.degree_levels?.length) {
-        if (!scholarship.degree_levels?.some((dl: string) => c.degree_levels!.includes(dl)))
-          return false;
-      }
-      if (c.funding_types?.length && !c.funding_types.includes(scholarship.funding_type))
-        return false;
-      return true;
-    })
+    .filter((c) => matchesCollectionFilters(c))
     .map((c) => ({ name: c.name, slug: c.slug, emoji: c.emoji }));
 }

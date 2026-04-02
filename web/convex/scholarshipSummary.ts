@@ -29,6 +29,7 @@ export interface ScholarshipSummary {
   application_deadline?: number | null;
   prestige_tier?: string | null;
   scholarship_type?: string | null;
+  tags?: string[] | null;
 }
 
 export function toScholarshipSummary(s: any): ScholarshipSummary {
@@ -56,5 +57,6 @@ export function toScholarshipSummary(s: any): ScholarshipSummary {
     application_deadline: s.application_deadline,
     prestige_tier: s.prestige_tier,
     scholarship_type: s.scholarship_type,
+    tags: s.tags,
   };
 }

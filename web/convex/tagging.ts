@@ -239,7 +239,7 @@ export const backfillSuggestedTags = rawInternalMutation({
 
     // Continue with the returned cursor to avoid reprocessing the first page forever.
     if (!page.isDone) {
-      await runAfterSafe(ctx, 0, internal.tagging.backfillSuggestedTags, {
+      await runAfterSafe(ctx, 500, internal.tagging.backfillSuggestedTags, {
         cursor: page.continueCursor,
         batchSize,
       });

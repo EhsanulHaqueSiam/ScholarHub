@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { analytics } from "@/lib/analytics";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { SkeletonCard } from "@/components/directory/SkeletonCard";
@@ -10,6 +10,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCountryName } from "@/lib/countries";
+import { useStaticData } from "@/hooks/useStaticData";
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
 import {
@@ -17,6 +18,7 @@ import {
   generateDegreeFaq,
   generateDegreeCrossLinks,
 } from "@/lib/seo/landing-content";
+import { filterScholarships, getDegreeLandingData } from "@/lib/static-data";
 import { api } from "../../../../convex/_generated/api";
 
 const SITE_URL =
@@ -63,12 +65,31 @@ function DegreeLandingPage() {
     analytics.track("degree_page_viewed", { degree: normalizedDegree, degree_name: degreeName });
   }, [normalizedDegree, degreeName]);
 
-  // SEO data query (combined to reduce Convex call count)
-  const landingData = useQuery(api.seo.getDegreeLandingData, {
-    degreeLevel: normalizedDegree,
-    includeScholarships: true,
-    scholarshipLimit: 12,
-  });
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const staticLandingData = useMemo(() => {
+    if (!staticData) return null;
+    const landing = getDegreeLandingData(staticData, normalizedDegree);
+    const scholarships = filterScholarships(staticData, {
+      degreeLevels: [normalizedDegree],
+      sort: "deadline",
+      showClosed: true,
+      limit: 12,
+      offset: 0,
+    }).scholarships;
+    return { ...landing, scholarships };
+  }, [staticData, normalizedDegree]);
+  const shouldUseConvex = !isStaticDataLoading && !staticData;
+  const queriedLandingData = useQuery(
+    api.seo.getDegreeLandingData,
+    shouldUseConvex
+      ? {
+          degreeLevel: normalizedDegree,
+          includeScholarships: true,
+          scholarshipLimit: 12,
+        }
+      : "skip",
+  );
+  const landingData = staticLandingData ?? queriedLandingData;
   const degreeStats = landingData?.stats;
   const scholarships = landingData?.scholarships;
 

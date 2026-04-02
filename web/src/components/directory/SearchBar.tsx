@@ -3,9 +3,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useStaticData } from "@/hooks/useStaticData";
 import { analytics } from "@/lib/analytics";
 import { getCountryFlag } from "@/lib/countries";
 import { FIELDS_OF_STUDY, parseCommaSeparated, serializeCommaSeparated } from "@/lib/filters";
+import { searchSuggestions as searchStaticSuggestions } from "@/lib/search-engine";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
@@ -22,6 +24,8 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
+  const { data: staticData } = useStaticData();
+  const useStaticSuggestions = !!staticData;
 
   // Debounce the search query
   const handleInputChange = useCallback((value: string) => {
@@ -50,11 +54,15 @@ export function SearchBar({ onSearch, defaultValue = "" }: SearchBarProps) {
     setInputValue(defaultValue);
   }, [defaultValue]);
 
-  // Fetch suggestions from Convex (reactive query)
-  const suggestions = useQuery(
+  // Fall back to Convex suggestions only when static export is unavailable.
+  const convexSuggestions = useQuery(
     api.directory.searchSuggestions,
-    debouncedQuery.length >= 2 ? { query: debouncedQuery } : "skip",
+    !useStaticSuggestions && debouncedQuery.length >= 2 ? { query: debouncedQuery } : "skip",
   );
+  const suggestions =
+    useStaticSuggestions && debouncedQuery.length >= 2
+      ? searchStaticSuggestions(debouncedQuery, 5)
+      : convexSuggestions;
 
   // Check if query matches a field of study for category suggestions
   const matchingFields =

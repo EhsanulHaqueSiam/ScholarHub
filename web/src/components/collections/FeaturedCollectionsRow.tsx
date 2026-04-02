@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useStaticData } from "@/hooks/useStaticData";
+import { getFeaturedCollections } from "@/lib/static-data";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
@@ -13,7 +15,13 @@ import { api } from "../../../convex/_generated/api";
  * Returns null during loading (no skeleton) and when no featured collections exist.
  */
 export const FeaturedCollectionsRow = memo(function FeaturedCollectionsRow() {
-  const featured = useQuery(api.collections.getFeaturedCollections);
+  const { data: staticData } = useStaticData();
+  const staticFeatured = staticData ? getFeaturedCollections(staticData) : null;
+  const queriedFeatured = useQuery(
+    api.collections.getFeaturedCollections,
+    staticFeatured ? "skip" : {},
+  );
+  const featured = staticFeatured ?? queriedFeatured;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

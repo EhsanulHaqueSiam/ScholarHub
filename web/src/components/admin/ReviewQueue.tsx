@@ -1,6 +1,6 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { useQuery } from "convex/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DesktopPagination } from "@/components/directory/Pagination";
 import { useAdminSelection } from "@/hooks/useAdminSelection";
 import { cn } from "@/lib/utils";
@@ -67,16 +67,29 @@ interface ReviewQueueProps {
 
 export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
   const [activeTab, setActiveTab] = useState<string>("pending_review");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [desktopPage, setDesktopPage] = useState(1);
+  const [mobilePagesLoaded, setMobilePagesLoaded] = useState(1);
   const [expandedId, setExpandedId] = useState<Id<"scholarships"> | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
   const selection = useAdminSelection();
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   // Determine status filter for the query
   const statusFilter = STATUS_TABS.find((t) => t.value === activeTab)?.statusFilter;
+  const includePossibleDuplicate = activeTab === "pending_review" || activeTab === "all";
 
   const rawItems = useQuery(api.admin.getReviewQueue, {
     status: statusFilter,
-    limit: 200,
+    limit: 100,
+    includePossibleDuplicate,
+    includeResolvedSources: true,
   });
 
   // Client-side sorting: highest trust rank desc, then newest first
@@ -90,18 +103,25 @@ export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
     });
   }, [rawItems]);
 
-  // Client-side pagination
+  // Client-side pagination with separate desktop/mobile behavior
   const totalPages = Math.max(1, Math.ceil(sortedItems.length / ITEMS_PER_PAGE));
-  const pageItems = sortedItems.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+  useEffect(() => {
+    setDesktopPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+  const desktopPageItems = sortedItems.slice(
+    (desktopPage - 1) * ITEMS_PER_PAGE,
+    desktopPage * ITEMS_PER_PAGE,
   );
+  const mobilePageItems = sortedItems.slice(0, mobilePagesLoaded * ITEMS_PER_PAGE);
+  const pageItems = isDesktop ? desktopPageItems : mobilePageItems;
+  const mobileHasMore = mobilePagesLoaded * ITEMS_PER_PAGE < sortedItems.length;
   const pageIds = pageItems.map((item) => item._id);
 
   // Tab change resets everything
   function handleTabChange(value: string) {
     setActiveTab(value);
-    setCurrentPage(1);
+    setDesktopPage(1);
+    setMobilePagesLoaded(1);
     setExpandedId(null);
     selection.deselectAll();
   }
@@ -194,12 +214,27 @@ export function ReviewQueue({ onEditScholarship, stats }: ReviewQueueProps) {
               </div>
             )}
 
-            {/* Pagination */}
-            <DesktopPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {/* Mobile: Load more */}
+            {mobileHasMore && (
+              <div className="lg:hidden flex justify-center mt-6">
+                <button
+                  type="button"
+                  onClick={() => setMobilePagesLoaded((page) => page + 1)}
+                  className="inline-flex items-center gap-2 bg-main text-main-foreground font-heading font-bold px-5 py-2.5 border-2 border-border rounded-base shadow-shadow active:translate-x-boxShadowX active:translate-y-boxShadowY active:shadow-none"
+                >
+                  Show More
+                </button>
+              </div>
+            )}
+
+            {/* Desktop: Numbered pagination */}
+            <div className="hidden lg:block">
+              <DesktopPagination
+                currentPage={desktopPage}
+                totalPages={totalPages}
+                onPageChange={setDesktopPage}
+              />
+            </div>
           </Tabs.Content>
         ))}
       </Tabs.Root>

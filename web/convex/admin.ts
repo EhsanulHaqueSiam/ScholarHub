@@ -33,9 +33,11 @@ const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(wrapDB));
 const ADMIN_COUNT_PAGE_SIZE = 256;
 const ADMIN_REVIEW_QUEUE_MAX_LIMIT = 100;
-const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 2000;
+const ADMIN_PUBLISHED_RECENT_SCAN_CAP = 500;
 const ADMIN_PENDING_SOURCE_SCAN_CAP = 2000;
 const ADMIN_POSSIBLE_DUP_SCAN_CAP = 2000;
+const ADMIN_SOURCE_LIST_MAX_LIMIT = 1200;
+const ADMIN_REVIEW_TEXT_PREVIEW_CHARS = 420;
 const ADMIN_DASHBOARD_STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
 type AdminDashboardStatus = (typeof ADMIN_DASHBOARD_STATUSES)[number];
 
@@ -93,6 +95,12 @@ async function countPendingScholarshipsForSource(ctx: { db: any }, sourceId: any
   return total;
 }
 
+function toQueuePreviewText(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  if (value.length <= ADMIN_REVIEW_TEXT_PREVIEW_CHARS) return value;
+  return `${value.slice(0, ADMIN_REVIEW_TEXT_PREVIEW_CHARS).trimEnd()}...`;
+}
+
 // ---------- Queries ----------
 
 /**
@@ -127,38 +135,37 @@ export const getAdminStats = query({
 
     const total = pending + published + rejected + archived;
 
-    const [healthRecords, allSources] = await Promise.all([
-      ctx.db.query("source_health").collect(),
-      ctx.db.query("sources").collect(),
-    ]);
+    // Derive source health from the lightweight sources table to avoid repeatedly
+    // reading large source_health error payloads on every admin dashboard refresh.
+    const sources = await ctx.db
+      .query("sources")
+      .withIndex("by_name")
+      .take(ADMIN_SOURCE_LIST_MAX_LIMIT);
+
     let healthy = 0;
     let degraded = 0;
     let failing = 0;
-    let deactivated = 0;
-    for (const health of healthRecords) {
-      switch (health.status) {
-        case "healthy":
-          healthy += 1;
-          break;
-        case "degraded":
-          degraded += 1;
-          break;
-        case "failing":
-          failing += 1;
-          break;
-        case "deactivated":
-          deactivated += 1;
-          break;
-        default:
-          break;
+
+    for (const source of sources) {
+      if (!source.is_active) {
+        failing += 1;
+        continue;
+      }
+      const failures = source.consecutive_failures ?? 0;
+      if (failures <= 0) {
+        healthy += 1;
+      } else if (failures < 3) {
+        degraded += 1;
+      } else {
+        failing += 1;
       }
     }
 
     const sourceHealth = {
       healthy,
       degraded,
-      failing: failing + deactivated,
-      total: allSources.length,
+      failing,
+      total: sources.length,
     };
 
     return {
@@ -181,12 +188,16 @@ export const getReviewQueue = query({
     status: v.optional(scholarshipStatusValidator),
     limit: v.optional(v.number()),
     includePossibleDuplicate: v.optional(v.boolean()),
+    includeResolvedSources: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     await isAdmin(ctx);
 
     const limit = Math.max(1, Math.min(args.limit ?? 200, ADMIN_REVIEW_QUEUE_MAX_LIMIT));
     const includePossibleDuplicate = args.includePossibleDuplicate ?? true;
+    const includeResolvedSources =
+      args.includeResolvedSources ??
+      !(args.status === "published" && includePossibleDuplicate === false);
 
     let scholarships;
     if (args.status) {
@@ -199,14 +210,16 @@ export const getReviewQueue = query({
       scholarships = await ctx.db.query("scholarships").order("desc").take(limit);
     }
 
-    const uniqueSourceIds = [...new Set(scholarships.flatMap((s) => s.source_ids.map(String)))];
     const sourceMap = new Map<string, any>();
-    await Promise.all(
-      uniqueSourceIds.map(async (sourceId) => {
-        const source = await ctx.db.get(sourceId);
-        if (source) sourceMap.set(sourceId, source);
-      }),
-    );
+    if (includeResolvedSources) {
+      const uniqueSourceIds = [...new Set(scholarships.flatMap((s) => s.source_ids.map(String)))];
+      await Promise.all(
+        uniqueSourceIds.map(async (sourceId) => {
+          const source = await ctx.db.get(sourceId);
+          if (source) sourceMap.set(sourceId, source);
+        }),
+      );
+    }
 
     const pendingIdsForDupCheck = new Set(
       includePossibleDuplicate
@@ -235,18 +248,20 @@ export const getReviewQueue = query({
     }
 
     const enriched = scholarships.map((scholarship) => {
-      const resolved_sources = scholarship.source_ids
-        .map((sourceId) => {
-          const source = sourceMap.get(String(sourceId));
-          if (!source) return null;
-          return {
-            _id: source._id,
-            name: source.name,
-            category: source.category,
-            trust_level: source.trust_level,
-          };
-        })
-        .filter((s): s is NonNullable<typeof s> => s !== null);
+      const resolved_sources = includeResolvedSources
+        ? scholarship.source_ids
+            .map((sourceId) => {
+              const source = sourceMap.get(String(sourceId));
+              if (!source) return null;
+              return {
+                _id: source._id,
+                name: source.name,
+                category: source.category,
+                trust_level: source.trust_level,
+              };
+            })
+            .filter((s): s is NonNullable<typeof s> => s !== null)
+        : [];
 
       const has_possible_duplicate =
         includePossibleDuplicate &&
@@ -254,7 +269,28 @@ export const getReviewQueue = query({
         possibleDuplicateIds.has(String(scholarship._id));
 
       return {
-        ...scholarship,
+        _id: scholarship._id,
+        _creationTime: scholarship._creationTime,
+        title: scholarship.title,
+        slug: scholarship.slug,
+        status: scholarship.status,
+        host_country: scholarship.host_country,
+        degree_levels: scholarship.degree_levels,
+        application_deadline: scholarship.application_deadline,
+        application_deadline_text: scholarship.application_deadline_text,
+        description: toQueuePreviewText(scholarship.description),
+        fields_of_study: scholarship.fields_of_study,
+        eligibility_nationalities: scholarship.eligibility_nationalities,
+        funding_type: scholarship.funding_type,
+        funding_amount_min: scholarship.award_amount_min,
+        funding_amount_max: scholarship.award_amount_max,
+        award_currency: scholarship.award_currency,
+        application_url: scholarship.application_url,
+        editorial_notes: toQueuePreviewText(scholarship.editorial_notes),
+        match_key: scholarship.match_key,
+        source_ids: scholarship.source_ids,
+        tags: scholarship.tags,
+        suggested_tags: scholarship.suggested_tags,
         resolved_sources,
         has_possible_duplicate,
       };
@@ -299,11 +335,22 @@ export const getScholarshipForEdit = query({
  * Returns all sources with their trust levels and categories.
  */
 export const getAllSources = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    activeOnly: v.optional(v.boolean()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     await isAdmin(ctx);
 
-    return await ctx.db.query("sources").collect();
+    const limit = Math.max(1, Math.min(args.limit ?? ADMIN_SOURCE_LIST_MAX_LIMIT, ADMIN_SOURCE_LIST_MAX_LIMIT));
+    if (args.activeOnly) {
+      return await ctx.db
+        .query("sources")
+        .withIndex("by_active_category", (q) => q.eq("is_active", true))
+        .take(limit);
+    }
+
+    return await ctx.db.query("sources").withIndex("by_name").take(limit);
   },
 });
 
@@ -646,7 +693,7 @@ export const reevaluateSourceScholarships = triggeredInternalMutation({
 
     const processed = (args.processed ?? 0) + pendingScholarships.length;
     if (!page.isDone) {
-      await ctx.scheduler.runAfter(0, internal.admin.reevaluateSourceScholarships, {
+      await ctx.scheduler.runAfter(500, internal.admin.reevaluateSourceScholarships, {
         sourceId: args.sourceId,
         batchSize,
         cursor: page.continueCursor,

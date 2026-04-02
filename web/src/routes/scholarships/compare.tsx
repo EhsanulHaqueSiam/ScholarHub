@@ -8,8 +8,10 @@ import { ComparisonTable } from "@/components/comparison/ComparisonTable";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { useStaticData } from "@/hooks/useStaticData";
 import { buildItemListJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
+import { getScholarshipsBySlugs } from "@/lib/static-data";
 import { api } from "../../../convex/_generated/api";
 
 const SITE_URL =
@@ -111,7 +113,8 @@ function CompareIllustration() {
 
 function ComparePage() {
   const { s } = Route.useSearch();
-  const { addToCompare, selected } = useCompare();
+  const { addToCompare } = useCompare();
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
 
   // Parse slugs from URL search params
   const slugs = useMemo(() => {
@@ -123,11 +126,19 @@ function ComparePage() {
       .slice(0, 3);
   }, [s]);
 
-  // Fetch comparison data
-  const scholarships = useQuery(
+  const staticScholarships = useMemo(() => {
+    if (!staticData || slugs.length === 0) return null;
+    return getScholarshipsBySlugs(staticData, slugs);
+  }, [staticData, slugs]);
+  const staticIsComplete = !!staticScholarships && staticScholarships.length === slugs.length;
+
+  const shouldUseConvex =
+    slugs.length > 0 && !isStaticDataLoading && (!staticData || !staticIsComplete);
+  const queriedScholarships = useQuery(
     api.comparison.getComparisonScholarships,
-    slugs.length > 0 ? { slugs } : "skip",
+    shouldUseConvex ? { slugs } : "skip",
   );
+  const scholarships = staticIsComplete ? staticScholarships : queriedScholarships;
 
   // Sync URL slugs with CompareContext on mount
   useEffect(() => {
@@ -149,7 +160,9 @@ function ComparePage() {
     }
   }, [scholarships]);
 
-  const isLoading = slugs.length > 0 && scholarships === undefined;
+  const isLoading =
+    slugs.length > 0 &&
+    (scholarships === undefined || (isStaticDataLoading && !shouldUseConvex && !staticIsComplete));
   const hasPartialData =
     scholarships !== undefined && scholarships.length > 0 && scholarships.length < slugs.length;
 

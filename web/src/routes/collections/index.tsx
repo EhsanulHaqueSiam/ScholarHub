@@ -3,6 +3,8 @@ import { useQuery } from "convex/react";
 import { CollectionCard } from "@/components/collections/CollectionCard";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
+import { useStaticData } from "@/hooks/useStaticData";
+import { getAllCollections } from "@/lib/static-data";
 import { api } from "../../../convex/_generated/api";
 
 export const Route = createFileRoute("/collections/")({
@@ -85,8 +87,14 @@ function CollectionCardSkeleton() {
 }
 
 function CollectionsBrowsePage() {
-  const collections = useQuery(api.collections.getAllCollections);
-  const isLoading = collections === undefined;
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const shouldUseConvex = !isStaticDataLoading && !staticData;
+  const queriedCollections = useQuery(
+    api.collections.getAllCollections,
+    shouldUseConvex ? {} : "skip",
+  );
+  const collections = staticData ? getAllCollections(staticData) : queriedCollections;
+  const isLoading = (isStaticDataLoading || queriedCollections === undefined) && collections === undefined;
   const isEmpty = collections !== undefined && collections.length === 0;
 
   return (

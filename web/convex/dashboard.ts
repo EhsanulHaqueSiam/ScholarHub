@@ -1,6 +1,9 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 
+const DASHBOARD_SOURCE_HEALTH_STATUS_CAP = 500;
+const DASHBOARD_RUN_SOURCE_CAP = 800;
+
 /**
  * Get the 10 most recent scrape runs with computed duration.
  */
@@ -29,14 +32,25 @@ export const getRecentRuns = query({
 export const getSourceHealth = query({
   args: {},
   handler: async (ctx) => {
-    const healthRecords = await ctx.db.query("source_health").collect();
-
-    const statusOrder: Record<string, number> = {
-      failing: 0,
-      deactivated: 1,
-      degraded: 2,
-      healthy: 3,
-    };
+    const [failing, deactivated, degraded, healthy] = await Promise.all([
+      ctx.db
+        .query("source_health")
+        .withIndex("by_status", (q) => q.eq("status", "failing"))
+        .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP),
+      ctx.db
+        .query("source_health")
+        .withIndex("by_status", (q) => q.eq("status", "deactivated"))
+        .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP),
+      ctx.db
+        .query("source_health")
+        .withIndex("by_status", (q) => q.eq("status", "degraded"))
+        .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP),
+      ctx.db
+        .query("source_health")
+        .withIndex("by_status", (q) => q.eq("status", "healthy"))
+        .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP),
+    ]);
+    const healthRecords = [...failing, ...deactivated, ...degraded, ...healthy];
 
     const withNames = await Promise.all(
       healthRecords.map(async (record) => {
@@ -48,10 +62,7 @@ export const getSourceHealth = query({
         };
       }),
     );
-
-    return withNames.sort(
-      (a, b) => (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4),
-    );
+    return withNames;
   },
 });
 
@@ -64,12 +75,12 @@ export const getFailingSources = query({
     const failing = await ctx.db
       .query("source_health")
       .withIndex("by_status", (q) => q.eq("status", "failing"))
-      .collect();
+      .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP);
 
     const deactivated = await ctx.db
       .query("source_health")
       .withIndex("by_status", (q) => q.eq("status", "deactivated"))
-      .collect();
+      .take(DASHBOARD_SOURCE_HEALTH_STATUS_CAP);
 
     const all = [...failing, ...deactivated];
 
@@ -99,10 +110,13 @@ export const getRunStats = query({
       return null;
     }
 
-    const sourceResults = await ctx.db
+    const sourceResultsPage = await ctx.db
       .query("scrape_run_sources")
       .withIndex("by_run", (q) => q.eq("run_id", args.run_id))
-      .collect();
+      .paginate({ cursor: null, numItems: DASHBOARD_RUN_SOURCE_CAP + 1 });
+    const sourceResults = sourceResultsPage.page.slice(0, DASHBOARD_RUN_SOURCE_CAP);
+    const sourceResultsTruncated =
+      !sourceResultsPage.isDone || sourceResultsPage.page.length > DASHBOARD_RUN_SOURCE_CAP;
 
     const withNames = await Promise.all(
       sourceResults.map(async (result) => {
@@ -117,6 +131,7 @@ export const getRunStats = query({
     return {
       run,
       source_results: withNames,
+      source_results_truncated: sourceResultsTruncated,
     };
   },
 });

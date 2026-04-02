@@ -12,9 +12,11 @@ import { SkeletonCard } from "@/components/directory/SkeletonCard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
+import { useStaticData } from "@/hooks/useStaticData";
 import { SORT_OPTIONS } from "@/lib/filters";
 import { buildItemListJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
+import { getCollectionBySlug, getCollectionScholarships } from "@/lib/static-data";
 import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 
@@ -52,9 +54,21 @@ function CollectionHeaderSkeleton() {
 
 function CollectionDetailPage() {
   const { slug } = Route.useParams();
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+
+  const staticCollection = useMemo(
+    () => (staticData ? getCollectionBySlug(staticData, slug) : null),
+    [staticData, slug],
+  );
+  const shouldUseConvexCollection =
+    !isStaticDataLoading && (!staticData || staticCollection === null);
 
   // Collection metadata
-  const collection = useQuery(api.collections.getCollectionBySlug, { slug });
+  const queriedCollection = useQuery(
+    api.collections.getCollectionBySlug,
+    shouldUseConvexCollection ? { slug } : "skip",
+  );
+  const collection = staticCollection ?? queriedCollection;
 
   useEffect(() => {
     if (collection) {
@@ -71,9 +85,19 @@ function CollectionDetailPage() {
   const effectiveSort = sort ?? collection?.default_sort ?? "deadline";
 
   // Collection scholarships query
-  const scholarshipData = useQuery(
+  const staticScholarshipData = useMemo(() => {
+    if (!staticData || !staticCollection) return null;
+    return getCollectionScholarships(staticData, staticCollection, {
+      sort: effectiveSort ?? undefined,
+      limit: PAGE_SIZE,
+      offset: (currentPage - 1) * PAGE_SIZE,
+    });
+  }, [staticData, staticCollection, effectiveSort, currentPage]);
+  const shouldUseConvexScholarships =
+    !!collection && !isStaticDataLoading && (!staticData || !staticCollection);
+  const queriedScholarshipData = useQuery(
     api.collections.getCollectionScholarships,
-    collection
+    shouldUseConvexScholarships
       ? {
           slug,
           sort: effectiveSort,
@@ -82,6 +106,7 @@ function CollectionDetailPage() {
         }
       : "skip",
   );
+  const scholarshipData = staticScholarshipData ?? queriedScholarshipData;
 
   // Update page title once collection name is loaded
   useEffect(() => {

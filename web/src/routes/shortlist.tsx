@@ -14,12 +14,13 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useStaticData } from "@/hooks/useStaticData";
 import { getAllCountries, getCountryFlag, getCountryName } from "@/lib/countries";
 import { buildPageMeta } from "@/lib/seo/meta";
 import { cn } from "@/lib/utils";
@@ -546,13 +547,56 @@ function UniSearchInput({
   existingIds: Set<string>;
 }) {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
 
-  const suggestions = useQuery(
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const searchTerm = debouncedSearch.trim();
+  const staticSuggestions = useMemo(() => {
+    if (!staticData || searchTerm.length < 3) return [];
+
+    const termLower = searchTerm.toLowerCase();
+    const providers = new Map<string, { name: string; count: number; countries: string[] }>();
+
+    for (const s of staticData.summaries) {
+      const provider = s.provider_organization;
+      if (!provider || !provider.toLowerCase().includes(termLower)) continue;
+
+      const key = provider.toLowerCase();
+      const existing = providers.get(key);
+      if (existing) {
+        existing.count += 1;
+        if (s.host_country && !existing.countries.includes(s.host_country)) {
+          existing.countries.push(s.host_country);
+        }
+      } else {
+        providers.set(key, {
+          name: provider,
+          count: 1,
+          countries: s.host_country ? [s.host_country] : [],
+        });
+      }
+    }
+
+    return Array.from(providers.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [staticData, searchTerm]);
+
+  const shouldUseConvexSuggestions = !isStaticDataLoading && !staticData && searchTerm.length >= 3;
+  const convexSuggestions = useQuery(
     api.shortlist.suggestUniversities,
-    search.trim().length >= 2 ? { search: search.trim() } : "skip",
+    shouldUseConvexSuggestions ? { search: searchTerm } : "skip",
   );
+  const suggestions = staticData ? staticSuggestions : convexSuggestions;
 
   // Filter out already-added universities
   const filtered = (suggestions ?? []).filter((s) => !existingIds.has(makeId(s.name)));
@@ -564,7 +608,7 @@ function UniSearchInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && search.trim().length >= 2) {
+    if (e.key === "Enter" && search.trim().length >= 3) {
       e.preventDefault();
       if (filtered.length > 0) {
         const s = filtered[0];
@@ -586,7 +630,7 @@ function UniSearchInput({
   };
 
   const showCustomOption =
-    search.trim().length >= 2 &&
+    search.trim().length >= 3 &&
     !filtered.some((s) => s.name.toLowerCase() === search.trim().toLowerCase()) &&
     !existingIds.has(makeId(search.trim()));
 
@@ -601,7 +645,7 @@ function UniSearchInput({
             setSearch(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => search.trim().length >= 2 && setOpen(true)}
+          onFocus={() => search.trim().length >= 3 && setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search for a university..."
           className={cn(
@@ -615,7 +659,7 @@ function UniSearchInput({
       </div>
 
       {/* Dropdown */}
-      {open && search.trim().length >= 2 && (
+      {open && search.trim().length >= 3 && (
         <div className="absolute top-full left-0 right-0 mt-1 border-3 border-border bg-secondary-background shadow-shadow rounded-base z-30 max-h-72 overflow-y-auto">
           {suggestions === undefined && (
             <div className="px-4 py-3 text-sm text-foreground/50">Searching...</div>
@@ -679,8 +723,21 @@ function CountryPanel({
   const [search, setSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
 
-  const countryCounts = useQuery(api.shortlist.countryScholarshipCounts);
+  const staticCountryCounts = useMemo(() => {
+    if (!staticData) return null;
+    const counts: Record<string, number> = {};
+    for (const row of staticData.countryCaches) {
+      counts[row.code] = row.total;
+    }
+    return counts;
+  }, [staticData]);
+  const queriedCountryCounts = useQuery(
+    api.shortlist.countryScholarshipCounts,
+    !isStaticDataLoading && !staticData ? {} : "skip",
+  );
+  const countryCounts = staticCountryCounts ?? queriedCountryCounts;
   const allCountries = getAllCountries();
 
   const existingCodes = new Set(data.countries.map((c) => c.code));

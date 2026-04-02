@@ -24,6 +24,9 @@ export type RelatedWeights = typeof DEFAULT_RELATED_WEIGHTS;
 const MAX_COUNTRY_CANDIDATES = 20;
 const MAX_GLOBAL_CANDIDATES = 15;
 const RELATED_REFRESH_BATCH_SIZE = 30;
+const RELATED_REFRESH_DELAY_MS = 500;
+const RELATED_REFRESH_MAX_BATCHES = 200;
+const RELATED_REFRESH_RUN_KEY = 1;
 
 // ---- Pure Functions ----
 
@@ -280,8 +283,32 @@ export const refreshAllRelatedIds = internalMutation({
   args: {
     cursor: v.optional(v.string()),
     processed: v.optional(v.number()),
+    batchesSoFar: v.optional(v.number()),
+    runKey: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const batchesSoFar = args.batchesSoFar ?? 0;
+
+    // Skip stale continuations from older deployments.
+    if (batchesSoFar > 0 && args.runKey === undefined) {
+      console.log("[related.refreshAllRelatedIds] skipped legacy continuation without runKey");
+      return { processed: args.processed ?? 0, complete: false, skippedLegacy: true };
+    }
+
+    if (args.runKey !== undefined && args.runKey !== RELATED_REFRESH_RUN_KEY) {
+      console.log(
+        `[related.refreshAllRelatedIds] skipped stale runKey=${args.runKey} (expected ${RELATED_REFRESH_RUN_KEY})`,
+      );
+      return { processed: args.processed ?? 0, complete: false, skippedLegacy: true };
+    }
+
+    if (batchesSoFar >= RELATED_REFRESH_MAX_BATCHES) {
+      console.log(
+        `[related.refreshAllRelatedIds] hit cap (${RELATED_REFRESH_MAX_BATCHES}) at processed=${args.processed ?? 0}`,
+      );
+      return { processed: args.processed ?? 0, complete: false, cappedAt: batchesSoFar };
+    }
+
     const page = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "published"))
@@ -308,9 +335,11 @@ export const refreshAllRelatedIds = internalMutation({
 
     const processed = (args.processed ?? 0) + scholarships.length;
     if (!page.isDone) {
-      await ctx.scheduler.runAfter(0, internal.related.refreshAllRelatedIds, {
+      await ctx.scheduler.runAfter(RELATED_REFRESH_DELAY_MS, internal.related.refreshAllRelatedIds, {
         cursor: page.continueCursor,
         processed,
+        batchesSoFar: batchesSoFar + 1,
+        runKey: RELATED_REFRESH_RUN_KEY,
       });
     }
 

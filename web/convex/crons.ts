@@ -12,7 +12,8 @@ crons.weekly(
   "archive_expired",
   { dayOfWeek: "sunday", hourUTC: 4, minuteUTC: 0 },
   internal.aggregation.archiveExpired,
-  { cursor: null },
+  // Keep in sync with ARCHIVE_RUN_KEY in aggregation.ts.
+  { cursor: null, runKey: 2 },
 );
 
 export default crons;

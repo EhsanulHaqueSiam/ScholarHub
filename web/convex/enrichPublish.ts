@@ -531,7 +531,10 @@ function inferFieldsOfStudy(title: string, description: string | undefined): str
 
 // ---- Main batch enrichment mutation ----
 
-export const enrichAndPublishBatch = triggeredInternalMutation({
+// Uses rawInternalMutation to skip prestige/search_text triggers during bulk ops.
+// This halves the write amplification. Prestige is recomputed later or by the trigger
+// on individual admin edits.
+export const enrichAndPublishBatch = rawInternalMutation({
   args: {
     batchSize: v.optional(v.number()),
     totalTarget: v.optional(v.number()),
@@ -540,6 +543,7 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
     rejected: v.optional(v.number()),
     reviewed: v.optional(v.number()),
     autoSchedule: v.optional(v.boolean()),
+    rejectIncomplete: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const batchSize = Math.max(1, Math.min(args.batchSize ?? ENRICH_BATCH_SIZE, 20));
@@ -578,13 +582,22 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
       };
     }
 
-    // Take a moving window so skipped records do not cause us to reprocess the same first page.
-    const windowSize = Math.min(totalTarget, reviewedSoFar + batchSize);
-    const pendingWindow = await ctx.db
-      .query("scholarships")
-      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-      .take(windowSize);
-    const scholarships = pendingWindow.slice(reviewedSoFar, reviewedSoFar + batchSize);
+    // When rejectIncomplete is true, all items leave pending (published or rejected),
+    // so always read from position 0. Otherwise use the moving window approach.
+    let scholarships;
+    if (args.rejectIncomplete) {
+      scholarships = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+        .take(batchSize);
+    } else {
+      const windowSize = Math.min(totalTarget, reviewedSoFar + batchSize);
+      const pendingWindow = await ctx.db
+        .query("scholarships")
+        .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+        .take(windowSize);
+      scholarships = pendingWindow.slice(reviewedSoFar, reviewedSoFar + batchSize);
+    }
 
     if (scholarships.length === 0) {
       console.log(
@@ -731,8 +744,14 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
         patch.eligibility_nationalities = bestRaw.eligibility_nationalities;
       }
 
+      // Don't publish scholarships with expired deadlines — they'd immediately
+      // get archived by the cron, wasting function calls and bandwidth.
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const deadlineExpired = deadline && deadline < Date.now() - THIRTY_DAYS_MS;
+
       const canPublish =
         !hasDuplicate &&
+        !deadlineExpired &&
         scholarship.title.trim().length > 0 &&
         !!description &&
         description.length >= 20 &&
@@ -755,6 +774,14 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
         );
         await ctx.db.patch(scholarship._id, patch);
         published++;
+      } else if (args.rejectIncomplete) {
+        patch.status = "rejected";
+        patch.editorial_notes = appendEditorialNote(
+          scholarship.editorial_notes,
+          "Auto-rejected: insufficient data for publication (missing application link or complete details).",
+        );
+        await ctx.db.patch(scholarship._id, patch);
+        rejected++;
       } else {
         patch.editorial_notes = appendEditorialNote(
           scholarship.editorial_notes,
@@ -776,7 +803,7 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
 
     // Schedule next batch if we haven't reached the target
     if (args.autoSchedule === true && newReviewed < totalTarget && scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(100, internal.enrichPublish.enrichAndPublishBatch, {
+      await ctx.scheduler.runAfter(1000, internal.enrichPublish.enrichAndPublishBatch, {
         batchSize,
         totalTarget,
         processed: newPublished,
@@ -784,6 +811,7 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
         rejected: newRejected,
         reviewed: newReviewed,
         autoSchedule: true,
+        rejectIncomplete: args.rejectIncomplete,
       });
     }
 
@@ -797,36 +825,91 @@ export const enrichAndPublishBatch = triggeredInternalMutation({
   },
 });
 
+// ---- Public trigger for bulk review ----
+// Kicks off enrichAndPublishBatch with rejectIncomplete mode.
+// Processes `totalTarget` items in batches of 15 with 1s delay between batches.
+// Cost: ~2 function calls per 15 items (batch + schedule) = ~670 calls for 5000 items.
+
+export const triggerBulkReview = rawMutation({
+  args: {
+    totalTarget: v.optional(v.number()),
+    batchSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const target = Math.min(args.totalTarget ?? 500, 5000);
+    const batch = Math.min(args.batchSize ?? 15, 20);
+    await ctx.scheduler.runAfter(0, internal.enrichPublish.enrichAndPublishBatch, {
+      totalTarget: target,
+      batchSize: batch,
+      autoSchedule: true,
+      rejectIncomplete: true,
+    });
+    return { scheduled: true, target, batchSize: batch };
+  },
+});
+
 // ---- Refresh scholarship_counts cache ----
+// Counts one status at a time via pagination to stay well under Convex bandwidth limits.
+// Each page reads only IDs (via the index), not full documents.
 
 const STATUSES = ["pending_review", "published", "rejected", "archived"] as const;
-const COUNT_SCAN_CAP = 5000;
+const COUNT_PAGE_SIZE = 500;
 
 export const refreshCounts = rawInternalMutation({
   args: {},
   handler: async (ctx) => {
-    for (const status of STATUSES) {
-      const rows = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", status))
-        .take(COUNT_SCAN_CAP);
-      const count = rows.length;
-
-      const existing = await ctx.db
-        .query("scholarship_counts")
-        .withIndex("by_status", (q) => q.eq("status", status))
-        .first();
-
-      if (existing) {
-        await ctx.db.patch(existing._id, { count, updated_at: Date.now() });
-      } else {
-        await ctx.db.insert("scholarship_counts", {
-          status,
-          count,
-          updated_at: Date.now(),
-        });
-      }
+    // Schedule per-status counters sequentially to avoid bandwidth spikes
+    for (let i = 0; i < STATUSES.length; i++) {
+      await ctx.scheduler.runAfter(i * 500, internal.enrichPublish.refreshCountForStatus, {
+        status: STATUSES[i],
+        cursor: null,
+        accumulated: 0,
+      });
     }
-    console.log("[enrichPublish] Counts cache refreshed");
+    console.log("[enrichPublish] Counts refresh scheduled for all statuses");
   },
 });
+
+export const refreshCountForStatus = rawInternalMutation({
+  args: {
+    status: v.string(),
+    cursor: v.union(v.string(), v.null()),
+    accumulated: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
+      .query("scholarships")
+      .withIndex("by_status", (q) => q.eq("status", args.status as any))
+      .paginate({ numItems: COUNT_PAGE_SIZE, cursor: args.cursor === null ? null : args.cursor });
+
+    const accumulated = args.accumulated + result.page.length;
+
+    if (!result.isDone) {
+      // More pages to count — schedule next page
+      await ctx.scheduler.runAfter(100, internal.enrichPublish.refreshCountForStatus, {
+        status: args.status,
+        cursor: result.continueCursor,
+        accumulated,
+      });
+      return;
+    }
+
+    // Final page — save the total count
+    const existing = await ctx.db
+      .query("scholarship_counts")
+      .withIndex("by_status", (q) => q.eq("status", args.status as any))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { count: accumulated, updated_at: Date.now() });
+    } else {
+      await ctx.db.insert("scholarship_counts", {
+        status: args.status as any,
+        count: accumulated,
+        updated_at: Date.now(),
+      });
+    }
+    console.log(`[enrichPublish] Count for ${args.status}: ${accumulated}`);
+  },
+});
+

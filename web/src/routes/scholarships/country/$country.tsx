@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Info } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { analytics } from "@/lib/analytics";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
@@ -13,6 +13,7 @@ import { IntakePeriodsSection } from "@/components/country/IntakePeriodsSection"
 import { PostStudyWorkSection } from "@/components/country/PostStudyWorkSection";
 import { getCountryData } from "@/lib/country-data";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
+import { useStaticData } from "@/hooks/useStaticData";
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
 import {
@@ -20,6 +21,7 @@ import {
   generateCountryFaq,
   generateCountryCrossLinks,
 } from "@/lib/seo/landing-content";
+import { filterScholarships, getCountryLandingData } from "@/lib/static-data";
 import { api } from "../../../../convex/_generated/api";
 
 const SITE_URL =
@@ -50,12 +52,31 @@ function CountryLandingPage() {
     analytics.track("country_page_viewed", { country, country_name: countryName });
   }, [country, countryName]);
 
-  // SEO data query (combined to reduce Convex call count)
-  const landingData = useQuery(api.seo.getCountryLandingData, {
-    countryCode: country,
-    includeScholarships: true,
-    scholarshipLimit: 12,
-  });
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const staticLandingData = useMemo(() => {
+    if (!staticData) return null;
+    const landing = getCountryLandingData(staticData, country);
+    const scholarships = filterScholarships(staticData, {
+      hostCountries: [country],
+      sort: "deadline",
+      showClosed: true,
+      limit: 12,
+      offset: 0,
+    }).scholarships;
+    return { ...landing, scholarships };
+  }, [staticData, country]);
+  const shouldUseConvex = !isStaticDataLoading && !staticData;
+  const queriedLandingData = useQuery(
+    api.seo.getCountryLandingData,
+    shouldUseConvex
+      ? {
+          countryCode: country,
+          includeScholarships: true,
+          scholarshipLimit: 12,
+        }
+      : "skip",
+  );
+  const landingData = staticLandingData ?? queriedLandingData;
   const countryStats = landingData?.stats;
 
   // Generate SEO content when stats are loaded

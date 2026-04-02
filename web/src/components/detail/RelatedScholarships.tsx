@@ -1,19 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { useMemo } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompareCheckbox } from "@/components/comparison/CompareCheckbox";
+import { useStaticData } from "@/hooks/useStaticData";
 import { getCountryFlag, getCountryName } from "@/lib/countries";
 import { getDeadlineUrgency } from "@/lib/filters";
 import type { PrestigeTier } from "@/lib/prestige";
 import { getPrestigeLabel } from "@/lib/prestige";
+import { getRelatedScholarships, getScholarshipBySlug } from "@/lib/static-data";
 import { formatFundingType, urgencyLabelMap, urgencyVariantMap } from "@/lib/shared";
 import { cn } from "@/lib/utils";
 
 interface RelatedScholarshipsProps {
   scholarshipId: Id<"scholarships">;
+  scholarshipSlug?: string;
 }
 
 /**
@@ -25,8 +29,23 @@ interface RelatedScholarshipsProps {
  * D-79: Compare checkbox on related cards.
  * D-80: Hidden when no related scholarships exist.
  */
-export function RelatedScholarships({ scholarshipId }: RelatedScholarshipsProps) {
-  const related = useQuery(api.related.getRelatedScholarships, { scholarshipId });
+export function RelatedScholarships({ scholarshipId, scholarshipSlug }: RelatedScholarshipsProps) {
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const staticSourceScholarship = useMemo(() => {
+    if (!staticData || !scholarshipSlug) return null;
+    return getScholarshipBySlug(staticData, scholarshipSlug);
+  }, [staticData, scholarshipSlug]);
+  const staticRelated = useMemo(() => {
+    if (!staticData || !scholarshipSlug || !staticSourceScholarship) return null;
+    return getRelatedScholarships(staticData, scholarshipSlug, 6);
+  }, [staticData, scholarshipSlug, staticSourceScholarship]);
+  const shouldUseConvex =
+    !isStaticDataLoading && (!staticData || !scholarshipSlug || staticSourceScholarship === null);
+  const queriedRelated = useQuery(
+    api.related.getRelatedScholarships,
+    shouldUseConvex ? { scholarshipId } : "skip",
+  );
+  const related = staticRelated ?? queriedRelated;
 
   // Loading skeleton
   if (related === undefined) {

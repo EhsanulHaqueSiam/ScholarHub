@@ -1,10 +1,13 @@
 import { useQuery } from "convex/react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
+import { useStaticData } from "@/hooks/useStaticData";
 import { getCountryName } from "@/lib/countries";
 import type { ScholarshipSummary } from "@/lib/scholarship-summary";
+import { filterScholarships } from "@/lib/static-data";
 import { api } from "../../../convex/_generated/api";
 
 interface CountryScholarshipsProps {
@@ -18,11 +21,25 @@ export function CountryScholarships({
   scholarships,
   loadFromQuery = true,
 }: CountryScholarshipsProps) {
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const staticScholarships = useMemo(() => {
+    if (!loadFromQuery || !staticData) return null;
+    return filterScholarships(staticData, {
+      hostCountries: [countryCode],
+      sort: "deadline",
+      showClosed: true,
+      limit: 12,
+      offset: 0,
+    }).scholarships;
+  }, [loadFromQuery, staticData, countryCode]);
+  const shouldUseConvexQuery = loadFromQuery && !isStaticDataLoading && !staticData;
   const queriedScholarships = useQuery(
     api.directory.listScholarshipsBatch,
-    loadFromQuery ? { hostCountries: [countryCode], limit: 12 } : "skip",
+    shouldUseConvexQuery ? { hostCountries: [countryCode], limit: 12 } : "skip",
   );
-  const resolvedScholarships = loadFromQuery ? queriedScholarships : scholarships;
+  const resolvedScholarships = loadFromQuery
+    ? (staticScholarships ?? queriedScholarships)
+    : scholarships;
 
   const countryName = getCountryName(countryCode);
 

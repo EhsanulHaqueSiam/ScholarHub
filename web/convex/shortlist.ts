@@ -5,14 +5,14 @@ export const suggestUniversities = query({
   args: { search: v.string() },
   handler: async (ctx, { search }) => {
     const term = search.trim();
-    if (term.length < 2) return [];
+    if (term.length < 3) return [];
 
     const results = await ctx.db
       .query("scholarships")
       .withSearchIndex("search_scholarships", (q) =>
         q.search("search_text", term).eq("status", "published"),
       )
-      .take(200);
+      .take(120);
 
     const termLower = term.toLowerCase();
     const providers = new Map<string, { name: string; count: number; countries: string[] }>();

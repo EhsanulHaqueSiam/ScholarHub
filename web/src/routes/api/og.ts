@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
+import { getScholarshipBySlug, loadStaticData } from "../../lib/static-data";
 
 const SITE_URL = process.env.VITE_SITE_URL || "https://scholarhub.io";
 
@@ -162,6 +163,7 @@ function infoLine(text: string) {
  * Build OG image for a specific scholarship.
  */
 async function buildScholarshipImage(
+  staticData: Awaited<ReturnType<typeof loadStaticData>>,
   convex: ConvexHttpClient | null,
   slug: string,
 ) {
@@ -170,7 +172,29 @@ async function buildScholarshipImage(
     .replace(/\b\w/g, (c) => c.toUpperCase());
   let info = "";
 
-  if (convex) {
+  const staticScholarship = staticData ? getScholarshipBySlug(staticData, slug) : null;
+  if (staticScholarship) {
+    scholarshipTitle = staticScholarship.title;
+    const parts: string[] = [];
+    if (staticScholarship.funding_type) {
+      parts.push(
+        staticScholarship.funding_type
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      );
+    }
+    if (staticScholarship.degree_levels?.length) {
+      parts.push(
+        staticScholarship.degree_levels
+          .map((d: string) => d.charAt(0).toUpperCase() + d.slice(1))
+          .join(", "),
+      );
+    }
+    if (staticScholarship.host_country) {
+      parts.push(staticScholarship.host_country);
+    }
+    info = parts.join("  |  ");
+  } else if (convex) {
     try {
       const data = await convex.query(api.directory.getBySlug, { slug });
       if (data) {
@@ -209,6 +233,7 @@ async function buildScholarshipImage(
  * Build OG image for a country landing page.
  */
 async function buildCountryImage(
+  staticData: Awaited<ReturnType<typeof loadStaticData>>,
   convex: ConvexHttpClient | null,
   countryCode: string,
 ) {
@@ -217,7 +242,10 @@ async function buildCountryImage(
   const countryName = code;
   let count = 0;
 
-  if (convex) {
+  if (staticData) {
+    const cached = staticData.countryCaches.find((c) => c.code === code);
+    count = cached?.total ?? 0;
+  } else if (convex) {
     try {
       const stats = await convex.query(api.seo.getCountryStats, {
         countryCode: code,
@@ -243,6 +271,7 @@ async function buildCountryImage(
  * Build OG image for a degree landing page.
  */
 async function buildDegreeImage(
+  staticData: Awaited<ReturnType<typeof loadStaticData>>,
   convex: ConvexHttpClient | null,
   degreeLevel: string,
 ) {
@@ -250,7 +279,10 @@ async function buildDegreeImage(
     degreeLevel.charAt(0).toUpperCase() + degreeLevel.slice(1);
   let count = 0;
 
-  if (convex) {
+  if (staticData) {
+    const cached = staticData.degreeCaches.find((d) => d.level === degreeLevel);
+    count = cached?.total ?? 0;
+  } else if (convex) {
     try {
       const stats = await convex.query(api.seo.getDegreeStats, {
         degreeLevel,
@@ -348,6 +380,7 @@ export const Route = createFileRoute("/api/og")({
           const type = url.searchParams.get("type") || "default";
           const slug = url.searchParams.get("slug") || "";
           const id = url.searchParams.get("id") || "";
+          const staticData = await loadStaticData();
 
           // Initialize Convex client if URL is available
           const convexUrl = process.env.VITE_CONVEX_URL;
@@ -358,13 +391,13 @@ export const Route = createFileRoute("/api/og")({
 
           switch (type) {
             case "scholarship":
-              element = await buildScholarshipImage(convex, slug);
+              element = await buildScholarshipImage(staticData, convex, slug);
               break;
             case "country":
-              element = await buildCountryImage(convex, id);
+              element = await buildCountryImage(staticData, convex, id);
               break;
             case "degree":
-              element = await buildDegreeImage(convex, id);
+              element = await buildDegreeImage(staticData, convex, id);
               break;
             case "collection":
               element = buildCollectionImage(id);

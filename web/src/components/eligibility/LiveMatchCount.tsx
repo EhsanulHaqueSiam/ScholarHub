@@ -1,5 +1,7 @@
 import { useQuery } from "convex/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useStaticData } from "@/hooks/useStaticData";
+import { filterScholarships } from "@/lib/static-data";
 import { api } from "../../../convex/_generated/api";
 import type { StudentProfile } from "@/lib/eligibility/types";
 import { cn } from "@/lib/utils";
@@ -21,6 +23,8 @@ interface LiveMatchCountProps {
  * Respects prefers-reduced-motion via motion-safe: prefix.
  */
 export function LiveMatchCount({ profile }: LiveMatchCountProps) {
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+
   // Build debounced query args from current profile state
   // Debounce by 500ms to avoid per-keystroke queries (Pitfall 1 from RESEARCH.md)
   const [debouncedArgs, setDebouncedArgs] = useState<{
@@ -52,28 +56,43 @@ export function LiveMatchCount({ profile }: LiveMatchCountProps) {
     profile.fieldsOfStudy?.join(","),
   ]);
 
+  const staticCount = useMemo(() => {
+    if (!staticData || !debouncedArgs) return null;
+    return filterScholarships(staticData, {
+      nationalities: debouncedArgs.nationalities,
+      degreeLevels: debouncedArgs.degreeLevels,
+      fieldsOfStudy: debouncedArgs.fieldsOfStudy,
+      showClosed: false,
+      limit: 1,
+      offset: 0,
+    }).total;
+  }, [staticData, debouncedArgs]);
+
+  const shouldUseConvex = debouncedArgs !== null && !isStaticDataLoading && !staticData;
   const result = useQuery(
     api.eligibility.getMatchCount,
-    debouncedArgs ?? "skip",
+    shouldUseConvex ? debouncedArgs : "skip",
   );
 
   // Track previous count for animation
   const [prevCount, setPrevCount] = useState<number | null>(null);
   const [animating, setAnimating] = useState(false);
+  const count = staticCount ?? result?.count ?? 0;
 
   useEffect(() => {
-    if (result && result.count !== prevCount) {
+    if (count !== prevCount) {
       setAnimating(true);
-      setPrevCount(result.count);
+      setPrevCount(count);
       const timer = setTimeout(() => setAnimating(false), 200);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result?.count]);
+  }, [count]);
 
   // Determine display state
-  const isLoading = debouncedArgs !== null && result === undefined;
-  const count = result?.count ?? 0;
+  const isLoading =
+    debouncedArgs !== null &&
+    (isStaticDataLoading || (!staticData && shouldUseConvex && result === undefined));
   const hasAnyInput = (profile.nationalities?.length ?? 0) > 0;
 
   return (

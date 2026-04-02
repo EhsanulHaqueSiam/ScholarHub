@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 import { analytics } from "@/lib/analytics";
 import { AdmissionVisaSection } from "@/components/country/AdmissionVisaSection";
@@ -24,9 +24,11 @@ import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countr
 import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
+import { useStaticData } from "@/hooks/useStaticData";
 import type { PrestigeTier } from "@/lib/prestige";
 import { buildBreadcrumbJsonLd, buildScholarshipJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
+import { getScholarshipBySlug, getScholarshipCollections } from "@/lib/static-data";
 import { formatFundingType } from "@/lib/shared";
 import { api } from "../../../convex/_generated/api";
 import type { ScholarshipType } from "../../../convex/schema";
@@ -96,11 +98,29 @@ function ScholarshipDetailPage() {
   const search = Route.useSearch();
   const heroRef = useRef<HTMLDivElement>(null);
   const isHeroVisible = useIsHeroVisible(heroRef);
-  const scholarship = useQuery(api.directory.getScholarshipDetail, { slug });
-  const scholarshipCollections = useQuery(
-    api.collections.getScholarshipCollections,
-    scholarship ? { scholarshipId: scholarship._id } : "skip",
+  const { data: staticData, isLoading: isStaticDataLoading } = useStaticData();
+  const staticScholarship = useMemo(
+    () => (staticData ? getScholarshipBySlug(staticData, slug) : null),
+    [staticData, slug],
   );
+  const shouldFallbackToConvex =
+    !isStaticDataLoading && (!staticData || staticScholarship === null);
+  const queriedScholarship = useQuery(
+    api.directory.getScholarshipDetail,
+    shouldFallbackToConvex ? { slug } : "skip",
+  );
+  const scholarship = staticScholarship ?? queriedScholarship;
+  const staticScholarshipCollections = useMemo(() => {
+    if (!staticData || staticScholarship === null || !scholarship) return null;
+    return getScholarshipCollections(staticData, scholarship._id);
+  }, [staticData, staticScholarship, scholarship]);
+  const shouldUseConvexCollections =
+    !!scholarship && !isStaticDataLoading && (!staticData || staticScholarship === null);
+  const queriedScholarshipCollections = useQuery(
+    api.collections.getScholarshipCollections,
+    shouldUseConvexCollections ? { scholarshipId: scholarship._id } : "skip",
+  );
+  const scholarshipCollections = staticScholarshipCollections ?? queriedScholarshipCollections;
 
   // Track scholarship detail view
   useEffect(() => {
@@ -340,13 +360,13 @@ function ScholarshipDetailPage() {
 
           {/* Sources */}
           <SourcesSection
-            resolvedSources={scholarship.resolved_sources}
+            resolvedSources={scholarship.resolved_sources ?? []}
             lastVerified={scholarship.last_verified ?? undefined}
             sourceCount={scholarship.source_ids.length}
           />
 
           {/* Similar Scholarships (DISC-03) */}
-          <RelatedScholarships scholarshipId={scholarship._id} />
+          <RelatedScholarships scholarshipId={scholarship._id} scholarshipSlug={scholarshipSlug} />
         </div>
       </div>
 
