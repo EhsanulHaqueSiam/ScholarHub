@@ -15,7 +15,7 @@
 - [ ] **RECO-04**: "New matches since last visit" indicator shows count of new scholarships matching profile
 
 ### TRACK — Application Tracker
-- [ ] **TRACK-01**: User can add any scholarship to their tracker from detail page or card
+- [x] **TRACK-01**: User can add any scholarship to their tracker from detail page or card
 - [ ] **TRACK-02**: Tracker shows a Kanban board with stages: Researching → Preparing → Submitted → Interview → Accepted / Rejected
 - [ ] **TRACK-03**: User can drag-and-drop scholarships between stages (works on touch devices via dnd-kit)
 - [ ] **TRACK-04**: Each tracked scholarship shows its deadline, required documents status, and notes

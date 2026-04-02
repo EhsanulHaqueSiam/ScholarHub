@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 2min | 2 tasks | 5 files |
 | Phase 01-02 P02 | 3min | 2 tasks | 5 files |
+| Phase 02 P04 | 3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 01]: No new npm dependencies for storage primitives -- pure TypeScript utilities
 - [Phase 01-02]: useLocalStorage returns 3-element tuple [value, setter, error] for backward-compatible error surfacing
 - [Phase 01-02]: Profile adapter saveProfile returns StorageWriteResult instead of void -- non-breaking for existing callers
+- [Phase 02-04]: SSR hydration via inline useState+useEffect rehydrate pattern instead of separate hook
+- [Phase 02-04]: Icon variant always uses Button size="icon" regardless of size prop for consistent touch target
 
 ### Pending Todos
 
