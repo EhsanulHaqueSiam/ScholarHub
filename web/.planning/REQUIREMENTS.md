@@ -3,8 +3,8 @@
 ## v1 Requirements
 
 ### STORE — Storage Foundations
-- [ ] **STORE-01**: useLocalStorage hook surfaces QuotaExceededError to the user instead of silently swallowing it
-- [ ] **STORE-02**: All localStorage objects (profile, shortlist, tracker, alerts) have a `_version` field for schema migration
+- [x] **STORE-01**: useLocalStorage hook surfaces QuotaExceededError to the user instead of silently swallowing it
+- [x] **STORE-02**: All localStorage objects (profile, shortlist, tracker, alerts) have a `_version` field for schema migration
 - [ ] **STORE-03**: Existing shortlist uses a typed StorageAdapter interface (matching eligibility profile pattern) for Clerk migration readiness
 - [ ] **STORE-04**: Cross-tab storage event listener keeps data in sync across open tabs
 
@@ -111,8 +111,8 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| STORE-01 | Phase 1 | Pending |
-| STORE-02 | Phase 1 | Pending |
+| STORE-01 | Phase 1 | Complete |
+| STORE-02 | Phase 1 | Complete |
 | STORE-03 | Phase 1 | Pending |
 | STORE-04 | Phase 1 | Pending |
 | TRACK-01 | Phase 2 | Pending |
