@@ -87,6 +87,9 @@ export function Navbar() {
           <NavLink to="/eligibility" exact>
             Eligibility
           </NavLink>
+          <NavLink to="/tracker" exact>
+            Tracker
+          </NavLink>
 
           {/* Dark mode toggle */}
           <Button
@@ -179,6 +182,15 @@ export function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Eligibility
+            </Link>
+            <Link
+              to="/tracker"
+              activeOptions={{ exact: true }}
+              className="font-heading text-sm rounded-base border-2 border-transparent px-3 py-2.5 min-h-[44px] flex items-center transition-[transform,box-shadow,border-color] duration-150 ease-out-expo active:scale-[0.97]"
+              activeProps={{ className: "border-border bg-main text-main-foreground" }}
+              onClick={() => setMenuOpen(false)}
+            >
+              Tracker
             </Link>
           </div>
         </div>

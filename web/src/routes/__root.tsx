@@ -8,6 +8,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
+import { Toaster } from "sonner";
 import { CompareBar } from "@/components/comparison/CompareBar";
 import { CompareProvider } from "@/components/comparison/CompareContext";
 import { PageActivityProvider } from "@/hooks/usePageActivity";
@@ -251,6 +252,13 @@ function RootComponent() {
               <Outlet />
             </main>
             <CompareBar />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className:
+                  "font-base border-2 border-border shadow-shadow bg-secondary-background text-foreground",
+              }}
+            />
           </CompareProvider>
         </PageActivityProvider>
         <SpaPageviewTracker />

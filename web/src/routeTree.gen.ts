@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackerRouteImport } from './routes/tracker'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -28,6 +29,11 @@ import { Route as ApiOgRouteImport } from './routes/api/og'
 import { Route as ScholarshipsDegreeDegreeRouteImport } from './routes/scholarships/degree/$degree'
 import { Route as ScholarshipsCountryCountryRouteImport } from './routes/scholarships/country/$country'
 
+const TrackerRoute = TrackerRouteImport.update({
+  id: '/tracker',
+  path: '/tracker',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShortlistRoute = ShortlistRouteImport.update({
   id: '/shortlist',
   path: '/shortlist',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
+  '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
+  '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
+  '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
   '/api/robots.txt': typeof ApiRobotsDottxtRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/guide'
     | '/shortlist'
+    | '/tracker'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/'
     | '/guide'
     | '/shortlist'
+    | '/tracker'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/guide'
     | '/shortlist'
+    | '/tracker'
     | '/api/og'
     | '/api/robots.txt'
     | '/api/sitemap.xml'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   GuideRoute: typeof GuideRoute
   ShortlistRoute: typeof ShortlistRoute
+  TrackerRoute: typeof TrackerRoute
   ApiOgRoute: typeof ApiOgRoute
   ApiRobotsDottxtRoute: typeof ApiRobotsDottxtRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
@@ -265,6 +278,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tracker': {
+      id: '/tracker'
+      path: '/tracker'
+      fullPath: '/tracker'
+      preLoaderRoute: typeof TrackerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shortlist': {
       id: '/shortlist'
       path: '/shortlist'
@@ -411,6 +431,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   GuideRoute: GuideRoute,
   ShortlistRoute: ShortlistRoute,
+  TrackerRoute: TrackerRoute,
   ApiOgRoute: ApiOgRoute,
   ApiRobotsDottxtRoute: ApiRobotsDottxtRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
