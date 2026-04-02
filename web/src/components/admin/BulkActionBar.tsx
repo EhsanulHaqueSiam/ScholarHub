@@ -3,7 +3,7 @@ import { useMutation } from "convex/react";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ALL_TAGS, getTagLabel } from "@/lib/tags";
+import { ALL_TAGS } from "@/lib/tags";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 

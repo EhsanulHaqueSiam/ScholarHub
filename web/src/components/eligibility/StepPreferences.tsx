@@ -2,7 +2,6 @@ import { useId } from "react";
 import { CountrySelector } from "@/components/directory/CountrySelector";
 import type { StudentProfile } from "@/lib/eligibility/types";
 import { FUNDING_TYPES } from "@/lib/filters";
-import { cn } from "@/lib/utils";
 
 const POPULAR_DESTINATIONS = [
   "US", "GB", "DE", "CA", "AU", "NL", "SE", "JP", "FR", "KR", "NZ", "IT",

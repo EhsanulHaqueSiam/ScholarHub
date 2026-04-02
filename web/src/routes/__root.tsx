@@ -236,7 +236,6 @@ function RootComponent() {
             Content is hardcoded at module scope (line 14), not user-supplied. */}
         <script
           type="application/ld+json"
-          // biome-ignore lint: static trusted content from buildOrganizationJsonLd()
           dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
         />
         <CompareProvider>

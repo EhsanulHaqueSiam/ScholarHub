@@ -17,9 +17,6 @@ import { wrapDB } from "./triggers";
 
 const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
 
-const VALID_DEGREES = ["bachelor", "master", "phd", "postdoc"] as const;
-const VALID_FUNDING = ["fully_funded", "partial", "tuition_waiver", "stipend_only"] as const;
-
 /**
  * Directly upsert scholarships from the Python pipeline.
  * Each record is fully enriched — no server-side processing needed.

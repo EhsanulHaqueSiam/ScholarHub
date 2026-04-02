@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,7 +19,6 @@ import type { ScholarshipSummary } from "@/lib/scholarship-summary";
 import {
   formatFundingType,
   formatFundingAmount,
-  hasLimitedInfo,
   urgencyLabelMap,
   urgencyVariantMap,
 } from "@/lib/shared";

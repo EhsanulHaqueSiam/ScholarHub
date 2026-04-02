@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   scoreScholarship,
   scoreAllScholarships,
@@ -8,7 +8,6 @@ import {
 import type {
   StudentProfile,
   EligibilitySummary,
-  ScoredScholarship,
 } from "./types";
 
 // Helper to create a base student profile

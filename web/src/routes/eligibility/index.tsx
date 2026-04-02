@@ -54,8 +54,7 @@ export const Route = createFileRoute("/eligibility/")({
 });
 
 function EligibilityWizardPage() {
-  const { profile, updateProfile, clearProfile, hasExistingProfile, hydrated } =
-    useStudentProfile();
+  const { profile, updateProfile, hasExistingProfile, hydrated } = useStudentProfile();
   const navigate = useNavigate();
   const [showWizard, setShowWizard] = useState(false);
 

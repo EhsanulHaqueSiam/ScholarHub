@@ -4,7 +4,6 @@ import {
   computeMatchKey,
   hasDegreeLevelOverlap,
   getTrustRank,
-  TRUST_RANK,
   resolveField,
   extractYear,
   shouldArchive,

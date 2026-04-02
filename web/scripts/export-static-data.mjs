@@ -4,8 +4,8 @@
  *
  * Run: node scripts/export-static-data.mjs
  *
- * Uses paginated queries to stay under Convex's return-value field limit.
- * Total Convex calls: ~10-12 (1 metadata + ~9 scholarship pages for 1700 records).
+ * Uses cursor-paginated queries to stay under Convex's return-value field limit
+ * without offset re-scans (important for read/bandwidth quota).
  */
 
 import { ConvexHttpClient } from "convex/browser";
@@ -44,21 +44,54 @@ async function main() {
     const metadata = await client.query("export:getMetadata", {});
     console.log(`   Metadata: ${metadata.collections.length} collections, ${metadata.countryCaches.length} countries`);
 
-    // 2. Fetch scholarships in pages — ~9 calls for 1700 records
+    // 2. Fetch scholarships in cursor pages
     const allScholarships = [];
     const allSummaries = [];
-    let page = 0;
-    let hasMore = true;
+    let pageCount = 0;
+    let cursor = null;
+    let legacyPage = 0;
+    let done = false;
+    let detectedPagingMode = null; // "cursor" | "page"
 
-    while (hasMore) {
-      const result = await client.query("export:getScholarshipsPage", { page });
+    while (!done) {
+      let result;
+
+      if (detectedPagingMode !== "page") {
+        try {
+          result = await client.query("export:getScholarshipsPage", {
+            cursor,
+            pageSize: 200,
+          });
+          detectedPagingMode = "cursor";
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (message.includes("required field `page`")) {
+            detectedPagingMode = "page";
+          } else {
+            throw error;
+          }
+        }
+      }
+
+      if (detectedPagingMode === "page") {
+        result = await client.query("export:getScholarshipsPage", { page: legacyPage });
+        legacyPage += 1;
+      }
+
       allScholarships.push(...result.scholarships);
       allSummaries.push(...result.summaries);
-      hasMore = result.hasMore;
-      page++;
-      process.stdout.write(`   Page ${page}: ${allScholarships.length} scholarships\r`);
+
+      if (detectedPagingMode === "cursor") {
+        cursor = result.continueCursor ?? null;
+        done = Boolean(result.isDone);
+      } else {
+        done = !result.hasMore;
+      }
+
+      pageCount++;
+      process.stdout.write(`   Page ${pageCount}: ${allScholarships.length} scholarships\r`);
     }
-    console.log(`   Fetched ${allScholarships.length} scholarships in ${page} pages`);
+    console.log(`   Fetched ${allScholarships.length} scholarships in ${pageCount} pages`);
 
     // 3. Build slug index client-side
     const slugIndex = {};
@@ -97,7 +130,7 @@ async function main() {
       exportedAt: data.exportedAt,
       scholarshipCount: allSummaries.length,
       collectionCount: metadata.collections.length,
-      pages: page,
+      pages: pageCount,
     });
     fs.writeFileSync(path.join(OUTPUT_DIR_SRC, "export-meta.json"), exportMeta);
     fs.writeFileSync(path.join(OUTPUT_DIR_PUBLIC, "export-meta.json"), exportMeta);

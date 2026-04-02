@@ -14,22 +14,73 @@
  */
 
 import { v } from "convex/values";
-import { customCtx, customMutation } from "convex-helpers/server/customFunctions";
 import { internal } from "./_generated/api";
 import {
   mutation as rawMutation,
   internalMutation as rawInternalMutation,
 } from "./_generated/server";
 import { computeMatchKey, parseDeadlineToTimestamp } from "./aggregationHelpers";
-import { wrapDB } from "./triggers";
+import { runAfterSafe } from "./scheduler";
 import { getRegion } from "../src/lib/regions";
 import { ALL_TAGS } from "../src/lib/tags";
 
-const triggeredMutation = customMutation(rawMutation, customCtx(wrapDB));
-const triggeredInternalMutation = customMutation(rawInternalMutation, customCtx(wrapDB));
-
 // Batch size tuned for Convex free-tier read limits
 const ENRICH_BATCH_SIZE = 8;
+const ENRICH_MAX_BATCH_SIZE = 20;
+const ENRICH_MAX_TARGET = 20000;
+const ENRICH_DEFAULT_SCHEDULE_DELAY_MS = 1500;
+const ENRICH_MAX_SCHEDULE_DELAY_MS = 5000;
+const ENRICH_MIN_SCHEDULE_DELAY_MS = 250;
+const ENRICH_MAX_BATCHES = 2500;
+const ENRICH_RAW_RECORD_SCAN_CAP = 4;
+const ENRICH_MATCH_KEY_SCAN_CAP = 5;
+const ENRICH_RUN_KEY = 3; // Bump to invalidate stale scheduled payloads.
+const ENRICH_LOCK_NAME = "enrichPublish.enrichAndPublishBatch";
+const ENRICH_LOCK_LEASE_MS = 2 * 60 * 1000;
+const ENRICH_LOCK_RETRY_DELAY_MS = 2000;
+const ENRICH_MAX_LOCK_RETRIES = 30;
+
+async function acquireEnrichLock(
+  ctx: any,
+  owner: string,
+): Promise<{ acquired: boolean; lockId?: any }> {
+  const now = Date.now();
+  const existing = await ctx.db
+    .query("pipeline_locks")
+    .withIndex("by_name", (q: any) => q.eq("name", ENRICH_LOCK_NAME))
+    .first();
+
+  if (!existing) {
+    const lockId = await ctx.db.insert("pipeline_locks", {
+      name: ENRICH_LOCK_NAME,
+      owner,
+      lease_expires_at: now + ENRICH_LOCK_LEASE_MS,
+      updated_at: now,
+    });
+    return { acquired: true, lockId };
+  }
+
+  if (existing.lease_expires_at > now && existing.owner !== owner) {
+    return { acquired: false, lockId: existing._id };
+  }
+
+  await ctx.db.patch(existing._id, {
+    owner,
+    lease_expires_at: now + ENRICH_LOCK_LEASE_MS,
+    updated_at: now,
+  });
+  return { acquired: true, lockId: existing._id };
+}
+
+async function releaseEnrichLock(ctx: any, lockId: any, owner: string): Promise<void> {
+  if (!lockId) return;
+  const existing = await ctx.db.get(lockId);
+  if (!existing || existing.owner !== owner) return;
+  await ctx.db.patch(lockId, {
+    lease_expires_at: 0,
+    updated_at: Date.now(),
+  });
+}
 
 // ---- Domain -> Country Code mapping ----
 
@@ -315,6 +366,28 @@ function selectBestRawRecord(rawRecords: any[]): any | undefined {
   return scored[0]?.raw;
 }
 
+function shouldReadRawRecords(scholarship: {
+  description?: string;
+  application_url?: string;
+  host_country?: string;
+  provider_organization?: string;
+  application_deadline?: number;
+  application_deadline_text?: string;
+  award_amount_min?: number;
+  eligibility_nationalities?: string[];
+}): boolean {
+  const provider = normalizeText(scholarship.provider_organization);
+  const hasProvider = !!provider && provider.toLowerCase() !== "unknown";
+  const hasDeadline = !!scholarship.application_deadline || !!normalizeText(scholarship.application_deadline_text);
+  const hasDescription = !!normalizeText(scholarship.description);
+  const hasApplyUrl = isValidHttpUrl(scholarship.application_url);
+  const needsCountry = isPlaceholderCountry(scholarship.host_country);
+  const needsAward = !scholarship.award_amount_min;
+  const needsEligibility = (scholarship.eligibility_nationalities?.length ?? 0) === 0;
+
+  return !hasDescription || !hasApplyUrl || needsCountry || !hasProvider || !hasDeadline || needsAward || needsEligibility;
+}
+
 function getHardRejectReason(
   title: string,
   description: string | undefined,
@@ -536,26 +609,38 @@ function inferFieldsOfStudy(title: string, description: string | undefined): str
 // on individual admin edits.
 export const enrichAndPublishBatch = rawInternalMutation({
   args: {
+    cursor: v.optional(v.union(v.string(), v.null())),
     batchSize: v.optional(v.number()),
     totalTarget: v.optional(v.number()),
     processed: v.optional(v.number()),
     skipped: v.optional(v.number()),
     rejected: v.optional(v.number()),
     reviewed: v.optional(v.number()),
+    batchesSoFar: v.optional(v.number()),
+    runKey: v.optional(v.number()),
+    scheduleDelayMs: v.optional(v.number()),
+    lockRetries: v.optional(v.number()),
     autoSchedule: v.optional(v.boolean()),
     rejectIncomplete: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const batchSize = Math.max(1, Math.min(args.batchSize ?? ENRICH_BATCH_SIZE, 20));
-    const totalTarget = args.totalTarget ?? 200;
+    const batchSize = Math.max(1, Math.min(args.batchSize ?? ENRICH_BATCH_SIZE, ENRICH_MAX_BATCH_SIZE));
+    const totalTarget = Math.max(1, Math.min(args.totalTarget ?? 200, ENRICH_MAX_TARGET));
     const publishedSoFar = args.processed ?? 0;
     const skippedSoFar = args.skipped ?? 0;
     const rejectedSoFar = args.rejected ?? 0;
     const reviewedSoFar = args.reviewed ?? 0;
-    const isLegacyScheduledInvocation =
-      args.reviewed === undefined && args.processed !== undefined && args.processed > 0;
+    const batchesSoFar = args.batchesSoFar ?? 0;
+    const lockRetries = args.lockRetries ?? 0;
+    const shouldAutoSchedule = args.autoSchedule === true;
+    const rejectIncomplete = args.rejectIncomplete === true;
+    const scheduleDelayMs = Math.max(
+      ENRICH_MIN_SCHEDULE_DELAY_MS,
+      Math.min(args.scheduleDelayMs ?? ENRICH_DEFAULT_SCHEDULE_DELAY_MS, ENRICH_MAX_SCHEDULE_DELAY_MS),
+    );
+    const isLegacyScheduledInvocation = shouldAutoSchedule && args.runKey === undefined && reviewedSoFar > 0;
 
-    // Prevent legacy scheduled payloads (from the previous batching logic) from restarting full runs.
+    // Prevent legacy scheduled payloads (from older batching logic) from restarting full runs.
     if (isLegacyScheduledInvocation) {
       console.log(
         `[enrichPublish] Ignoring legacy scheduled invocation (processed=${publishedSoFar}, skipped=${skippedSoFar})`,
@@ -565,9 +650,29 @@ export const enrichAndPublishBatch = rawInternalMutation({
         published: publishedSoFar,
         skipped: skippedSoFar,
         rejected: rejectedSoFar,
+        cursor: null,
         complete: true,
+        skippedLegacy: true,
       };
     }
+
+    // Reject stale queued invocations from previous run keys.
+    if (args.runKey !== undefined && args.runKey !== ENRICH_RUN_KEY) {
+      console.log(
+        `[enrichPublish] Ignoring stale runKey=${args.runKey} (expected ${ENRICH_RUN_KEY})`,
+      );
+      return {
+        reviewed: reviewedSoFar,
+        published: publishedSoFar,
+        skipped: skippedSoFar,
+        rejected: rejectedSoFar,
+        cursor: args.cursor ?? null,
+        complete: false,
+        skippedLegacy: true,
+      };
+    }
+
+    const effectiveRunKey = shouldAutoSchedule ? (args.runKey ?? ENRICH_RUN_KEY) : args.runKey;
 
     if (reviewedSoFar >= totalTarget) {
       console.log(
@@ -578,36 +683,82 @@ export const enrichAndPublishBatch = rawInternalMutation({
         published: publishedSoFar,
         skipped: skippedSoFar,
         rejected: rejectedSoFar,
+        cursor: args.cursor ?? null,
         complete: true,
       };
     }
 
-    // When rejectIncomplete is true, all items leave pending (published or rejected),
-    // so always read from position 0. Otherwise use the moving window approach.
-    let scholarships;
-    if (args.rejectIncomplete) {
-      scholarships = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-        .take(batchSize);
-    } else {
-      const windowSize = Math.min(totalTarget, reviewedSoFar + batchSize);
-      const pendingWindow = await ctx.db
-        .query("scholarships")
-        .withIndex("by_status", (q) => q.eq("status", "pending_review"))
-        .take(windowSize);
-      scholarships = pendingWindow.slice(reviewedSoFar, reviewedSoFar + batchSize);
-    }
-
-    if (scholarships.length === 0) {
+    if (batchesSoFar >= ENRICH_MAX_BATCHES) {
       console.log(
-        `[enrichPublish] No more pending scholarships in target window. Reviewed: ${reviewedSoFar}, Published: ${publishedSoFar}`,
+        `[enrichPublish] Hit batch cap (${ENRICH_MAX_BATCHES}). reviewed=${reviewedSoFar}, published=${publishedSoFar}`,
       );
       return {
         reviewed: reviewedSoFar,
         published: publishedSoFar,
         skipped: skippedSoFar,
         rejected: rejectedSoFar,
+        cursor: args.cursor ?? null,
+        complete: false,
+        cappedAt: batchesSoFar,
+      };
+    }
+
+    const owner = `enrich:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+    const lock = await acquireEnrichLock(ctx, owner);
+    if (!lock.acquired) {
+      if (shouldAutoSchedule && lockRetries < ENRICH_MAX_LOCK_RETRIES) {
+        await runAfterSafe(ctx, ENRICH_LOCK_RETRY_DELAY_MS, internal.enrichPublish.enrichAndPublishBatch, {
+          ...args,
+          runKey: effectiveRunKey,
+          lockRetries: lockRetries + 1,
+        });
+      }
+      return {
+        reviewed: reviewedSoFar,
+        published: publishedSoFar,
+        skipped: skippedSoFar,
+        rejected: rejectedSoFar,
+        cursor: args.cursor ?? null,
+        complete: false,
+        deferred: true,
+      };
+    }
+
+    try {
+
+      // When rejectIncomplete=true, each processed item leaves pending_review,
+      // so always reading the first page keeps reads flat.
+      // When rejectIncomplete=false, use cursor pagination to avoid O(n^2) window scans.
+      let scholarships: any[] = [];
+      let nextCursor: string | null = null;
+      let reachedDataEnd = false;
+      if (rejectIncomplete) {
+        scholarships = await ctx.db
+          .query("scholarships")
+          .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+          .take(batchSize);
+        reachedDataEnd = scholarships.length < batchSize;
+      } else {
+        const page = await ctx.db
+          .query("scholarships")
+          .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+          .paginate({
+            cursor: args.cursor === undefined ? null : args.cursor,
+            numItems: batchSize,
+          });
+        scholarships = page.page;
+        nextCursor = page.isDone ? null : page.continueCursor;
+        reachedDataEnd = page.isDone || scholarships.length < batchSize;
+      }
+
+    if (scholarships.length === 0) {
+      console.log(`[enrichPublish] No more pending scholarships. Reviewed: ${reviewedSoFar}, Published: ${publishedSoFar}`);
+      return {
+        reviewed: reviewedSoFar,
+        published: publishedSoFar,
+        skipped: skippedSoFar,
+        rejected: rejectedSoFar,
+        cursor: rejectIncomplete ? null : nextCursor,
         complete: true,
       };
     }
@@ -615,12 +766,15 @@ export const enrichAndPublishBatch = rawInternalMutation({
     let published = 0;
     let skipped = 0;
     let rejected = 0;
+    const duplicateByMatchKey = new Map<string, boolean>();
 
     for (const scholarship of scholarships) {
-      const rawRecords = await ctx.db
-        .query("raw_records")
-        .withIndex("by_canonical", (q) => q.eq("canonical_id", scholarship._id))
-        .take(8);
+      const rawRecords = shouldReadRawRecords(scholarship)
+        ? await ctx.db
+            .query("raw_records")
+            .withIndex("by_canonical", (q) => q.eq("canonical_id", scholarship._id))
+            .take(ENRICH_RAW_RECORD_SCAN_CAP)
+        : [];
       const bestRaw = selectBestRawRecord(rawRecords);
 
       const extractedDescription =
@@ -708,13 +862,17 @@ export const enrichAndPublishBatch = rawInternalMutation({
       );
 
       const matchKey = computeMatchKey(scholarship.title, org, country);
-      const existingWithKey = await ctx.db
-        .query("scholarships")
-        .withIndex("by_match_key", (q) => q.eq("match_key", matchKey))
-        .take(5);
-      const hasDuplicate = existingWithKey.some(
-        (s) => s._id !== scholarship._id && s.status === "published",
-      );
+      let hasDuplicate = duplicateByMatchKey.get(matchKey);
+      if (hasDuplicate === undefined) {
+        const existingWithKey = await ctx.db
+          .query("scholarships")
+          .withIndex("by_match_key", (q) => q.eq("match_key", matchKey))
+          .take(ENRICH_MATCH_KEY_SCAN_CAP);
+        hasDuplicate = existingWithKey.some(
+          (s) => s._id !== scholarship._id && s.status === "published",
+        );
+        duplicateByMatchKey.set(matchKey, hasDuplicate);
+      }
 
       const patch: Record<string, any> = {
         host_country: country,
@@ -774,7 +932,7 @@ export const enrichAndPublishBatch = rawInternalMutation({
         );
         await ctx.db.patch(scholarship._id, patch);
         published++;
-      } else if (args.rejectIncomplete) {
+      } else if (rejectIncomplete) {
         patch.status = "rejected";
         patch.editorial_notes = appendEditorialNote(
           scholarship.editorial_notes,
@@ -792,59 +950,110 @@ export const enrichAndPublishBatch = rawInternalMutation({
       }
     }
 
-    const newPublished = publishedSoFar + published;
-    const newSkipped = skippedSoFar + skipped;
-    const newRejected = rejectedSoFar + rejected;
-    const newReviewed = reviewedSoFar + scholarships.length;
+      const newPublished = publishedSoFar + published;
+      const newSkipped = skippedSoFar + skipped;
+      const newRejected = rejectedSoFar + rejected;
+      const newReviewed = reviewedSoFar + scholarships.length;
+      const nextBatchNumber = batchesSoFar + 1;
+      const cursorForNext = rejectIncomplete ? null : nextCursor;
+      const complete = newReviewed >= totalTarget || reachedDataEnd;
 
-    console.log(
-      `[enrichPublish] Batch done: reviewed ${scholarships.length}, ${published} published, ${skipped} skipped, ${rejected} rejected. Total reviewed: ${newReviewed}/${totalTarget}`,
-    );
+      console.log(
+        `[enrichPublish] Batch done: reviewed ${scholarships.length}, ${published} published, ${skipped} skipped, ${rejected} rejected. Total reviewed: ${newReviewed}/${totalTarget}`,
+      );
 
-    // Schedule next batch if we haven't reached the target
-    if (args.autoSchedule === true && newReviewed < totalTarget && scholarships.length === batchSize) {
-      await ctx.scheduler.runAfter(1000, internal.enrichPublish.enrichAndPublishBatch, {
-        batchSize,
-        totalTarget,
-        processed: newPublished,
+      // Schedule next batch if we haven't reached the target.
+      if (shouldAutoSchedule && !complete) {
+        if (nextBatchNumber >= ENRICH_MAX_BATCHES) {
+          console.log(
+            `[enrichPublish] Hit batch cap (${ENRICH_MAX_BATCHES}) while scheduling continuation.`,
+          );
+          return {
+            reviewed: newReviewed,
+            published: newPublished,
+            skipped: newSkipped,
+            rejected: newRejected,
+            cursor: cursorForNext,
+            complete: false,
+            cappedAt: nextBatchNumber,
+          };
+        }
+
+        await runAfterSafe(ctx, scheduleDelayMs, internal.enrichPublish.enrichAndPublishBatch, {
+          cursor: cursorForNext,
+          batchSize,
+          totalTarget,
+          processed: newPublished,
+          skipped: newSkipped,
+          rejected: newRejected,
+          reviewed: newReviewed,
+          batchesSoFar: nextBatchNumber,
+          runKey: effectiveRunKey,
+          scheduleDelayMs,
+          lockRetries: 0,
+          autoSchedule: true,
+          rejectIncomplete,
+        });
+      }
+
+      return {
+        reviewed: newReviewed,
+        published: newPublished,
         skipped: newSkipped,
         rejected: newRejected,
-        reviewed: newReviewed,
-        autoSchedule: true,
-        rejectIncomplete: args.rejectIncomplete,
-      });
+        cursor: cursorForNext,
+        complete,
+      };
+    } finally {
+      await releaseEnrichLock(ctx, lock.lockId, owner);
     }
-
-    return {
-      reviewed: newReviewed,
-      published: newPublished,
-      skipped: newSkipped,
-      rejected: newRejected,
-      complete: newReviewed >= totalTarget,
-    };
   },
 });
 
 // ---- Public trigger for bulk review ----
-// Kicks off enrichAndPublishBatch with rejectIncomplete mode.
-// Processes `totalTarget` items in batches of 15 with 1s delay between batches.
-// Cost: ~2 function calls per 15 items (batch + schedule) = ~670 calls for 5000 items.
+// Kicks off enrichAndPublishBatch with rejectIncomplete mode by default.
+// Supports large runs (e.g. 12k) with guarded scheduling and runKey isolation.
 
 export const triggerBulkReview = rawMutation({
   args: {
     totalTarget: v.optional(v.number()),
     batchSize: v.optional(v.number()),
+    scheduleDelayMs: v.optional(v.number()),
+    rejectIncomplete: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const target = Math.min(args.totalTarget ?? 500, 5000);
-    const batch = Math.min(args.batchSize ?? 15, 20);
-    await ctx.scheduler.runAfter(0, internal.enrichPublish.enrichAndPublishBatch, {
+    const target = Math.max(1, Math.min(args.totalTarget ?? 500, ENRICH_MAX_TARGET));
+    const batch = Math.max(1, Math.min(args.batchSize ?? 15, ENRICH_MAX_BATCH_SIZE));
+    const scheduleDelayMs = Math.max(
+      ENRICH_MIN_SCHEDULE_DELAY_MS,
+      Math.min(args.scheduleDelayMs ?? ENRICH_DEFAULT_SCHEDULE_DELAY_MS, ENRICH_MAX_SCHEDULE_DELAY_MS),
+    );
+    const rejectIncomplete = args.rejectIncomplete ?? true;
+
+    await runAfterSafe(ctx, 0, internal.enrichPublish.enrichAndPublishBatch, {
+      cursor: null,
       totalTarget: target,
       batchSize: batch,
+      processed: 0,
+      skipped: 0,
+      rejected: 0,
+      reviewed: 0,
+      batchesSoFar: 0,
+      runKey: ENRICH_RUN_KEY,
+      scheduleDelayMs,
+      lockRetries: 0,
       autoSchedule: true,
-      rejectIncomplete: true,
+      rejectIncomplete,
     });
-    return { scheduled: true, target, batchSize: batch };
+
+    return {
+      scheduled: true,
+      target,
+      batchSize: batch,
+      scheduleDelayMs,
+      rejectIncomplete,
+      runKey: ENRICH_RUN_KEY,
+    };
   },
 });
 
@@ -912,4 +1121,3 @@ export const refreshCountForStatus = rawInternalMutation({
     console.log(`[enrichPublish] Count for ${args.status}: ${accumulated}`);
   },
 });
-

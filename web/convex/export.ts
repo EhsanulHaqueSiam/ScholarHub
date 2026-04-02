@@ -9,49 +9,61 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { toScholarshipSummary } from "./scholarshipSummary";
 
-const EXPORT_SCAN_CAP = 8000;
+const EXPORT_DEFAULT_PAGE_SIZE = 200;
+const EXPORT_MAX_PAGE_SIZE = 250;
 
 /**
- * Export published scholarships in pages (avoids field-count limit).
- * Call with page=0, page=1, etc. until result.hasMore is false.
+ * Export published scholarships in cursor pages (avoids field-count limit).
+ * Uses true cursor pagination so each call only reads one page (no offset re-scan).
  */
 export const getScholarshipsPage = query({
-  args: { page: v.number() },
-  handler: async (ctx, { page }) => {
-    const PAGE_SIZE = 200;
-    const offset = page * PAGE_SIZE;
+  args: {
+    cursor: v.optional(v.union(v.string(), v.null())),
+    pageSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const pageSize = Math.max(
+      1,
+      Math.min(args.pageSize ?? EXPORT_DEFAULT_PAGE_SIZE, EXPORT_MAX_PAGE_SIZE),
+    );
 
-    const published = await ctx.db
+    const publishedPage = await ctx.db
       .query("scholarships")
       .withIndex("by_status", (q) => q.eq("status", "published"))
-      .take(offset + PAGE_SIZE);
+      .paginate({
+        cursor: args.cursor === undefined ? null : args.cursor,
+        numItems: pageSize,
+      });
 
-    const slice = published.slice(offset, offset + PAGE_SIZE);
+    const page = publishedPage.page;
 
     // Resolve sources for this page
     const sourceIds = new Set<string>();
-    for (const s of slice) {
+    for (const s of page) {
       for (const id of s.source_ids) sourceIds.add(String(id));
     }
     const sourceMap: Record<string, { name: string; url: string }> = {};
-    for (const id of sourceIds) {
-      const source = await ctx.db.get(id as any);
-      if (source) sourceMap[id] = { name: source.name, url: source.url };
+    for (const sourceId of sourceIds) {
+      const source = await ctx.db.get(sourceId as any);
+      if (source) sourceMap[sourceId] = { name: source.name, url: source.url };
     }
 
-    const scholarships = slice.map((s) => ({
+    const scholarships = page.map((s) => ({
       ...s,
       resolved_sources: s.source_ids
         .map((id) => sourceMap[String(id)])
         .filter(Boolean),
     }));
 
-    const summaries = slice.map((s) => toScholarshipSummary(s));
+    const summaries = page.map((s) => toScholarshipSummary(s));
+    const continueCursor = publishedPage.isDone ? null : publishedPage.continueCursor;
 
     return {
       scholarships,
       summaries,
-      hasMore: slice.length === PAGE_SIZE,
+      continueCursor,
+      isDone: publishedPage.isDone,
+      hasMore: !publishedPage.isDone,
     };
   },
 });

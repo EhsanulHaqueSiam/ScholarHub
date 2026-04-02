@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { TAG_CATEGORIES, ALL_TAGS, getTagLabel } from "@/lib/tags";
+import { ALL_TAGS, getTagLabel } from "@/lib/tags";
 import { api } from "../../../convex/_generated/api";
 
 const DEGREE_OPTIONS = ["bachelor", "master", "phd", "postdoc"] as const;

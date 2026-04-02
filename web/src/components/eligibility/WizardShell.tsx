@@ -186,13 +186,6 @@ export function WizardShell({ profile, onProfileChange }: WizardShellProps) {
     return "Find My Scholarships";
   }, [currentStep]);
 
-  // Determine slide classes for transition
-  const getSlideClass = () => {
-    if (!isTransitioning) return "translate-x-0";
-    if (direction === "forward") return "motion-safe:animate-slide-left";
-    return "motion-safe:animate-slide-right";
-  };
-
   return (
     <div className="pt-20 pb-24 md:pb-8 px-4">
       {/* Page Title */}

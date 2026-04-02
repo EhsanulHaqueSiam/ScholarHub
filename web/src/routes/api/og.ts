@@ -3,8 +3,6 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 import { getScholarshipBySlug, loadStaticData } from "../../lib/static-data";
 
-const SITE_URL = process.env.VITE_SITE_URL || "https://scholarhub.io";
-
 // Module-level font cache
 let interFont: ArrayBuffer | null = null;
 let archivoFont: ArrayBuffer | null = null;

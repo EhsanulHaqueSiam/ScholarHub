@@ -166,7 +166,7 @@ export const Route = createFileRoute("/api/sitemap.xml")({
                 "public, max-age=3600, stale-while-revalidate=86400",
             },
           });
-        } catch (error) {
+        } catch {
           // Fallback: return minimal sitemap on error
           const fallbackXml = generateSitemapXml([
             { loc: SITE_URL, priority: 1.0 },

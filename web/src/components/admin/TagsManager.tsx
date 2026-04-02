@@ -18,7 +18,6 @@ export function TagsManager() {
   const allTags = useQuery(api.tags.getAllTags);
   const deleteTagMut = useMutation(api.tags.deleteTagPublic);
   const renameTagMut = useMutation(api.tags.renameTagPublic);
-  const addTag = useMutation(api.tags.addTagToScholarship);
   const bulkAddTags = useMutation(api.tags.bulkAddTags);
 
   // Section 1: Grouped tag list state
@@ -130,10 +129,6 @@ export function TagsManager() {
     if (e.key === "Enter") {
       const value = newTagInputs[category]?.trim();
       if (value) {
-        const tagId = value
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "_")
-          .replace(/^_|_$/g, "");
         // D-35: Create by adding to a scholarship (tag is created implicitly)
         // For now, just clear the input -- tag will exist when added to a scholarship
         setNewTagInputs((prev) => ({ ...prev, [category]: "" }));

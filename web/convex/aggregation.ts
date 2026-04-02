@@ -16,7 +16,6 @@ import {
   computeExpectedReopenMonth,
   computeMatchKey,
   extractYear,
-  getTrustRank,
   hasDegreeLevelOverlap,
   parseDeadlineToTimestamp,
   resolveField,
@@ -41,6 +40,7 @@ const ARCHIVE_EXPIRED_BATCH_SIZE = 20;
 const ARCHIVE_BATCH_DELAY_MS = 2000;
 const ARCHIVE_MAX_BATCHES = 50; // Hard cap: 50 × 20 = 1000 per cron run
 const ARCHIVE_RUN_KEY = 2; // Bump this to invalidate legacy scheduled continuations.
+const ARCHIVE_MAX_CHAIN_AGE_MS = 6 * 60 * 60 * 1000; // 6h stale-chain cutoff
 const ARCHIVE_GRACE_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_VALID_DEADLINE_MS = 0;
 const AGGREGATION_LOCK_NAME = "aggregation.aggregateBatch";
@@ -349,6 +349,7 @@ export const archiveExpired = rawInternalMutation({
     cursor: v.union(v.string(), v.null()),
     batchesSoFar: v.optional(v.number()),
     runKey: v.optional(v.number()),
+    chainStartedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const batchesSoFar = args.batchesSoFar ?? 0;
@@ -364,6 +365,20 @@ export const archiveExpired = rawInternalMutation({
       console.log(
         `[archiveExpired] skipped continuation with stale runKey=${args.runKey} (expected ${ARCHIVE_RUN_KEY})`,
       );
+      return { archived: 0, processed: 0, complete: false, skippedLegacy: true };
+    }
+
+    // Legacy continuation guard:
+    // batched self-scheduled calls from older code did not include chainStartedAt.
+    // Rejecting them prevents old queued payloads from restarting long chains.
+    if (batchesSoFar > 0 && args.chainStartedAt === undefined) {
+      console.log("[archiveExpired] skipped legacy continuation without chainStartedAt");
+      return { archived: 0, processed: 0, complete: false, skippedLegacy: true };
+    }
+
+    const chainStartedAt = args.chainStartedAt ?? Date.now();
+    if (Date.now() - chainStartedAt > ARCHIVE_MAX_CHAIN_AGE_MS) {
+      console.log("[archiveExpired] skipped stale chain older than max age");
       return { archived: 0, processed: 0, complete: false, skippedLegacy: true };
     }
 
@@ -413,6 +428,7 @@ export const archiveExpired = rawInternalMutation({
           cursor: null,
           batchesSoFar: batchesSoFar + 1,
           runKey: ARCHIVE_RUN_KEY,
+          chainStartedAt,
         });
       }
 

@@ -29,7 +29,6 @@ import type { PrestigeTier } from "@/lib/prestige";
 import { buildBreadcrumbJsonLd, buildScholarshipJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
 import { getScholarshipBySlug, getScholarshipCollections } from "@/lib/static-data";
-import { formatFundingType } from "@/lib/shared";
 import { api } from "../../../convex/_generated/api";
 import type { ScholarshipType } from "../../../convex/schema";
 
@@ -63,30 +62,6 @@ export const Route = createFileRoute("/scholarships/$slug")({
   },
   component: ScholarshipDetailPage,
 });
-
-/**
- * Build structured meta title for SEO.
- * Format: {Title} -- {Funding Type} {Degree} Scholarship in {Country} | ScholarHub
- * Fallback: {Title} | ScholarHub
- */
-function buildMetaTitle(scholarship: {
-  title: string;
-  funding_type: string;
-  degree_levels: string[];
-  host_country: string;
-}): string {
-  const fundingLabel = formatFundingType(scholarship.funding_type);
-  const degree =
-    scholarship.degree_levels.length > 0
-      ? scholarship.degree_levels[0].charAt(0).toUpperCase() + scholarship.degree_levels[0].slice(1)
-      : null;
-  const country = getCountryName(scholarship.host_country);
-
-  if (degree && country) {
-    return `${scholarship.title} -- ${fundingLabel} ${degree} Scholarship in ${country} | ScholarHub`;
-  }
-  return `${scholarship.title} | ScholarHub`;
-}
 
 const SITE_URL =
   typeof window !== "undefined"
