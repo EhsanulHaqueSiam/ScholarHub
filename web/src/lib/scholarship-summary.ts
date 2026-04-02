@@ -29,4 +29,5 @@ export interface ScholarshipSummary {
   prestige_tier?: string | null;
   scholarship_type?: string | null;
   tags?: string[] | null;
+  document_requirements?: string[] | null;
 }
