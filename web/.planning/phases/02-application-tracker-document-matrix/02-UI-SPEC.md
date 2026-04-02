@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: true
 preset: default (neutral base, css variables)
 created: 2026-04-03
+revised: 2026-04-03
 ---
 
 # Phase 02 — UI Design Contract
@@ -50,17 +51,18 @@ Exceptions:
 
 ## Typography
 
-Uses existing type scale from `index.css`. Phase 02 uses these specific stops:
+Uses existing type scale from `index.css`. Phase 02 uses exactly 4 stops:
 
 | Role | Token | Size | Weight | Line Height | Usage |
 |------|-------|------|--------|-------------|-------|
-| Caption | `text-caption` | 13px (0.8125rem) | 400 (Inter) | 1.45 | Document checklist item labels, timestamp metadata, CSV export link |
-| Body small | `text-body-sm` | 15px (0.9375rem) | 400 (Inter) | 1.5 | Notes textarea content, document matrix body text, stage descriptions |
-| Body | `text-body` | 17px (1.0625rem) | 400 (Inter) | 1.5 | Tracker card scholarship title, empty state body copy |
+| Caption | `text-caption` | 13px (0.8125rem) | 400 (Inter) | 1.45 | Document checklist item labels, document matrix body text, timestamp metadata, notes textarea content, stage descriptions, CSV export link |
+| Body | `text-body` | 17px (1.0625rem) | 400 (Inter) | 1.5 | Tracker card scholarship title, empty state body copy, notes placeholder text |
 | Subhead | `text-subhead` | 21px (1.3125rem) | 400 (Archivo Black) | 1.35 | Kanban column headings, document matrix section headings |
 | Heading | `text-heading` | 27px (1.6875rem) | 400 (Archivo Black) | 1.25 | Page title "My Applications", "Document Overview" |
 
 Weight constraint: Archivo Black for headings (renders at 400 weight but is visually bold by typeface design). Inter at 400 for body. No additional weights needed — the existing system uses only these two.
+
+Rationale for 4-stop scale: The previous 5-stop scale had a compressed bottom cluster (13px, 15px, 17px — only 2px apart). Dropping `text-body-sm` (15px) produces a clean hierarchy with clear visual separation at each step: 13 > 17 > 21 > 27. Caption (13px) absorbs the former body-small usage for secondary content like document matrix cells and notes.
 
 ---
 
@@ -132,6 +134,8 @@ Each stage column header uses an existing badge variant or semantic token. No ne
 ---
 
 ## Layout Contract
+
+**Primary focal point:** The Kanban board (`TrackerKanban`) is the primary focal point on desktop. On mobile, the card list for the currently selected stage is the primary focal point. Both are the first interactive content below the page heading and draw the eye through card density and stage color coding.
 
 ### Desktop (>= 1024px): Kanban Board
 
@@ -215,6 +219,8 @@ Mobile: Horizontal scroll with sticky first column (document name)
 [StickyBar]
   [Existing: Copy Link + Apply Now]
   [NEW: Track This icon-button — appended to actions row]
+    aria-label="Track this scholarship"
+    Tooltip on hover: "Track this scholarship"
 ```
 
 ---
@@ -268,6 +274,15 @@ Mobile: Horizontal scroll with sticky first column (document name)
 | Click when tracking | Shows dropdown: "Move to [stage]" options + "Remove from tracker" (destructive) |
 | Sonner toast | "Added to tracker" or "Removed from tracker" confirmation toast |
 
+### Sticky Bar Icon-Button
+
+| Interaction | Behavior |
+|-------------|----------|
+| Render | Icon-only button (Plus or Check icon depending on tracked state) |
+| `aria-label` | `"Track this scholarship"` (untracked) / `"Manage tracked scholarship"` (tracked) |
+| Tooltip | Shows on hover after 300ms delay: same text as `aria-label` |
+| Tap/click | Same behavior as full `TrackThisButton` — toggles or opens dropdown |
+
 ### Export CSV
 
 | Interaction | Behavior |
@@ -292,7 +307,7 @@ Mobile: Horizontal scroll with sticky first column (document name)
 | Error state (storage full) | Reuses `StorageErrorBanner`: "Your browser storage is full. Some data may not be saved. Try clearing old data or using a different browser." |
 | Error state (data corruption) | "Your tracker data could not be loaded. It may have been corrupted. You can start fresh or try a different browser." + "Reset Tracker" button |
 | Destructive: Remove single | "Remove from tracker" (no confirmation dialog — action is easily reversible by re-adding) |
-| Destructive: Clear all | "Clear All Applications": confirmation dialog "This will remove all tracked applications. This cannot be undone. Are you sure?" with "Clear All" (destructive button) and "Cancel" (neutral button) |
+| Destructive: Clear all | "Clear All Applications": confirmation dialog "This will remove all tracked applications. This cannot be undone. Are you sure?" with "Clear All" (destructive button) and "Keep Applications" (neutral button) |
 | Toast: Added | "Added to tracker" |
 | Toast: Removed | "Removed from tracker" |
 | Toast: Stage moved | "Moved to [Stage Name]" |
@@ -358,6 +373,7 @@ const DOCUMENT_TYPES = [
 | Focus management | After card drop, focus returns to the dropped card |
 | Reduced motion | `motion-safe:` prefix on all transitions (matches existing codebase pattern) |
 | Color contrast | All stage colors use existing tokens verified at 4.5:1+ contrast ratio against their backgrounds |
+| Sticky bar icon-button | `aria-label="Track this scholarship"` (untracked) / `aria-label="Manage tracked scholarship"` (tracked); tooltip on hover for sighted users |
 
 ---
 
