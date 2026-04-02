@@ -66,7 +66,7 @@
 **Requirements:** TRACK-01, TRACK-02, TRACK-03, TRACK-04, TRACK-05, TRACK-06, TRACK-07, DOC-01, DOC-02, DOC-03, DOC-04
 **Depends on:** Phase 01 (storage adapters)
 **UI hint:** yes
-**Plans:** 6 plans
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md — TDD: Tracker data layer (types, Zustand store, engine functions, CSV export)
@@ -91,6 +91,11 @@ Plans:
 **Requirements:** CAL-01, CAL-02, CAL-03, CAL-04, CAL-05
 **Depends on:** Phase 02 (tracker data for calendar overlay)
 **UI hint:** yes
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — TDD: Calendar types + deadline engine (computeUrgency, getMonthData, localizer)
+- [ ] 03-02-PLAN.md — Calendar UI components, /calendar route, navbar link, visual verification
 
 **Success Criteria:**
 1. Monthly calendar renders deadlines for tracked/shortlisted scholarships only
