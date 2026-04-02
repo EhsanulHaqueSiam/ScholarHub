@@ -17,6 +17,7 @@ import { groupByStage } from "@/lib/tracker/tracker-engine";
 import { STAGE_CONFIG, type TrackerStage } from "@/lib/tracker/types";
 import { TrackerColumn } from "./TrackerColumn";
 import { TrackerCard } from "./TrackerCard";
+import { TrackerCardExpanded } from "./TrackerCardExpanded";
 import { TrackerEmptyState } from "./TrackerEmptyState";
 import { MobileStageSelector } from "./MobileStageSelector";
 
@@ -61,6 +62,7 @@ export function TrackerKanban() {
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mobileStage, setMobileStage] = useState<TrackerStage>("researching");
+  const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
 
   const grouped = useMemo(() => groupByStage(entries), [entries]);
 
@@ -169,6 +171,7 @@ export function TrackerKanban() {
               key={stage}
               stage={stage}
               entries={grouped[stage]}
+              onCardExpand={setExpandedSlug}
             />
           ))}
         </div>
@@ -198,11 +201,36 @@ export function TrackerKanban() {
               <TrackerCard
                 key={entry.scholarshipSlug}
                 entry={entry}
+                onExpand={setExpandedSlug}
               />
             ))
           )}
         </div>
       </div>
+
+      {/* Expanded card overlay */}
+      {expandedSlug && (() => {
+        const expandedEntry = entries.find(
+          (e) => e.scholarshipSlug === expandedSlug,
+        );
+        if (!expandedEntry) return null;
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-foreground/20 flex items-center justify-center p-4"
+            onClick={() => setExpandedSlug(null)}
+          >
+            <div
+              className="max-w-lg w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <TrackerCardExpanded
+                entry={expandedEntry}
+                onClose={() => setExpandedSlug(null)}
+              />
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

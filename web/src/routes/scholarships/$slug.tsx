@@ -19,6 +19,7 @@ import { OverviewSection } from "@/components/detail/OverviewSection";
 import { RelatedScholarships } from "@/components/detail/RelatedScholarships";
 import { SourcesSection } from "@/components/detail/SourcesSection";
 import { StickyBar } from "@/components/detail/StickyBar";
+import { DocumentChecklist } from "@/components/tracker/DocumentChecklist";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
@@ -26,6 +27,7 @@ import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import { useStaticData } from "@/hooks/useStaticData";
+import { useTrackerStore } from "@/hooks/useTrackerStore";
 import type { PrestigeTier } from "@/lib/prestige";
 import { buildBreadcrumbJsonLd, buildScholarshipJsonLd } from "@/lib/seo/json-ld";
 import { buildPageMeta } from "@/lib/seo/meta";
@@ -97,6 +99,12 @@ function ScholarshipDetailPage() {
     shouldUseConvexCollections ? { scholarshipId: scholarship._id } : "skip",
   );
   const scholarshipCollections = staticScholarshipCollections ?? queriedScholarshipCollections;
+
+  // Application tracker state
+  const isTracked = useTrackerStore((s) => s.isTracked(slug));
+  const trackerEntry = useTrackerStore((s) =>
+    s.entries.find((e) => e.scholarshipSlug === slug),
+  );
 
   // Track scholarship detail view
   useEffect(() => {
@@ -332,6 +340,28 @@ function ScholarshipDetailPage() {
             }
             applicationTips={scholarship.application_tips ?? undefined}
           />
+
+          {/* Document Checklist (DOC-01) */}
+          <section className="mt-8">
+            <h2 className="font-heading text-subhead mb-4">Document Checklist</h2>
+            {isTracked && trackerEntry ? (
+              <DocumentChecklist
+                slug={slug}
+                documentChecks={trackerEntry.documentChecks}
+              />
+            ) : (
+              <div className="bg-secondary-background border-2 border-border p-4">
+                <DocumentChecklist
+                  slug={slug}
+                  documentChecks={{}}
+                  readOnly
+                />
+                <p className="text-caption text-foreground/60 mt-3">
+                  Track this scholarship to check off documents as you prepare them.
+                </p>
+              </div>
+            )}
+          </section>
 
           {/* How to Apply */}
           <HowToApplySection
