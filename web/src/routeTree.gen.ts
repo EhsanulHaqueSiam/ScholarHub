@@ -10,12 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrackerRouteImport } from './routes/tracker'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as CompareCountriesRouteImport } from './routes/compare-countries'
-import { Route as DiscoverRouteImport } from './routes/discover'
-import { Route as EssayGuidanceRouteImport } from './routes/essay-guidance'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as EssayGuidanceRouteImport } from './routes/essay-guidance'
+import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as CompareCountriesRouteImport } from './routes/compare-countries'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScholarshipsIndexRouteImport } from './routes/scholarships/index'
@@ -38,26 +38,6 @@ const TrackerRoute = TrackerRouteImport.update({
   path: '/tracker',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareCountriesRoute = CompareCountriesRouteImport.update({
-  id: '/compare-countries',
-  path: '/compare-countries',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiscoverRoute = DiscoverRouteImport.update({
-  id: '/discover',
-  path: '/discover',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EssayGuidanceRoute = EssayGuidanceRouteImport.update({
-  id: '/essay-guidance',
-  path: '/essay-guidance',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShortlistRoute = ShortlistRouteImport.update({
   id: '/shortlist',
   path: '/shortlist',
@@ -66,6 +46,26 @@ const ShortlistRoute = ShortlistRouteImport.update({
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EssayGuidanceRoute = EssayGuidanceRouteImport.update({
+  id: '/essay-guidance',
+  path: '/essay-guidance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareCountriesRoute = CompareCountriesRouteImport.update({
+  id: '/compare-countries',
+  path: '/compare-countries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
@@ -337,34 +337,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare-countries': {
-      id: '/compare-countries'
-      path: '/compare-countries'
-      fullPath: '/compare-countries'
-      preLoaderRoute: typeof CompareCountriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/discover': {
-      id: '/discover'
-      path: '/discover'
-      fullPath: '/discover'
-      preLoaderRoute: typeof DiscoverRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/essay-guidance': {
-      id: '/essay-guidance'
-      path: '/essay-guidance'
-      fullPath: '/essay-guidance'
-      preLoaderRoute: typeof EssayGuidanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shortlist': {
       id: '/shortlist'
       path: '/shortlist'
@@ -377,6 +349,34 @@ declare module '@tanstack/react-router' {
       path: '/guide'
       fullPath: '/guide'
       preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/essay-guidance': {
+      id: '/essay-guidance'
+      path: '/essay-guidance'
+      fullPath: '/essay-guidance'
+      preLoaderRoute: typeof EssayGuidanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare-countries': {
+      id: '/compare-countries'
+      path: '/compare-countries'
+      fullPath: '/compare-countries'
+      preLoaderRoute: typeof CompareCountriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
