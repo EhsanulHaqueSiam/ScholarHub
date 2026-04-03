@@ -1,0 +1,138 @@
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+
+/* Neo-brutalism overrides for react-big-calendar */
+
+.rbc-toolbar {
+  display: none;
+}
+
+.rbc-month-view {
+  border: 2px solid var(--border);
+  border-radius: 0px;
+  background: var(--background);
+}
+
+.rbc-month-row {
+  border-color: var(--border);
+  min-height: 100px;
+}
+
+.rbc-day-bg {
+  background: var(--secondary-background);
+  border-color: var(--border);
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 2px solid var(--border);
+}
+
+.rbc-month-row + .rbc-month-row {
+  border-top: 2px solid var(--border);
+}
+
+.rbc-header {
+  font-family: var(--font-heading);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border);
+  padding: 8px 4px;
+  color: var(--foreground);
+  background: var(--secondary-background);
+}
+
+.rbc-header + .rbc-header {
+  border-left: 2px solid var(--border);
+}
+
+.rbc-today {
+  background: transparent !important;
+  border: 3px solid var(--main) !important;
+}
+
+.rbc-off-range-bg {
+  background: var(--background);
+}
+
+.rbc-off-range {
+  color: var(--foreground);
+  opacity: 0.4;
+}
+
+.rbc-event {
+  border-radius: 0px;
+  border: 2px solid var(--border);
+  font-family: var(--font-base);
+  font-size: 13px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.rbc-event:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.rbc-event:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.rbc-event.rbc-selected {
+  border: 2px solid var(--main);
+}
+
+.rbc-row-segment {
+  padding: 2px 4px;
+}
+
+.rbc-show-more {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  color: var(--main);
+  font-weight: 700;
+  background: transparent;
+  padding: 2px 4px;
+}
+
+.rbc-date-cell {
+  padding: 4px 8px;
+  text-align: right;
+}
+
+.rbc-date-cell > button {
+  font-family: var(--font-base);
+  font-size: 13px;
+  color: var(--foreground);
+}
+
+/* Dark mode adjustments */
+.dark .rbc-month-view,
+.dark .rbc-day-bg,
+.dark .rbc-header {
+  background: var(--secondary-background);
+}
+
+.dark .rbc-off-range-bg {
+  background: var(--background);
+}
+
+/* Mobile: condensed cells */
+@media (max-width: 768px) {
+  .rbc-month-row {
+    min-height: 60px;
+  }
+
+  .rbc-row-segment {
+    padding: 1px 2px;
+  }
+
+  .rbc-date-cell {
+    padding: 2px 4px;
+  }
+
+  .rbc-event {
+    font-size: 11px;
+    padding: 1px 3px;
+  }
+}

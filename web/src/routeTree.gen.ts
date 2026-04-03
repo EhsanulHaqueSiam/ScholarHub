@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrackerRouteImport } from './routes/tracker'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -32,6 +33,11 @@ import { Route as ScholarshipsCountryCountryRouteImport } from './routes/scholar
 const TrackerRoute = TrackerRouteImport.update({
   id: '/tracker',
   path: '/tracker',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShortlistRoute = ShortlistRouteImport.update({
@@ -130,6 +136,7 @@ const ScholarshipsCountryCountryRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/calendar'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendar'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/calendar'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  CalendarRoute: typeof CalendarRoute
   GuideRoute: typeof GuideRoute
   ShortlistRoute: typeof ShortlistRoute
   TrackerRoute: typeof TrackerRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       path: '/tracker'
       fullPath: '/tracker'
       preLoaderRoute: typeof TrackerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shortlist': {
@@ -429,6 +449,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  CalendarRoute: CalendarRoute,
   GuideRoute: GuideRoute,
   ShortlistRoute: ShortlistRoute,
   TrackerRoute: TrackerRoute,
