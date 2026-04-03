@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrackerRouteImport } from './routes/tracker'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as CompareCountriesRouteImport } from './routes/compare-countries'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
 import { Route as GuideRouteImport } from './routes/guide'
@@ -39,6 +40,11 @@ const TrackerRoute = TrackerRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareCountriesRoute = CompareCountriesRouteImport.update({
+  id: '/compare-countries',
+  path: '/compare-countries',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/calendar': typeof CalendarRoute
+  '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/calendar': typeof CalendarRoute
+  '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/calendar'
+    | '/compare-countries'
     | '/discover'
     | '/guide'
     | '/shortlist'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendar'
+    | '/compare-countries'
     | '/discover'
     | '/guide'
     | '/shortlist'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/calendar'
+    | '/compare-countries'
     | '/discover'
     | '/guide'
     | '/shortlist'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CalendarRoute: typeof CalendarRoute
+  CompareCountriesRoute: typeof CompareCountriesRoute
   DiscoverRoute: typeof DiscoverRoute
   GuideRoute: typeof GuideRoute
   ShortlistRoute: typeof ShortlistRoute
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare-countries': {
+      id: '/compare-countries'
+      path: '/compare-countries'
+      fullPath: '/compare-countries'
+      preLoaderRoute: typeof CompareCountriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   CalendarRoute: CalendarRoute,
+  CompareCountriesRoute: CompareCountriesRoute,
   DiscoverRoute: DiscoverRoute,
   GuideRoute: GuideRoute,
   ShortlistRoute: ShortlistRoute,
