@@ -18,7 +18,9 @@ import { HowToApplySection } from "@/components/detail/HowToApplySection";
 import { OverviewSection } from "@/components/detail/OverviewSection";
 import { RelatedScholarships } from "@/components/detail/RelatedScholarships";
 import { SourcesSection } from "@/components/detail/SourcesSection";
+import { ReadinessCard } from "@/components/detail/ReadinessCard";
 import { StickyBar } from "@/components/detail/StickyBar";
+import { ValueCard } from "@/components/detail/ValueCard";
 import { DocumentChecklist } from "@/components/tracker/DocumentChecklist";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Navbar } from "@/components/layout/Navbar";
@@ -27,6 +29,7 @@ import { buildStudyData, getCountryData } from "@/lib/country-data";
 import { useIsHeroVisible } from "@/lib/deadline";
 import { getDeadlineUrgency } from "@/lib/filters";
 import { useStaticData } from "@/hooks/useStaticData";
+import { useStudentProfile } from "@/hooks/useStudentProfile";
 import { useTrackerStore } from "@/hooks/useTrackerStore";
 import type { PrestigeTier } from "@/lib/prestige";
 import { buildBreadcrumbJsonLd, buildScholarshipJsonLd } from "@/lib/seo/json-ld";
@@ -105,6 +108,9 @@ function ScholarshipDetailPage() {
   const trackerEntry = useTrackerStore((s) =>
     s.entries.find((e) => e.scholarshipSlug === slug),
   );
+
+  // Eligibility profile for readiness card
+  const { profile: studentProfile } = useStudentProfile();
 
   // Track scholarship detail view
   useEffect(() => {
@@ -250,6 +256,30 @@ function ScholarshipDetailPage() {
               (scholarship.scholarship_type ?? undefined) as ScholarshipType | undefined
             }
           />
+
+          {/* Value Breakdown */}
+          <ValueCard
+            fundingType={scholarship.funding_type}
+            fundingTuition={scholarship.funding_tuition ?? undefined}
+            fundingLiving={scholarship.funding_living ?? undefined}
+            fundingTravel={scholarship.funding_travel ?? undefined}
+            fundingInsurance={scholarship.funding_insurance ?? undefined}
+            fundingBooks={scholarship.funding_books ?? undefined}
+            fundingResearch={scholarship.funding_research ?? undefined}
+            awardAmountMin={scholarship.award_amount_min ?? undefined}
+            awardAmountMax={scholarship.award_amount_max ?? undefined}
+            awardCurrency={scholarship.award_currency ?? undefined}
+            hostCountryCode={parseHostCountries(scholarship.host_country)[0]}
+            degreeLevel={scholarship.degree_levels[0]?.toLowerCase()}
+          />
+
+          {/* Readiness Check (only when profile exists) */}
+          {studentProfile && (
+            <ReadinessCard
+              profile={studentProfile}
+              scholarship={scholarship}
+            />
+          )}
 
           {/* Country Info -- per host country: cost, admission/visa, intakes, post-study work */}
           {(() => {
