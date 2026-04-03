@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef } from "react";
 import { Toaster } from "sonner";
 import { CompareBar } from "@/components/comparison/CompareBar";
+import { NotificationChecker } from "@/components/notifications/NotificationChecker";
 import { CompareProvider } from "@/components/comparison/CompareContext";
 import { PageActivityProvider } from "@/hooks/usePageActivity";
 import { buildOrganizationJsonLd } from "@/lib/seo/json-ld";
@@ -252,6 +253,7 @@ function RootComponent() {
               <Outlet />
             </main>
             <CompareBar />
+            <NotificationChecker />
             <Toaster
               position="bottom-right"
               toastOptions={{

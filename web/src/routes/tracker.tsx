@@ -4,6 +4,7 @@ import { BackToTop } from "@/components/layout/BackToTop";
 import { TrackerKanban } from "@/components/tracker/TrackerKanban";
 import { DocumentMatrix } from "@/components/tracker/DocumentMatrix";
 import { ExportCSVButton } from "@/components/tracker/ExportCSVButton";
+import { NotificationPreferencesPanel } from "@/components/notifications/NotificationPreferencesPanel";
 import { StorageErrorBanner } from "@/components/ui/storage-error-banner";
 import { useTrackerStore } from "@/hooks/useTrackerStore";
 
@@ -36,6 +37,10 @@ function TrackerPage() {
 
         <div className="mt-12">
           <DocumentMatrix />
+        </div>
+
+        <div className="mt-12 max-w-md">
+          <NotificationPreferencesPanel />
         </div>
       </div>
       <BackToTop />
