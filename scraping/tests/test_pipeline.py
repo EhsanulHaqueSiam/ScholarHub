@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -210,7 +208,7 @@ class TestLocalBuffer:
     def test_save_creates_directory(self, tmp_path):
         """Buffer directory is created if it doesn't exist."""
         buffer_dir = tmp_path / "nested" / "buffer"
-        buffer = LocalBuffer(str(buffer_dir))
+        LocalBuffer(str(buffer_dir))
 
         assert buffer_dir.exists()
 

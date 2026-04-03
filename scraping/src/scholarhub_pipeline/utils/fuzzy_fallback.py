@@ -58,7 +58,7 @@ def find_listing_selector(page_html: str) -> str | None:
 
     try:
         doc = lxml_html.fromstring(page_html)
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
     for pattern in COMMON_LISTING_PATTERNS:
@@ -91,7 +91,7 @@ def find_field_selectors(item_html: str) -> dict[str, str]:
 
     try:
         doc = lxml_html.fromstring(item_html)
-    except Exception:  # noqa: BLE001
+    except Exception:
         return {}
 
     found: dict[str, str] = {}

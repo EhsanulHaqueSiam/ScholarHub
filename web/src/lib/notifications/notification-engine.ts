@@ -31,16 +31,17 @@ export function checkDeadlineReminders(
   if (!prefs.deadlineReminders) return;
 
   const now = Date.now();
+  const msPerDay = 24 * 60 * 60 * 1000;
   const reminderMs = prefs.reminderDaysBefore * 24 * 60 * 60 * 1000;
 
   for (const entry of entries) {
     const summary = summaries.find((s) => s.slug === entry.scholarshipSlug);
     if (!summary?.application_deadline) continue;
 
-    const deadline = summary.application_deadline;
-    const daysUntil = Math.ceil((deadline - now) / (24 * 60 * 60 * 1000));
+    const msUntilDeadline = summary.application_deadline - now;
+    const daysUntil = Math.ceil(msUntilDeadline / msPerDay);
 
-    if (daysUntil > 0 && daysUntil <= prefs.reminderDaysBefore) {
+    if (msUntilDeadline > 0 && msUntilDeadline <= reminderMs) {
       const title = summary.title;
       const message = `${title} deadline in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}`;
 

@@ -65,7 +65,7 @@ class BaseScraper(abc.ABC):
             Record dict with normalized values and quality_flags attached.
         """
         # Sanitize description HTML
-        if "description" in raw and raw["description"]:
+        if raw.get("description"):
             raw["description"] = sanitize_html(raw["description"])
         # Normalize fields
         record = normalize_record(raw)
@@ -91,7 +91,7 @@ class BaseScraper(abc.ABC):
             if deadline.tzinfo is None:
                 deadline = deadline.replace(tzinfo=timezone.utc)
             return deadline < self._cutoff_date
-        except Exception:  # noqa: BLE001
+        except Exception:
             return False
 
     @staticmethod

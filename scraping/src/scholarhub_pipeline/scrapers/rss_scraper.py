@@ -107,7 +107,7 @@ class RssScraper(BaseScraper):
                                 text = matches[0].text_content().strip()
                                 if text:
                                     extracted[field_name] = text
-                        except Exception:  # noqa: BLE001
+                        except Exception:
                             logger.debug(
                                 "detail_selector_failed",
                                 field=field_name,

@@ -53,7 +53,7 @@ async def retry_with_backoff(
                 raise
             delay = min(base_delay * (2**attempt), max_delay)
             # Add jitter: +/- 25%
-            delay = delay * (0.75 + random.random() * 0.5)  # noqa: S311
+            delay = delay * (0.75 + random.random() * 0.5)
             logger.warning(
                 "retry_attempt",
                 attempt=attempt + 1,

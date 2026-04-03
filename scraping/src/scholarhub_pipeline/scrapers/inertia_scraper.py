@@ -170,7 +170,7 @@ class InertiaScraper(BaseScraper):
 
                         new_version = self._extract_inertia_version(refresh.text)
                         if not new_version:
-                            raise  # noqa: TRY201
+                            raise
 
                         version = new_version
                         inertia_headers["X-Inertia-Version"] = version

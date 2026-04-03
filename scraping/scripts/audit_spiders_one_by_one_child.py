@@ -79,7 +79,7 @@ async def run(source_id: str, max_records: int) -> None:
                     "duration_s": duration,
                 },
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             duration = round(time.time() - started, 2)
             total_bytes += int(getattr(scraper, "bytes_downloaded", 0) or 0)
             method_errors.append(

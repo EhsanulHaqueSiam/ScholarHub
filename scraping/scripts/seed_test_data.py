@@ -103,10 +103,10 @@ def generate_fake_scholarship(index: int) -> dict:
     Returns:
         Dict matching the raw_records schema for Convex ingestion.
     """
-    title_base = random.choice(SAMPLE_TITLES)  # noqa: S311
-    country = random.choice(COUNTRIES)  # noqa: S311
-    degree_count = random.randint(1, 3)  # noqa: S311
-    amount = random.randint(5000, 50000)  # noqa: S311
+    title_base = random.choice(SAMPLE_TITLES)
+    country = random.choice(COUNTRIES)
+    degree_count = random.randint(1, 3)
+    amount = random.randint(5000, 50000)
 
     return {
         "title": f"{title_base} #{index}",
@@ -115,16 +115,16 @@ def generate_fake_scholarship(index: int) -> dict:
             f"seeking to study in {country}. Covers tuition and living expenses. "
             f"Application #{index}."
         ),
-        "provider_organization": random.choice(ORGANIZATIONS),  # noqa: S311
+        "provider_organization": random.choice(ORGANIZATIONS),
         "host_country": country,
-        "degree_levels": random.sample(DEGREE_LEVELS, k=degree_count),  # noqa: S311
-        "fields_of_study": random.sample(  # noqa: S311
-            FIELDS_OF_STUDY, k=random.randint(1, 4),  # noqa: S311
+        "degree_levels": random.sample(DEGREE_LEVELS, k=degree_count),
+        "fields_of_study": random.sample(
+            FIELDS_OF_STUDY, k=random.randint(1, 4),
         ),
-        "funding_type": random.choice(FUNDING_TYPES),  # noqa: S311
+        "funding_type": random.choice(FUNDING_TYPES),
         "award_amount": str(amount),
-        "award_currency": random.choice(["EUR", "GBP", "USD", "JPY", "AUD", "CAD", "CHF"]),  # noqa: S311
-        "application_deadline": f"2026-{random.randint(1, 12):02d}-{random.randint(1, 28):02d}",  # noqa: S311
+        "award_currency": random.choice(["EUR", "GBP", "USD", "JPY", "AUD", "CAD", "CHF"]),
+        "application_deadline": f"2026-{random.randint(1, 12):02d}-{random.randint(1, 28):02d}",
         "source_url": f"https://example.com/scholarship/{index}",
         "scraped_at": int(time.time() * 1000),
         "quality_flags": [],

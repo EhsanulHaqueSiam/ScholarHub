@@ -42,7 +42,7 @@ class SourceScheduler:
             return None
         try:
             return self.convex.query("sources:getByUrl", {"url": url})
-        except Exception:  # noqa: BLE001 - Convex query errors vary by runtime
+        except Exception:
             self._supports_get_by_url = False
             return None
 

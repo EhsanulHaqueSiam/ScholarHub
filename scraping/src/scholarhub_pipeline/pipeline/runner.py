@@ -20,7 +20,6 @@ from scholarhub_pipeline.configs import discover_configs
 from scholarhub_pipeline.ingestion.batch import BatchAccumulator
 from scholarhub_pipeline.ingestion.dedup import SourceDeduplicator
 from scholarhub_pipeline.pipeline.buffer import LocalBuffer
-from scholarhub_pipeline.pipeline.scheduler import SourceScheduler
 from scholarhub_pipeline.scrapers import get_scraper
 
 # Fields accepted by Convex batchInsertRawRecords mutation

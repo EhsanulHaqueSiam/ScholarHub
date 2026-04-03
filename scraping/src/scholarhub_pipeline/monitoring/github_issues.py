@@ -75,8 +75,8 @@ class GitHubIssueManager:
             "It will be auto-closed when the source successfully scrapes again.\n"
         )
         try:
-            result = subprocess.run(  # noqa: S603
-                [  # noqa: S607
+            result = subprocess.run(
+                [
                     "gh", "issue", "create",
                     "--repo", self.repo,
                     "--title", title,
@@ -127,8 +127,8 @@ class GitHubIssueManager:
 
         try:
             comment = f"Source **{source_name}** has recovered. Closing automatically."
-            subprocess.run(  # noqa: S603
-                [  # noqa: S607
+            subprocess.run(
+                [
                     "gh", "issue", "close", str(issue_number),
                     "--repo", self.repo,
                     "--comment", comment,

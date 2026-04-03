@@ -129,7 +129,7 @@ class ApiScraper(BaseScraper):
                         if title:
                             import hashlib
                             id_src = f"{title}|{provider}".encode()
-                            mapped["external_id"] = hashlib.md5(id_src).hexdigest()[:16]  # noqa: S324
+                            mapped["external_id"] = hashlib.md5(id_src).hexdigest()[:16]
 
                     # Fetch detail page for extra fields
                     if detail_enabled and detail_mappings:
@@ -163,7 +163,6 @@ class ApiScraper(BaseScraper):
                     page += 1
                     param = self.config.pagination.get("param", "page")
                     start = self.config.pagination.get("start", 1)
-                    base = self.config.url.split("?")[0]
                     sep = "&" if "?" in self.config.url else "?"
                     url = f"{self.config.url}{sep}{param}={start + page}"
                 else:
@@ -342,6 +341,6 @@ class ApiScraper(BaseScraper):
                     mapped[target_field] = value
 
             return mapped
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.debug("detail_page_failed", url=url)
             return {}

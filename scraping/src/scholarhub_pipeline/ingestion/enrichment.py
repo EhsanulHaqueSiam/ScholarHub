@@ -19,7 +19,6 @@ import hashlib
 import re
 from urllib.parse import urlparse
 
-
 # ---- Country inference from URL ----
 
 TLD_COUNTRY: dict[str, str] = {

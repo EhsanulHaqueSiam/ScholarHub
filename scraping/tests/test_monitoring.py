@@ -8,8 +8,8 @@ from scholarhub_pipeline.monitoring.health import HealthTracker
 from scholarhub_pipeline.monitoring.heartbeat import HeartbeatMonitor
 from scholarhub_pipeline.monitoring.rot_detector import (
     DEACTIVATE_THRESHOLD,
-    FAST_DEACTIVATE_THRESHOLDS,
     FAILURE_THRESHOLD,
+    FAST_DEACTIVATE_THRESHOLDS,
     RotDetector,
 )
 

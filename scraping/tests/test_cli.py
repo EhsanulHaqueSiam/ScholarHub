@@ -192,7 +192,7 @@ class TestGenConfigCommand:
 
 class TestExportCommand:
     def test_export_requires_output(self, cli_runner):
-        """export requires --output flag."""
+        """Export requires --output flag."""
         result = cli_runner.invoke(scrape, ["export"])
         assert result.exit_code != 0
         assert "output" in result.output.lower() or "Missing" in result.output

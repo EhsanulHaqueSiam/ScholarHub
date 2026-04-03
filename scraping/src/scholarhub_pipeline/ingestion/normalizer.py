@@ -134,13 +134,13 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     """
     result = dict(record)
 
-    if "host_country" in result and result["host_country"]:
+    if result.get("host_country"):
         result["host_country"] = normalize_country(result["host_country"])
 
-    if "application_deadline" in result and result["application_deadline"]:
+    if result.get("application_deadline"):
         result["application_deadline"] = normalize_date(result["application_deadline"])
 
-    if "award_currency" in result and result["award_currency"]:
+    if result.get("award_currency"):
         result["award_currency"] = normalize_currency(result["award_currency"])
 
     return result

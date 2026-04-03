@@ -4,20 +4,14 @@ import { Plus, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { BackToTop } from "@/components/layout/BackToTop";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useStaticData } from "@/hooks/useStaticData";
 import {
   COUNTRY_DATA,
   type CountryData,
   getCountryData,
 } from "@/lib/country-data";
-import {
-  POPULAR_DESTINATIONS,
-  getCountryFlag,
-  getCountryName,
-} from "@/lib/countries";
-import { parseHostCountries } from "@/lib/countries";
-import { cn } from "@/lib/utils";
+import { getCountryFlag, getCountryName, parseHostCountries } from "@/lib/countries";
 
 const AVAILABLE_COUNTRIES = Object.keys(COUNTRY_DATA);
 

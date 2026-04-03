@@ -46,4 +46,4 @@ def get_random_ua() -> str:
     Returns:
         A realistic browser User-Agent string.
     """
-    return random.choice(USER_AGENTS)  # noqa: S311
+    return random.choice(USER_AGENTS)

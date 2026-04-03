@@ -282,7 +282,6 @@ class HtmlScraper(BaseScraper):
                 # Numeric pagination: append ?page=N (or configured param)
                 param = self.config.pagination.get("param", "page")
                 start = self.config.pagination.get("start", 1)
-                base = self.config.url.split("?")[0]
                 sep = "&" if "?" in self.config.url else "?"
                 url = f"{self.config.url}{sep}{param}={start + page}"
             else:
@@ -338,6 +337,6 @@ class HtmlScraper(BaseScraper):
                 if self.config.field_mappings
                 else extracted
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.warning("detail_page_failed", url=url)
             return {}
