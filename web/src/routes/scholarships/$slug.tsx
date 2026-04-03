@@ -18,7 +18,9 @@ import { HowToApplySection } from "@/components/detail/HowToApplySection";
 import { OverviewSection } from "@/components/detail/OverviewSection";
 import { RelatedScholarships } from "@/components/detail/RelatedScholarships";
 import { SourcesSection } from "@/components/detail/SourcesSection";
+import { CompetitivenessBadge } from "@/components/detail/CompetitivenessBadge";
 import { ReadinessCard } from "@/components/detail/ReadinessCard";
+import { SimilarSuggestions } from "@/components/detail/SimilarSuggestions";
 import { StickyBar } from "@/components/detail/StickyBar";
 import { ValueCard } from "@/components/detail/ValueCard";
 import { DocumentChecklist } from "@/components/tracker/DocumentChecklist";
@@ -224,6 +226,15 @@ function ScholarshipDetailPage() {
             }
           />
 
+          {/* Competitiveness Badge */}
+          <div className="flex items-center gap-2">
+            <span className="text-caption opacity-60">Competitiveness:</span>
+            <CompetitivenessBadge
+              prestigeTier={scholarship.prestige_tier}
+              fundingType={scholarship.funding_type}
+            />
+          </div>
+
           {/* Overview */}
           <OverviewSection description={scholarship.description} />
 
@@ -411,6 +422,11 @@ function ScholarshipDetailPage() {
           />
 
           {/* Similar Scholarships (DISC-03) */}
+          {/* Similar Suggestions */}
+          <SimilarSuggestions
+            currentScholarship={scholarship as unknown as import("@/lib/scholarship-summary").ScholarshipSummary}
+          />
+
           <RelatedScholarships scholarshipId={scholarship._id} scholarshipSlug={scholarshipSlug} />
         </div>
       </div>
