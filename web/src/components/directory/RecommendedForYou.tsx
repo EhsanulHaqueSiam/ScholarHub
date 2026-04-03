@@ -11,12 +11,12 @@ import { parseHostCountries } from "@/lib/countries";
 
 function scoreMatch(
   s: ScholarshipSummary,
-  profile: { nationalities: string[]; degreeLevel: string; fieldsOfStudy: string[]; destinationCountries?: string[] },
+  profile: Partial<{ nationalities: string[]; degreeLevel: string; fieldsOfStudy: string[]; destinationCountries?: string[] }>,
 ): number {
   let score = 0;
 
   // Nationality match
-  if (s.eligibility_nationalities && s.eligibility_nationalities.length > 0) {
+  if (s.eligibility_nationalities && s.eligibility_nationalities.length > 0 && profile.nationalities?.length) {
     if (profile.nationalities.some((n) => s.eligibility_nationalities!.some((e) => e.toUpperCase() === n.toUpperCase()))) {
       score += 30;
     }
@@ -25,13 +25,15 @@ function scoreMatch(
   }
 
   // Degree match
-  const degrees = s.degree_levels.map((d) => d.toLowerCase());
-  if (degrees.some((d) => d.includes(profile.degreeLevel.toLowerCase()))) {
-    score += 25;
+  if (profile.degreeLevel) {
+    const degrees = s.degree_levels.map((d) => d.toLowerCase());
+    if (degrees.some((d) => d.includes(profile.degreeLevel!.toLowerCase()))) {
+      score += 25;
+    }
   }
 
   // Field match
-  if (s.fields_of_study && s.fields_of_study.length > 0) {
+  if (s.fields_of_study && s.fields_of_study.length > 0 && profile.fieldsOfStudy?.length) {
     if (profile.fieldsOfStudy.some((f) => s.fields_of_study!.some((sf) => sf.toLowerCase().includes(f.toLowerCase())))) {
       score += 25;
     }

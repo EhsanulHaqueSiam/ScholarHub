@@ -12,7 +12,7 @@ interface ReadinessGap {
 }
 
 interface ReadinessCardProps {
-  profile: StudentProfile;
+  profile: Partial<StudentProfile>;
   scholarship: {
     eligibility_nationalities?: string[] | null;
     degree_levels: string[];
@@ -22,14 +22,14 @@ interface ReadinessCardProps {
 }
 
 function analyzeReadiness(
-  profile: StudentProfile,
+  profile: Partial<StudentProfile>,
   scholarship: ReadinessCardProps["scholarship"],
 ): ReadinessGap[] {
   const gaps: ReadinessGap[] = [];
 
   // Nationality check
   const eligNats = scholarship.eligibility_nationalities;
-  if (eligNats && eligNats.length > 0) {
+  if (eligNats && eligNats.length > 0 && profile.nationalities && profile.nationalities.length > 0) {
     const match = profile.nationalities.some((n) =>
       eligNats.some((e) => e.toUpperCase() === n.toUpperCase()),
     );
@@ -44,6 +44,14 @@ function analyzeReadiness(
   }
 
   // Degree level check
+  if (!profile.degreeLevel) {
+    gaps.push({
+      field: "Degree Level",
+      status: "unknown",
+      detail: "No degree level in your profile",
+      action: "Complete your eligibility profile to check degree match",
+    });
+  } else {
   const degreeLevels = scholarship.degree_levels.map((d) => d.toLowerCase());
   const profileDegree = profile.degreeLevel.toLowerCase();
   const degreeMatch = degreeLevels.some(
@@ -61,9 +69,10 @@ function analyzeReadiness(
       : `Requires ${scholarship.degree_levels.join(" or ")}`,
     action: degreeMatch ? undefined : "Consider if your program aligns with the required level",
   });
+  }
 
   // Field of study check
-  if (scholarship.fields_of_study && scholarship.fields_of_study.length > 0) {
+  if (scholarship.fields_of_study && scholarship.fields_of_study.length > 0 && profile.fieldsOfStudy && profile.fieldsOfStudy.length > 0) {
     const fieldMatch = profile.fieldsOfStudy.some((f) =>
       scholarship.fields_of_study!.some(
         (sf) => sf.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(sf.toLowerCase()),
