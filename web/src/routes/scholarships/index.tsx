@@ -10,6 +10,7 @@ import { FilterPanel, MobileFilterTrigger } from "@/components/directory/FilterP
 import { NationalityBanner } from "@/components/directory/NationalityBanner";
 import { DesktopPagination } from "@/components/directory/Pagination";
 import { QuickFilters } from "@/components/directory/QuickFilters";
+import { RecommendedForYou } from "@/components/directory/RecommendedForYou";
 import { ScholarshipCard } from "@/components/directory/ScholarshipCard";
 import { ScholarshipListItem } from "@/components/directory/ScholarshipListItem";
 import { SearchBar } from "@/components/directory/SearchBar";
@@ -329,6 +330,7 @@ function ScholarshipsDirectory() {
             <div className="mb-8">
               <FeaturedCollectionsRow />
             </div>
+            <RecommendedForYou />
           </>
         )}
 

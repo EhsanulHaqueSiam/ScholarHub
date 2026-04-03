@@ -13,6 +13,7 @@ import { Route as TrackerRouteImport } from './routes/tracker'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CompareCountriesRouteImport } from './routes/compare-countries'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as EssayGuidanceRouteImport } from './routes/essay-guidance'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -50,6 +51,11 @@ const CompareCountriesRoute = CompareCountriesRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EssayGuidanceRoute = EssayGuidanceRouteImport.update({
+  id: '/essay-guidance',
+  path: '/essay-guidance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShortlistRoute = ShortlistRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
+  '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
+  '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/compare-countries': typeof CompareCountriesRoute
   '/discover': typeof DiscoverRoute
+  '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/compare-countries'
     | '/discover'
+    | '/essay-guidance'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/compare-countries'
     | '/discover'
+    | '/essay-guidance'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/compare-countries'
     | '/discover'
+    | '/essay-guidance'
     | '/guide'
     | '/shortlist'
     | '/tracker'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CompareCountriesRoute: typeof CompareCountriesRoute
   DiscoverRoute: typeof DiscoverRoute
+  EssayGuidanceRoute: typeof EssayGuidanceRoute
   GuideRoute: typeof GuideRoute
   ShortlistRoute: typeof ShortlistRoute
   TrackerRoute: typeof TrackerRoute
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/essay-guidance': {
+      id: '/essay-guidance'
+      path: '/essay-guidance'
+      fullPath: '/essay-guidance'
+      preLoaderRoute: typeof EssayGuidanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shortlist': {
@@ -492,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CompareCountriesRoute: CompareCountriesRoute,
   DiscoverRoute: DiscoverRoute,
+  EssayGuidanceRoute: EssayGuidanceRoute,
   GuideRoute: GuideRoute,
   ShortlistRoute: ShortlistRoute,
   TrackerRoute: TrackerRoute,
