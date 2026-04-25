@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrackerRouteImport } from './routes/tracker'
 import { Route as ShortlistRouteImport } from './routes/shortlist'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as EssayGuidanceRouteImport } from './routes/essay-guidance'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -41,6 +42,11 @@ const TrackerRoute = TrackerRouteImport.update({
 const ShortlistRoute = ShortlistRouteImport.update({
   id: '/shortlist',
   path: '/shortlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuideRoute = GuideRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
+  '/resources': typeof ResourcesRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
+  '/resources': typeof ResourcesRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/essay-guidance': typeof EssayGuidanceRoute
   '/guide': typeof GuideRoute
+  '/resources': typeof ResourcesRoute
   '/shortlist': typeof ShortlistRoute
   '/tracker': typeof TrackerRoute
   '/api/og': typeof ApiOgRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/essay-guidance'
     | '/guide'
+    | '/resources'
     | '/shortlist'
     | '/tracker'
     | '/api/og'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/essay-guidance'
     | '/guide'
+    | '/resources'
     | '/shortlist'
     | '/tracker'
     | '/api/og'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/essay-guidance'
     | '/guide'
+    | '/resources'
     | '/shortlist'
     | '/tracker'
     | '/api/og'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   EssayGuidanceRoute: typeof EssayGuidanceRoute
   GuideRoute: typeof GuideRoute
+  ResourcesRoute: typeof ResourcesRoute
   ShortlistRoute: typeof ShortlistRoute
   TrackerRoute: typeof TrackerRoute
   ApiOgRoute: typeof ApiOgRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/shortlist'
       fullPath: '/shortlist'
       preLoaderRoute: typeof ShortlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guide': {
@@ -514,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   EssayGuidanceRoute: EssayGuidanceRoute,
   GuideRoute: GuideRoute,
+  ResourcesRoute: ResourcesRoute,
   ShortlistRoute: ShortlistRoute,
   TrackerRoute: TrackerRoute,
   ApiOgRoute: ApiOgRoute,
